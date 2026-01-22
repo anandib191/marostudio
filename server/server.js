@@ -108,6 +108,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Favicon handler - return 204 No Content to avoid 404 in logs
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 // Apply rate limiting (only if not on Vercel, as Vercel has its own rate limiting)
 if (!isVercel) {
   app.use(generalLimiter);
