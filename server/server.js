@@ -98,13 +98,29 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Health check route - should be accessible without DB connection
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
 // Apply rate limiting (only if not on Vercel, as Vercel has its own rate limiting)
 if (!isVercel) {
   app.use(generalLimiter);
 }
 
-// Middleware to ensure DB connection before handling requests
+// Middleware to ensure DB connection before handling API requests
+// Skip DB check for health endpoint
 app.use(async (req, res, next) => {
+  // Skip DB connection for health check
+  if (req.path === '/health' || req.path === '/') {
+    return next();
+  }
+  
   try {
     await ensureDBConnection();
     next();
@@ -127,12 +143,20 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/price-plans', pricePlansRoutes);
 app.use('/api/credits', creditsRoutes);
 
-// Health check route
-app.get('/health', (req, res) => {
+// Root route
+app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
+    message: 'NextGenPhoto API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      admin: '/api/admin',
+      payment: '/api/payment',
+      pricePlans: '/api/price-plans',
+      credits: '/api/credits',
+    },
   });
 });
 
@@ -141,6 +165,7 @@ app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
+    path: req.path,
   });
 });
 
