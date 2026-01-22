@@ -22,22 +22,55 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+      const url = `${API_URL}/api/auth/send-otp`;
+      
+      // Debug: Log the API URL in development
+      if (import.meta.env.DEV) {
+        console.log('Sending OTP to:', url);
+        console.log('API_URL:', API_URL);
+      }
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, is_admin: isAdmin }),
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // If 404, provide more helpful error
+        if (response.status === 404) {
+          throw new Error(`API endpoint not found. Check if VITE_API_URL is set correctly. Current: ${API_URL}`);
+        }
+        // Try to parse error response
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        throw new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || data.detail || 'Failed to send OTP');
       }
 
       setOtpSent(true);
       setStep('otp');
     } catch (err: any) {
-      setError(err.message || 'Failed to send OTP. Please try again.');
+      console.error('Send OTP error:', err);
+      console.error('API_URL used:', API_URL);
+      console.error('Full URL:', `${API_URL}/api/auth/send-otp`);
+      
+      // More specific error messages
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        setError(`Cannot connect to server. Please check if backend is running at: ${API_URL}`);
+      } else {
+        setError(err.message || 'Failed to send OTP. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
