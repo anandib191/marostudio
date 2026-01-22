@@ -1,0 +1,1710 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Logo } from '../Logo';
+import { ConfirmationModal } from '../ui/ConfirmationModal';
+import { CheckIcon } from '../icons/CheckIcon';
+import { StarIcon } from '../icons/StarIcon';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export interface PricePlan {
+  _id?: string;
+  name: string;
+  price: string;
+  yearlyPrice: string;
+  description: string;
+  features: string[];
+  isPopular: boolean;
+  photoshootCredits?: number;
+  marketingPosterCredits?: number;
+}
+
+interface User {
+  _id: string;
+  email: string;
+  role: 'user' | 'admin';
+  isVerified: boolean;
+  createdAt: string;
+  lastLogin?: string;
+  subscriptionPlan?: string | null;
+  subscriptionExpiresAt?: string | null;
+  photoshootCredits?: number;
+  marketingPosterCredits?: number;
+  planName?: string;
+  totalPhotoshootCredits?: number;
+  totalMarketingCredits?: number;
+  usedPhotoshootCredits?: number;
+  usedMarketingCredits?: number;
+  isActive?: boolean;
+}
+
+type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits';
+
+export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [section, setSection] = useState<SidebarSection>('price-plans');
+  const [userEmail, setUserEmail] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Price Plans state
+  const [plans, setPlans] = useState<PricePlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [savingPlans, setSavingPlans] = useState(false);
+
+  // Users state
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersTotal, setUsersTotal] = useState(0);
+  const [usersPages, setUsersPages] = useState(0);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Admins state
+  const [admins, setAdmins] = useState<User[]>([]);
+  const [adminsPage, setAdminsPage] = useState(1);
+  const [adminsTotal, setAdminsTotal] = useState(0);
+  const [adminsPages, setAdminsPages] = useState(0);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+
+  // Free tier credits state
+  const [freeTierCredits, setFreeTierCredits] = useState({
+    photoshootCredits: 3,
+    marketingPosterCredits: 5,
+  });
+  const [loadingFreeTier, setLoadingFreeTier] = useState(false);
+  const [savingFreeTier, setSavingFreeTier] = useState(false);
+
+  // Add Admin state
+  const [addAdminEmail, setAddAdminEmail] = useState('');
+  const [addAdminOTP, setAddAdminOTP] = useState('');
+  const [addAdminStep, setAddAdminStep] = useState<'email' | 'otp'>('email');
+  const [addAdminLoading, setAddAdminLoading] = useState(false);
+  const [addAdminError, setAddAdminError] = useState('');
+  const [deleteAdminId, setDeleteAdminId] = useState<string | null>(null);
+  const [showDeleteAdminModal, setShowDeleteAdminModal] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  const [planToDeleteIndex, setPlanToDeleteIndex] = useState<number | null>(null);
+  const [showDeletePlanModal, setShowDeletePlanModal] = useState(false);
+  const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null);
+  const [showEditPlanOverlay, setShowEditPlanOverlay] = useState(false);
+  const [showAddPlanOverlay, setShowAddPlanOverlay] = useState(false);
+  const [newPlan, setNewPlan] = useState<PricePlan>({
+    name: '',
+    price: '',
+    yearlyPrice: '',
+    description: '',
+    features: [],
+    isPopular: false,
+    photoshootCredits: 0,
+    marketingPosterCredits: 0,
+  });
+
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token');
+    const role = localStorage.getItem('admin_role');
+    const email = localStorage.getItem('admin_email');
+
+    if (!token || role !== 'admin') {
+      navigate('/admin/login');
+      return;
+    }
+    setUserEmail(email || '');
+    if (section === 'price-plans') {
+      loadPlans(token);
+    } else if (section === 'users') {
+      loadUsers(token, usersPage);
+    } else if (section === 'admins') {
+      loadAdmins(token, adminsPage);
+    } else if (section === 'credits') {
+      loadPlans(token); // Load plans to show credits
+      loadFreeTierCredits(token); // Load free tier credits
+    }
+  }, [navigate, section, usersPage, adminsPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadPlans = async (token: string) => {
+    setLoadingPlans(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/price-plans`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.plans)) {
+        setPlans(data.plans);
+      } else {
+        toast.error(data.message || 'Failed to load plans', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load price plans', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  const loadFreeTierCredits = async (token: string) => {
+    setLoadingFreeTier(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/free-tier-credits`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFreeTierCredits({
+          photoshootCredits: data.freeTierPhotoshootCredits || 3,
+          marketingPosterCredits: data.freeTierMarketingPosterCredits || 5,
+        });
+      } else {
+        toast.error(data.message || 'Failed to load free tier credits', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load free tier credits', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingFreeTier(false);
+    }
+  };
+
+  const loadUsers = async (token: string, page: number) => {
+    setLoadingUsers(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Ensure users is always an array
+        const usersList = Array.isArray(data.users) ? data.users : [];
+        setUsers(usersList);
+        setUsersTotal(data.pagination?.total || 0);
+        setUsersPages(data.pagination?.pages || 0);
+      } else {
+        setUsers([]); // Set empty array on error
+        toast.error(data.message || 'Failed to load users', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      console.error('Error loading users:', e);
+      setUsers([]); // Set empty array on error
+      toast.error('Failed to load users', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const loadAdmins = async (token: string, page: number) => {
+    setLoadingAdmins(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users?role=admin&page=${page}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAdmins(data.users || []);
+        setAdminsTotal(data.pagination?.total || 0);
+        setAdminsPages(data.pagination?.pages || 0);
+      } else {
+        toast.error(data.message || 'Failed to load admins', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load admins', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const handleSavePlans = async (plansToSave?: PricePlan[]) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    setSavingPlans(true);
+    try {
+      // Use provided plans or current state
+      const plansToProcess = plansToSave || plans;
+      
+      // Filter out blank features from all plans before saving
+      // Also ensure only one plan is popular
+      const cleanedPlans = plansToProcess.map(plan => ({
+        ...plan,
+        features: (plan.features || []).filter((f: string) => f && f.trim().length > 0)
+      }));
+      
+      // Ensure only one plan is popular (keep the first one found as popular)
+      let foundPopular = false;
+      const finalPlans = cleanedPlans.map(plan => {
+        if (plan.isPopular) {
+          if (foundPopular) {
+            return { ...plan, isPopular: false };
+          } else {
+            foundPopular = true;
+            return plan;
+          }
+        }
+        return plan;
+      });
+
+      const res = await fetch(`${API_URL}/api/admin/price-plans`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plans: finalPlans }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPlans(data.plans || finalPlans);
+        toast.success('Price plans updated successfully', { position: "top-right", autoClose: 3000 });
+      } else {
+        toast.error(data.message || 'Failed to save', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to save price plans', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setSavingPlans(false);
+    }
+  };
+
+  const handleSendAdminOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddAdminError('');
+    setAddAdminLoading(true);
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/send-admin-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: addAdminEmail }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAddAdminStep('otp');
+        toast.success('OTP sent to email', { position: "top-right", autoClose: 3000 });
+      } else {
+        setAddAdminError(data.message || 'Failed to send OTP');
+      }
+    } catch (e) {
+      setAddAdminError('Failed to send OTP');
+    } finally {
+      setAddAdminLoading(false);
+    }
+  };
+
+  const handleVerifyAdminOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddAdminError('');
+    setAddAdminLoading(true);
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/verify-admin-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: addAdminEmail, otp: addAdminOTP }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Admin added successfully', { position: "top-right", autoClose: 3000 });
+        setAddAdminEmail('');
+        setAddAdminOTP('');
+        setAddAdminStep('email');
+        loadAdmins(token, adminsPage);
+      } else {
+        setAddAdminError(data.message || 'Invalid OTP');
+      }
+    } catch (e) {
+      setAddAdminError('Failed to verify OTP');
+    } finally {
+      setAddAdminLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_email');
+    localStorage.removeItem('admin_role');
+    navigate('/admin/login');
+  };
+
+  const handleDeleteAdmin = async () => {
+    if (!deleteAdminId) return;
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/remove-admin/${deleteAdminId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Admin privileges removed successfully', { position: "top-right", autoClose: 3000 });
+        loadAdmins(token, adminsPage);
+      } else {
+        toast.error(data.message || 'Failed to remove admin', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to remove admin', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setShowDeleteAdminModal(false);
+      setDeleteAdminId(null);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteUserId) return;
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${deleteUserId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('User deleted successfully', { position: "top-right", autoClose: 3000 });
+        loadUsers(token, usersPage);
+      } else {
+        toast.error(data.message || 'Failed to delete user', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to delete user', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setShowDeleteUserModal(false);
+      setDeleteUserId(null);
+    }
+  };
+
+  const updatePlan = (index: number, field: keyof PricePlan, value: string | string[] | boolean) => {
+    setPlans((prev) => {
+      const next = prev.map((p, i) => {
+        if (i === index) {
+          // If setting isPopular to true, unset all others
+          if (field === 'isPopular' && value === true) {
+            return { ...p, [field]: value };
+          } else {
+            return { ...p, [field]: value };
+          }
+        } else {
+          // If another plan is being set as popular, unset this one
+          if (field === 'isPopular' && value === true) {
+            return { ...p, isPopular: false };
+          }
+          return p;
+        }
+      });
+      return next;
+    });
+  };
+
+  const addFeature = (planIndex: number) => {
+    setPlans((prev) =>
+      prev.map((p, i) =>
+        i === planIndex ? { ...p, features: [...(p.features || []), ''] } : p
+      )
+    );
+  };
+
+  const updateFeature = (planIndex: number, featIndex: number, value: string) => {
+    setPlans((prev) =>
+      prev.map((p, i) => {
+        if (i !== planIndex) return p;
+        const f = [...(p.features || [])];
+        f[featIndex] = value;
+        return { ...p, features: f };
+      })
+    );
+  };
+
+  const removeFeature = (planIndex: number, featIndex: number) => {
+    setPlans((prev) =>
+      prev.map((p, i) => {
+        if (i !== planIndex) return p;
+        const f = (p.features || []).filter((_, j) => j !== featIndex);
+        return { ...p, features: f };
+      })
+    );
+  };
+
+  const addPlan = () => {
+    setNewPlan({
+      name: '',
+      price: '',
+      yearlyPrice: '',
+      description: '',
+      features: [],
+      isPopular: false,
+      photoshootCredits: 0,
+      marketingPosterCredits: 0,
+    });
+    setShowAddPlanOverlay(true);
+  };
+
+  const removePlan = (index: number) => {
+    if (plans.length <= 1) return;
+    setPlanToDeleteIndex(index);
+    setShowDeletePlanModal(true);
+  };
+
+  const setPlanAsPopular = async (index: number) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    
+    setSavingPlans(true);
+    try {
+      const currentPlan = plans[index];
+      if (!currentPlan._id) {
+        toast.error('Cannot update plan without ID', { position: "top-right", autoClose: 3000 });
+        setSavingPlans(false);
+        return;
+      }
+
+      const isCurrentlyPopular = currentPlan.isPopular;
+      const newPopularStatus = !isCurrentlyPopular;
+      
+      // Update the plan's popular status
+      const res = await fetch(`${API_URL}/api/admin/price-plans/${currentPlan._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: currentPlan.name,
+          price: currentPlan.price,
+          yearlyPrice: currentPlan.yearlyPrice,
+          description: currentPlan.description,
+          features: currentPlan.features,
+          isPopular: newPopularStatus,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Reload all plans to get updated state
+        await loadPlans(token);
+        toast.success(isCurrentlyPopular ? 'Popular status removed' : 'Plan set as popular', { position: "top-right", autoClose: 3000 });
+      } else {
+        toast.error(data.message || 'Failed to update popular plan', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to update popular plan', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setSavingPlans(false);
+    }
+  };
+
+  const confirmDeletePlan = async () => {
+    if (planToDeleteIndex === null || plans.length <= 1) return;
+    
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    
+    const planToDelete = plans[planToDeleteIndex];
+    if (!planToDelete._id) {
+      toast.error('Cannot delete plan without ID', { position: "top-right", autoClose: 3000 });
+      setShowDeletePlanModal(false);
+      setPlanToDeleteIndex(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/price-plans/${planToDelete._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Remove plan from local state
+        const updatedPlans = plans.filter((_, i) => i !== planToDeleteIndex);
+        setPlans(updatedPlans);
+        toast.success('Plan deleted successfully', { position: "top-right", autoClose: 3000 });
+      } else {
+        toast.error(data.message || 'Failed to delete plan', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to delete plan', { position: "top-right", autoClose: 3000 });
+    }
+    
+    setShowDeletePlanModal(false);
+    setPlanToDeleteIndex(null);
+  };
+
+  const handleEditPlan = (index: number) => {
+    setEditingPlanIndex(index);
+    setShowEditPlanOverlay(true);
+  };
+
+  const handleCloseEditOverlay = () => {
+    // Remove blank features from the plan being edited before closing
+    if (editingPlanIndex !== null) {
+      setPlans((prev) => {
+        const updated = [...prev];
+        updated[editingPlanIndex] = {
+          ...updated[editingPlanIndex],
+          features: (updated[editingPlanIndex].features || []).filter((f: string) => f && f.trim().length > 0)
+        };
+        return updated;
+      });
+    }
+    setShowEditPlanOverlay(false);
+    setEditingPlanIndex(null);
+  };
+
+  const handleCloseAddPlanOverlay = () => {
+    setShowAddPlanOverlay(false);
+    setNewPlan({
+      name: '',
+      price: '',
+      yearlyPrice: '',
+      description: '',
+      features: [],
+      isPopular: false,
+      photoshootCredits: 0,
+      marketingPosterCredits: 0,
+    });
+  };
+
+  const updateNewPlan = (field: keyof PricePlan, value: string | string[] | boolean) => {
+    setNewPlan((prev) => {
+      const updated = { ...prev, [field]: value };
+      // If setting isPopular to true, unset all existing plans
+      if (field === 'isPopular' && value === true) {
+        setPlans((prevPlans) => prevPlans.map((p) => ({ ...p, isPopular: false })));
+      }
+      return updated;
+    });
+  };
+
+  const addNewPlanFeature = () => {
+    setNewPlan((prev) => ({ ...prev, features: [...(prev.features || []), ''] }));
+  };
+
+  const updateNewPlanFeature = (featIndex: number, value: string) => {
+    setNewPlan((prev) => {
+      const f = [...(prev.features || [])];
+      f[featIndex] = value;
+      return { ...prev, features: f };
+    });
+  };
+
+  const removeNewPlanFeature = (featIndex: number) => {
+    setNewPlan((prev) => ({
+      ...prev,
+      features: (prev.features || []).filter((_, j) => j !== featIndex),
+    }));
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      // More compact format for mobile
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }) + ' ' + date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return 'Invalid Date';
+    }
+  };
+
+  const sidebar = (
+    <aside className="w-64 h-screen fixed left-0 top-0 bg-neutral-950/95 backdrop-blur-xl border-r border-white/5 flex flex-col overflow-y-auto z-50">
+      <div className="p-6 border-b border-white/5">
+        <Logo />
+      </div>
+      <nav className="p-4 flex-1 space-y-1">
+        <button
+          onClick={() => {
+            setSection('price-plans');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+            section === 'price-plans' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Price Plans
+        </button>
+        <button
+          onClick={() => {
+            setSection('users');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+            section === 'users' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Users
+        </button>
+        <button
+          onClick={() => {
+            setSection('admins');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+            section === 'admins' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Admins
+        </button>
+        <button
+          onClick={() => {
+            setSection('credits');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+            section === 'credits' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Credits
+        </button>
+      </nav>
+    </aside>
+  );
+
+  return (
+    <div className="min-h-screen bg-black text-white flex">
+      {/* Fixed Sidebar - Desktop */}
+      <div className="hidden md:block">{sidebar}</div>
+
+      {/* Mobile: overlay + sidebar */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setSidebarOpen(false)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute left-0 top-0 bottom-0 w-64" onClick={(e) => e.stopPropagation()}>
+            {sidebar}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-64">
+        {/* Top Header Bar */}
+        <header className="sticky top-0 z-30 bg-black/90 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-neutral-400 hover:text-white rounded-lg flex-shrink-0"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs sm:text-sm text-neutral-400 whitespace-nowrap">Welcome,</span>
+              <span className="text-xs sm:text-sm font-medium text-white truncate" title={userEmail}>{userEmail}</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors font-medium whitespace-nowrap flex-shrink-0"
+          >
+            Logout
+          </button>
+        </header>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 md:p-8">
+
+          {section === 'price-plans' && (
+            <div className="w-full">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold font-serif-display">Price Plans</h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={addPlan}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Add Plan
+                  </button>
+                </div>
+              </div>
+
+              {loadingPlans ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
+                  {plans.map((plan, i) => (
+                    <div
+                      key={i}
+                      className={`relative rounded-2xl p-4 sm:p-6 md:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out ${
+                        plan.isPopular 
+                          ? 'bg-neutral-900 border-2 border-rose-500 shadow-2xl shadow-rose-900/40 z-10' 
+                          : 'bg-neutral-950/50 border border-neutral-800'
+                      }`}
+                    >
+                      {/* Edit, Popular, and Delete Icons */}
+                      <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        <button
+                          onClick={() => handleEditPlan(i)}
+                          className="p-2 bg-black/60 hover:bg-indigo-600/80 rounded-lg text-indigo-400 hover:text-white transition-colors"
+                          title="Edit Plan"
+                          aria-label="Edit Plan"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => setPlanAsPopular(i)}
+                          disabled={savingPlans}
+                          className={`p-2 bg-black/60 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                            plan.isPopular
+                              ? 'bg-rose-500/80 hover:bg-rose-600/80 text-white'
+                              : 'hover:bg-yellow-600/80 text-yellow-400 hover:text-white'
+                          }`}
+                          title={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
+                          aria-label={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
+                        >
+                          <StarIcon className={`w-4 h-4 ${plan.isPopular ? 'fill-current' : ''}`} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPlanToDeleteIndex(i);
+                            setShowDeletePlanModal(true);
+                          }}
+                          disabled={plans.length <= 1}
+                          className="p-2 bg-black/60 hover:bg-red-600/80 rounded-lg text-red-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Delete Plan"
+                          aria-label="Delete Plan"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {plan.isPopular && (
+                        <div className="absolute top-0 right-6 -translate-y-1/2 bg-rose-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider">
+                          <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
+                          Most Popular
+                        </div>
+                      )}
+
+                      <div className="flex-1 flex flex-col">
+                        <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                        <div className="mt-4 flex items-baseline justify-center gap-x-2">
+                          <span className="text-5xl font-bold tracking-tight text-white">
+                            ${plan.price}
+                          </span>
+                          <span className="text-sm font-semibold leading-6 tracking-wide text-neutral-400">/ month</span>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-neutral-500">billed monthly</p>
+                        <p className="mt-1 text-xs leading-5 text-neutral-500">${plan.yearlyPrice}/mo billed annually</p>
+
+                        <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
+                          {(plan.features || []).map((feature, idx) => (
+                            <li key={idx} className="flex gap-x-3">
+                              <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="mt-auto pt-8">
+                          <p className="text-xs leading-5 text-neutral-500 h-8">{plan.description || 'No description'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {section === 'users' && (
+            <div className="w-full max-w-6xl">
+              <h2 className="text-xl sm:text-2xl font-bold font-serif-display mb-4 sm:mb-6">Users</h2>
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-12 sm:py-16">
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : (
+                <>
+                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[800px]">
+                        <thead className="bg-neutral-800/50">
+                          <tr>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Used Credits</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Created</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Login</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {users && users.length > 0 ? users.map((user) => (
+                            <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30">
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white">
+                                <div className="max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm">
+                                <div className="flex flex-col gap-1">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium ${
+                                    user?.planName === 'Free' 
+                                      ? 'bg-neutral-500/20 text-neutral-300' 
+                                      : user?.planName === 'Gold'
+                                      ? 'bg-yellow-500/20 text-yellow-300'
+                                      : user?.planName === 'Platinum'
+                                      ? 'bg-purple-500/20 text-purple-300'
+                                      : 'bg-blue-500/20 text-blue-300'
+                                  }`}>
+                                    {user?.planName || 'Free'}
+                                  </span>
+                                  {user?.isActive !== undefined && (
+                                    <span className={`text-[9px] ${user.isActive ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {user.isActive ? '● Active' : '● Expired'}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                <span className={`inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium ${
+                                  user?.isVerified ? 'bg-emerald-500/20 text-emerald-300' : 'bg-yellow-500/20 text-yellow-300'
+                                }`}>
+                                  {user?.isVerified ? 'Verified' : 'Unverified'}
+                                </span>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 hidden md:table-cell">
+                                <div className="flex flex-col gap-0.5">
+                                  <span>Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}</span>
+                                  <span>Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}</span>
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden sm:table-cell">{formatDate(user?.createdAt)}</td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden lg:table-cell">{formatDate(user?.lastLogin)}</td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                {user?._id && (
+                                  <button
+                                    onClick={() => {
+                                      setDeleteUserId(user._id);
+                                      setShowDeleteUserModal(true);
+                                    }}
+                                    className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                    title="Delete user"
+                                    aria-label="Delete user"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr>
+                              <td colSpan={7} className="px-4 py-8 text-center text-neutral-400 text-sm">
+                                No users found
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {usersPages > 1 && (
+                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <button
+                        onClick={() => setUsersPage((p) => Math.max(1, p - 1))}
+                        disabled={usersPage === 1}
+                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-xs sm:text-sm text-neutral-400 text-center">
+                        Page {usersPage} of {usersPages} ({usersTotal} total)
+                      </span>
+                      <button
+                        onClick={() => setUsersPage((p) => Math.min(usersPages, p + 1))}
+                        disabled={usersPage === usersPages}
+                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {section === 'admins' && (
+            <div className="w-full max-w-6xl">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold font-serif-display">Admins</h2>
+              </div>
+
+              {/* Add Admin Form */}
+              <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Add New Admin</h3>
+                {addAdminStep === 'email' ? (
+                  <form onSubmit={handleSendAdminOTP} className="space-y-4">
+                    <div>
+                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={addAdminEmail}
+                        onChange={(e) => setAddAdminEmail(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="admin@example.com"
+                      />
+                    </div>
+                    {addAdminError && (
+                      <div className="text-sm text-red-400">{addAdminError}</div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={addAdminLoading}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {addAdminLoading ? 'Sending...' : 'Send OTP'}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyAdminOTP} className="space-y-4">
+                    <div>
+                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={addAdminEmail}
+                        disabled
+                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-neutral-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">OTP</label>
+                      <input
+                        type="text"
+                        value={addAdminOTP}
+                        onChange={(e) => setAddAdminOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        required
+                        maxLength={6}
+                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-center text-xl sm:text-2xl tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="000000"
+                      />
+                    </div>
+                    {addAdminError && (
+                      <div className="text-sm text-red-400">{addAdminError}</div>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="submit"
+                        disabled={addAdminLoading || addAdminOTP.length !== 6}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {addAdminLoading ? 'Verifying...' : 'Verify & Add Admin'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddAdminStep('email');
+                          setAddAdminOTP('');
+                          setAddAdminError('');
+                        }}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Change Email
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              {/* Admins List */}
+              {loadingAdmins ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : (
+                <>
+                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[600px]">
+                        <thead className="bg-neutral-800/50">
+                          <tr>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Created</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Login</th>
+                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {admins.map((admin) => (
+                            <tr key={admin._id} className="hover:bg-neutral-800/30">
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white">
+                                <div className="max-w-[200px] sm:max-w-none truncate" title={admin.email}>{admin.email}</div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                <span className="inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium bg-indigo-500/20 text-indigo-300">
+                                  Admin
+                                </span>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden sm:table-cell">{formatDate(admin.createdAt)}</td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden lg:table-cell">{formatDate(admin.lastLogin)}</td>
+                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                {admin.email.toLowerCase() !== userEmail.toLowerCase() && (
+                                  <button
+                                    onClick={() => {
+                                      setDeleteAdminId(admin._id);
+                                      setShowDeleteAdminModal(true);
+                                    }}
+                                    className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                    title="Remove admin privileges"
+                                    aria-label="Delete admin"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {adminsPages > 1 && (
+                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <button
+                        onClick={() => setAdminsPage((p) => Math.max(1, p - 1))}
+                        disabled={adminsPage === 1}
+                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-xs sm:text-sm text-neutral-400 text-center">
+                        Page {adminsPage} of {adminsPages} ({adminsTotal} total)
+                      </span>
+                      <button
+                        onClick={() => setAdminsPage((p) => Math.min(adminsPages, p + 1))}
+                        disabled={adminsPage === adminsPages}
+                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {section === 'credits' && (
+            <div className="w-full">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold font-serif-display">Credits Management</h2>
+                <p className="text-sm text-neutral-400">Configure credits for each pricing plan</p>
+              </div>
+
+              {loadingPlans ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Free Tier Credits Section */}
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-indigo-500/30 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">Free Tier Credits</h3>
+                        <p className="text-xs text-neutral-400 mt-1">Credits for users without a subscription plan</p>
+                      </div>
+                      <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-semibold rounded-full">
+                        Default Plan
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Photoshoot Credits
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={freeTierCredits.photoshootCredits}
+                          onChange={(e) => setFreeTierCredits(prev => ({
+                            ...prev,
+                            photoshootCredits: parseInt(e.target.value) || 0
+                          }))}
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Marketing Poster Credits
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={freeTierCredits.marketingPosterCredits}
+                          onChange={(e) => setFreeTierCredits(prev => ({
+                            ...prev,
+                            marketingPosterCredits: parseInt(e.target.value) || 0
+                          }))}
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end pt-4 border-t border-white/10">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('admin_token');
+                          if (!token) {
+                            toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                            return;
+                          }
+                          
+                          setSavingFreeTier(true);
+                          try {
+                            const res = await fetch(`${API_URL}/api/admin/free-tier-credits`, {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({
+                                freeTierPhotoshootCredits: freeTierCredits.photoshootCredits,
+                                freeTierMarketingPosterCredits: freeTierCredits.marketingPosterCredits,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                              toast.success('Free tier credits updated successfully!', { position: "top-right", autoClose: 3000 });
+                            } else {
+                              toast.error(data.message || 'Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
+                            }
+                          } catch (e) {
+                            toast.error('Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
+                          } finally {
+                            setSavingFreeTier(false);
+                          }
+                        }}
+                        disabled={savingFreeTier}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {savingFreeTier ? 'Saving...' : 'Save Free Tier Credits'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Paid Plans Section */}
+                  <div className="pt-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Paid Plans</h3>
+                  </div>
+                  {plans.map((plan, i) => (
+                    <div
+                      key={i}
+                      className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
+                        {plan.isPopular && (
+                          <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-full">
+                            Most Popular
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Photoshoot Credits (per month)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={plan.photoshootCredits || 0}
+                            onChange={(e) => updatePlan(i, 'photoshootCredits', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Marketing Poster Credits (per month)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={plan.marketingPosterCredits || 0}
+                            onChange={(e) => updatePlan(i, 'marketingPosterCredits', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="flex justify-end pt-4">
+                    <button
+                      onClick={async () => {
+                        const token = localStorage.getItem('admin_token');
+                        if (!token) return;
+                        
+                        setSavingPlans(true);
+                        try {
+                          const updatedPlans = plans.map(plan => ({
+                            ...plan,
+                            photoshootCredits: plan.photoshootCredits || 0,
+                            marketingPosterCredits: plan.marketingPosterCredits || 0,
+                          }));
+                          
+                          await handleSavePlans(updatedPlans);
+                        } catch (e) {
+                          toast.error('Failed to save credits', { position: "top-right", autoClose: 3000 });
+                        } finally {
+                          setSavingPlans(false);
+                        }
+                      }}
+                      disabled={savingPlans}
+                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {savingPlans ? 'Saving...' : 'Save Credits'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          </div>
+        </div>
+      </div>
+
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-500"
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteAdminModal}
+        onClose={() => {
+          setShowDeleteAdminModal(false);
+          setDeleteAdminId(null);
+        }}
+        onConfirm={handleDeleteAdmin}
+        title="Remove Admin Privileges"
+        message={`Are you sure you want to remove admin privileges from this user? They will be converted to a regular user.`}
+        confirmText="Remove Admin"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-500"
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteUserModal}
+        onClose={() => {
+          setShowDeleteUserModal(false);
+          setDeleteUserId(null);
+        }}
+        onConfirm={handleDeleteUser}
+        title="Delete User"
+        message={`Are you sure you want to delete this user? This action cannot be undone and all user data will be permanently removed.`}
+        confirmText="Delete User"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-500"
+      />
+
+      <ConfirmationModal
+        isOpen={showDeletePlanModal}
+        onClose={() => {
+          setShowDeletePlanModal(false);
+          setPlanToDeleteIndex(null);
+        }}
+        onConfirm={confirmDeletePlan}
+        title="Delete Price Plan"
+        message={`Are you sure you want to delete this price plan? This action cannot be undone.`}
+        confirmText="Delete Plan"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-500"
+      />
+
+      {/* Add Plan Overlay */}
+      {showAddPlanOverlay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold font-serif-display">Add New Plan</h3>
+              <button
+                onClick={handleCloseAddPlanOverlay}
+                className="p-2 text-neutral-400 hover:text-white rounded-lg transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Name</label>
+                  <input
+                    value={newPlan.name}
+                    onChange={(e) => updateNewPlan('name', e.target.value)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Monthly Price ($)</label>
+                  <input
+                    value={newPlan.price}
+                    onChange={(e) => updateNewPlan('price', e.target.value)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price ($/mo)</label>
+                  <input
+                    value={newPlan.yearlyPrice}
+                    onChange={(e) => updateNewPlan('yearlyPrice', e.target.value)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Photoshoot Credits (per month)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newPlan.photoshootCredits || 0}
+                    onChange={(e) => updateNewPlan('photoshootCredits', parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Marketing Poster Credits (per month)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newPlan.marketingPosterCredits || 0}
+                    onChange={(e) => updateNewPlan('marketingPosterCredits', parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="add-plan-popular"
+                    checked={newPlan.isPopular}
+                    onChange={(e) => updateNewPlan('isPopular', e.target.checked)}
+                    className="rounded border-white/20 bg-black/40 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="add-plan-popular" className="text-sm text-neutral-300">Most Popular</label>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Description</label>
+                  <input
+                    value={newPlan.description}
+                    onChange={(e) => updateNewPlan('description', e.target.value)}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-neutral-500 uppercase tracking-wider">Features</label>
+                  <button
+                    onClick={addNewPlanFeature}
+                    className="text-xs text-indigo-400 hover:text-indigo-300"
+                  >
+                    + Add Feature
+                  </button>
+                </div>
+                <ul className="space-y-2">
+                  {(newPlan.features || []).map((f, j) => (
+                    <li key={j} className="flex gap-2">
+                      <input
+                        value={f}
+                        onChange={(e) => updateNewPlanFeature(j, e.target.value)}
+                        className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                      <button
+                        onClick={() => removeNewPlanFeature(j)}
+                        className="p-2 text-red-400 hover:text-red-300 rounded"
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex gap-3 pt-4 border-t border-white/10">
+                <button
+                  onClick={handleCloseAddPlanOverlay}
+                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    // Validate required fields
+                    if (!newPlan.name.trim()) {
+                      toast.error('Plan name is required', { position: "top-right", autoClose: 3000 });
+                      return;
+                    }
+                    if (!newPlan.price.trim()) {
+                      toast.error('Monthly price is required', { position: "top-right", autoClose: 3000 });
+                      return;
+                    }
+                    if (!newPlan.yearlyPrice.trim()) {
+                      toast.error('Yearly price is required', { position: "top-right", autoClose: 3000 });
+                      return;
+                    }
+
+                    const token = localStorage.getItem('admin_token');
+                    if (!token) {
+                      toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                      return;
+                    }
+                    
+                    setSavingPlans(true);
+                    try {
+                    // Filter blank features
+                    const cleanedFeatures = (newPlan.features || []).filter((f: string) => f && f.trim().length > 0);
+
+                    // Create new plan via POST
+                    const res = await fetch(`${API_URL}/api/admin/price-plans`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({
+                          name: newPlan.name.trim(),
+                          price: newPlan.price.trim(),
+                          yearlyPrice: newPlan.yearlyPrice.trim(),
+                          description: newPlan.description.trim(),
+                          features: cleanedFeatures,
+                          isPopular: newPlan.isPopular,
+                          photoshootCredits: newPlan.photoshootCredits || 0,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (res.ok && data.success) {
+                        // Reload all plans to get the new one with ID
+                        await loadPlans(token);
+                        toast.success('New plan created successfully!', { position: "top-right", autoClose: 3000 });
+                        handleCloseAddPlanOverlay();
+                      } else {
+                        toast.error(data.message || 'Failed to save plan', { position: "top-right", autoClose: 3000 });
+                      }
+                    } catch (e) {
+                      toast.error('Failed to save plan', { position: "top-right", autoClose: 3000 });
+                    } finally {
+                      setSavingPlans(false);
+                    }
+                  }}
+                  disabled={savingPlans}
+                  className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  {savingPlans ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Plan Overlay */}
+      {showEditPlanOverlay && editingPlanIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold font-serif-display">Edit Plan</h3>
+              <button
+                onClick={handleCloseEditOverlay}
+                className="p-2 text-neutral-400 hover:text-white rounded-lg transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {editingPlanIndex !== null && (
+              <div className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Name</label>
+                    <input
+                      value={plans[editingPlanIndex].name}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'name', e.target.value)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Monthly Price ($)</label>
+                    <input
+                      value={plans[editingPlanIndex].price}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'price', e.target.value)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price ($/mo)</label>
+                    <input
+                      value={plans[editingPlanIndex].yearlyPrice}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'yearlyPrice', e.target.value)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Photoshoot Credits (per month)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={plans[editingPlanIndex].photoshootCredits || 0}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'photoshootCredits', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Marketing Poster Credits (per month)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={plans[editingPlanIndex].marketingPosterCredits || 0}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'marketingPosterCredits', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="edit-plan-popular"
+                      checked={plans[editingPlanIndex].isPopular}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'isPopular', e.target.checked)}
+                      className="rounded border-white/20 bg-black/40 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <label htmlFor="edit-plan-popular" className="text-sm text-neutral-300">Most Popular</label>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Description</label>
+                    <input
+                      value={plans[editingPlanIndex].description}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'description', e.target.value)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs text-neutral-500 uppercase tracking-wider">Features</label>
+                    <button
+                      onClick={() => addFeature(editingPlanIndex)}
+                      className="text-xs text-indigo-400 hover:text-indigo-300"
+                    >
+                      + Add Feature
+                    </button>
+                  </div>
+                  <ul className="space-y-2">
+                    {(plans[editingPlanIndex].features || []).map((f, j) => (
+                      <li key={j} className="flex gap-2">
+                        <input
+                          value={f}
+                          onChange={(e) => updateFeature(editingPlanIndex, j, e.target.value)}
+                          className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <button
+                          onClick={() => removeFeature(editingPlanIndex, j)}
+                          className="p-2 text-red-400 hover:text-red-300 rounded"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/10">
+                  <button
+                    onClick={handleCloseEditOverlay}
+                    className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (editingPlanIndex === null) return;
+                      
+                      const planToEdit = plans[editingPlanIndex];
+                      if (!planToEdit._id) {
+                        toast.error('Cannot edit plan without ID', { position: "top-right", autoClose: 3000 });
+                        return;
+                      }
+
+                      const token = localStorage.getItem('admin_token');
+                      if (!token) {
+                        toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                        return;
+                      }
+
+                      setSavingPlans(true);
+                      try {
+                        // Filter blank features
+                        const cleanedFeatures = (planToEdit.features || []).filter((f: string) => f && f.trim().length > 0);
+
+                        // Update plan via PUT
+                        const res = await fetch(`${API_URL}/api/admin/price-plans/${planToEdit._id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({
+                            name: planToEdit.name,
+                            price: planToEdit.price,
+                            yearlyPrice: planToEdit.yearlyPrice,
+                            description: planToEdit.description,
+                            features: cleanedFeatures,
+                            isPopular: planToEdit.isPopular,
+                            photoshootCredits: planToEdit.photoshootCredits || 0,
+                            marketingPosterCredits: planToEdit.marketingPosterCredits || 0,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                          // Reload all plans to get updated state
+                          await loadPlans(token);
+                          toast.success('Plan updated successfully!', { position: "top-right", autoClose: 3000 });
+                          handleCloseEditOverlay();
+                        } else {
+                          toast.error(data.message || 'Failed to update plan', { position: "top-right", autoClose: 3000 });
+                        }
+                      } catch (e) {
+                        toast.error('Failed to update plan', { position: "top-right", autoClose: 3000 });
+                      } finally {
+                        setSavingPlans(false);
+                      }
+                    }}
+                    disabled={savingPlans}
+                    className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    {savingPlans ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
