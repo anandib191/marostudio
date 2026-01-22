@@ -48,7 +48,10 @@ export const validateEnv = () => {
       console.error(`   - ${varName}`);
     });
     console.error('\nPlease set these variables in your .env file.\n');
-    process.exit(1);
+    // Don't exit in Vercel serverless environment
+    if (process.env.VERCEL !== '1') {
+      process.exit(1);
+    }
   }
 
   if (warnings.length > 0 && process.env.NODE_ENV === 'production') {

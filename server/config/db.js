@@ -29,7 +29,11 @@ const connectDB = async () => {
     });
   } catch (error) {
     logger.error('MongoDB connection failed:', error);
-    process.exit(1);
+    // Don't exit process in serverless environment (Vercel)
+    if (process.env.VERCEL !== '1') {
+      process.exit(1);
+    }
+    throw error; // Re-throw so caller can handle
   }
 };
 

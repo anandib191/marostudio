@@ -20,11 +20,28 @@ const __dirname = dirname(__filename);
 // Load environment variables from .env file in server directory
 dotenv.config({ path: join(__dirname, '.env') });
 
-// Validate environment variables before starting server
-validateEnv();
+// Check if running on Vercel (serverless)
+const isVercel = process.env.VERCEL === '1';
 
-// Connect to MongoDB
-connectDB();
+// Validate environment variables
+// Only validate if not on Vercel (Vercel has its own env management)
+if (!isVercel) {
+  validateEnv();
+}
+
+// MongoDB connection - lazy load for serverless
+let dbConnected = false;
+const ensureDBConnection = async () => {
+  if (!dbConnected) {
+    try {
+      await connectDB();
+      dbConnected = true;
+    } catch (error) {
+      logger.error('Failed to connect to database:', error);
+      throw error;
+    }
+  }
+};
 
 const app = express();
 
@@ -81,11 +98,30 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Apply rate limiting
-app.use(generalLimiter);
+// Apply rate limiting (only if not on Vercel, as Vercel has its own rate limiting)
+if (!isVercel) {
+  app.use(generalLimiter);
+}
+
+// Middleware to ensure DB connection before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await ensureDBConnection();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+    });
+  }
+});
 
 // Routes (Bladdit image gen is called directly from frontend → https://api.bladdit.com/v1/generate, no backend proxy)
-app.use('/api/auth', authLimiter, authRoutes);
+if (isVercel) {
+  app.use('/api/auth', authRoutes);
+} else {
+  app.use('/api/auth', authLimiter, authRoutes);
+}
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/price-plans', pricePlansRoutes);
@@ -126,35 +162,38 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Graceful shutdown handler
-const gracefulShutdown = (signal) => {
-  logger.info(`Received ${signal}, shutting down gracefully...`);
-  process.exit(0);
-};
+// Only start server if not on Vercel (Vercel handles this)
+if (!isVercel) {
+  // Graceful shutdown handler
+  const gracefulShutdown = (signal) => {
+    logger.info(`Received ${signal}, shutting down gracefully...`);
+    process.exit(0);
+  };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  logger.error('Unhandled Promise Rejection:', err);
-  // In production, you might want to exit the process
-  if (process.env.NODE_ENV === 'production') {
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (err) => {
+    logger.error('Unhandled Promise Rejection:', err);
+    // In production, you might want to exit the process
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err) => {
+    logger.error('Uncaught Exception:', err);
     process.exit(1);
-  }
-});
+  });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-  process.exit(1);
-});
+  const PORT = process.env.PORT || 8000;
 
-const PORT = process.env.PORT || 8000;
+  const server = app.listen(PORT, () => {
+    logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+}
 
-const server = app.listen(PORT, () => {
-  logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
-
-// Export server for testing
+// Export app for Vercel serverless functions
 export default app;
