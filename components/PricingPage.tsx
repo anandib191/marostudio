@@ -159,9 +159,10 @@ export const PricingPage: React.FC = () => {
         });
         // Refresh subscription plan after successful payment
         await fetchSubscriptionPlan();
-        // Force a page reload to ensure all components get updated credits
+        // Reload the page to refresh all components with updated credits
+        // Use window.location.href instead of reload() to ensure proper navigation
         setTimeout(() => {
-            window.location.reload();
+            window.location.href = '/pricing';
         }, 1500);
         setShowPaymentModal(false);
     };
