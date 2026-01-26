@@ -520,6 +520,88 @@ router.put('/free-tier-credits', protect, admin, [
 });
 
 /**
+ * @route   GET /api/admin/statistics
+ * @desc    Get statistics configuration (admin only)
+ * @access  Private/Admin
+ */
+router.get('/statistics', protect, admin, async (req, res) => {
+  try {
+    const config = await AppConfig.getConfig();
+    res.status(200).json({
+      success: true,
+      statistics: config.statistics || {
+        categories: '4+',
+        activeUsers: '10k+',
+        imageGenerated: '50k+',
+        activeSubscription: '1k+',
+      },
+    });
+  } catch (error) {
+    logger.error('Get statistics error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * @route   PUT /api/admin/statistics
+ * @desc    Update statistics configuration (admin only)
+ * @access  Private/Admin
+ */
+router.put('/statistics', protect, admin, [
+  body('categories').optional().isString().withMessage('Categories must be a string'),
+  body('activeUsers').optional().isString().withMessage('Active Users must be a string'),
+  body('imageGenerated').optional().isString().withMessage('Image Generated must be a string'),
+  body('activeSubscription').optional().isString().withMessage('Active Subscription must be a string'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array(),
+      });
+    }
+
+    const { categories, activeUsers, imageGenerated, activeSubscription } = req.body;
+    const config = await AppConfig.getConfig();
+
+    if (!config.statistics) {
+      config.statistics = {
+        categories: '4+',
+        activeUsers: '10k+',
+        imageGenerated: '50k+',
+        activeSubscription: '1k+',
+      };
+    }
+
+    if (categories !== undefined) {
+      config.statistics.categories = categories;
+    }
+    if (activeUsers !== undefined) {
+      config.statistics.activeUsers = activeUsers;
+    }
+    if (imageGenerated !== undefined) {
+      config.statistics.imageGenerated = imageGenerated;
+    }
+    if (activeSubscription !== undefined) {
+      config.statistics.activeSubscription = activeSubscription;
+    }
+
+    await config.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Statistics updated successfully',
+      statistics: config.statistics,
+    });
+  } catch (error) {
+    logger.error('Update statistics error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
  * @route   POST /api/admin/send-admin-otp
  * @desc    Send OTP to email for adding new admin (admin only)
  * @access  Private/Admin

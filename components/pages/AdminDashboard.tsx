@@ -74,7 +74,8 @@ export const AdminDashboard: React.FC = () => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_email');
     localStorage.removeItem('admin_role');
-    navigate('/admin/login');
+    // Force page reload to refresh all components
+    window.location.href = '/admin/login';
   };
 
   if (loading) {

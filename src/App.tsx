@@ -38,8 +38,6 @@ import { ImageCarousel } from './components/ImageCarousel';
 import { DemoCard } from './components/DemoCard';
 import { AIModelsGrid } from './components/AIModelsGrid';
 import { BookDemoPage } from './components/BookDemoPage';
-import { HowItWorks } from './components/HowItWorks';
-import { ComingSoonPage } from './components/ComingSoonPage';
 import { PricingPage } from './components/PricingPage';
 import { UploadStep } from './components/UploadStep';
 import { GeneratedAdsViewer } from './components/GeneratedAdsViewer';
@@ -69,7 +67,6 @@ interface LandingIntroProps {
 }
 
 const LandingIntro: React.FC<LandingIntroProps> = ({ onStart, onBookDemo }) => {
-  const howItWorksRef = useRef<HTMLDivElement>(null);
   // FIX: Removed unnecessary comment.
   const pricingRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLElement>(null);

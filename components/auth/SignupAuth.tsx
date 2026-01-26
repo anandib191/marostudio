@@ -1,0 +1,418 @@
+import React, { useState, useEffect } from 'react';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { Logo } from '../Logo';
+
+interface SignupAuthProps {
+  onAuthSuccess: (email: string, token: string) => void;
+  onSwitchToLogin: () => void;
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchToLogin }) => {
+  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [name, setName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const container = document.querySelector('.auth-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, []);
+
+  // Validate phone number
+  const validatePhoneNumber = (phone: string): string => {
+    const cleaned = phone.replace(/\D/g, '');
+    
+    if (!cleaned) {
+      return 'Phone number is required';
+    }
+    
+    if (cleaned.length !== 10) {
+      return 'Phone number must be exactly 10 digits';
+    }
+    
+    // Check if it contains only digits
+    if (!/^[0-9]{10}$/.test(cleaned)) {
+      return 'Phone number must contain only digits';
+    }
+    
+    return '';
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setPhoneNumber(value);
+    
+    // Validate on change
+    if (value) {
+      const error = validatePhoneNumber(value);
+      setPhoneError(error);
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setPhoneError('');
+    setLoading(true);
+
+    // Validate phone number before submitting
+    const phoneValidationError = validatePhoneNumber(phoneNumber);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      setLoading(false);
+      return;
+    }
+
+    // Validate name
+    if (!name.trim()) {
+      setError('Name is required');
+      setLoading(false);
+      return;
+    }
+
+    // Validate email
+    if (!email.trim()) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const url = `${API_URL}/api/auth/send-otp`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          is_signup: true,
+          name: name.trim(),
+          phoneNumber: phoneNumber.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        // Check if user already exists
+        if (errorData.userExists) {
+          throw new Error('User already registered. Please login instead.');
+        }
+        
+        throw new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || data.detail || 'Failed to send OTP');
+      }
+
+      setOtpSent(true);
+      setStep('otp');
+    } catch (err: any) {
+      console.error('Send OTP error:', err);
+      setError(err.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.detail || 'Invalid OTP');
+      }
+
+      // Store user token and name
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user_email', email);
+      localStorage.setItem('user_role', data.role || 'user');
+      if (data.user?.name) {
+        localStorage.setItem('user_name', data.user.name);
+      }
+      
+      onAuthSuccess(email, data.access_token);
+    } catch (err: any) {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          is_signup: true,
+          name: name.trim(),
+          phoneNumber: phoneNumber.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.detail || 'Failed to resend OTP');
+      }
+
+      setOtp('');
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+    
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Google sign up failed');
+      }
+
+      // Store user token
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', data.user?.email || '');
+        localStorage.setItem('user_role', data.role || 'user');
+        if (data.user?.name) {
+          localStorage.setItem('user_name', data.user.name);
+        }
+      
+      onAuthSuccess(data.user?.email || '', data.access_token);
+    } catch (err: any) {
+      setError(err.message || 'Google sign up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center z-[100]" style={{ overflow: 'hidden', height: '100vh', top: '80px' }}>
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-[-1]">
+        <img 
+          src="https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?q=80&w=1920&auto=format&fit=crop" 
+          alt="Authentication background"
+          className="w-full h-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+      </div>
+
+      {/* Content Container - Centered */}
+      <div className="flex flex-col items-center justify-center w-full h-full" style={{ overflow: 'hidden' }}>
+
+        {/* Auth Form */}
+        <div className="w-full max-w-md mx-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+        <h1 className="text-lg font-bold text-white font-serif-display mb-0.5 text-center">
+          Create Account
+        </h1>
+        <p className="text-xs text-neutral-400 mb-2 text-center">
+          {step === 'details' 
+            ? 'Fill in your details to get started'
+            : 'Enter the OTP sent to your email'
+          }
+        </p>
+
+        {error && (
+          <div className="mb-2 p-1.5 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-xs">
+            {error}
+          </div>
+        )}
+
+        {step === 'details' ? (
+          <>
+            <div className="mb-2">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google sign up failed. Please try again.')}
+                theme="outline"
+                shape="rectangular"
+                text="signup_with"
+                size="large"
+                width="100%"
+              />
+            </div>
+            <div className="relative mb-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-black/60 text-neutral-400">OR</span>
+              </div>
+            </div>
+            <form onSubmit={handleSendOTP} className="space-y-2">
+              <div>
+                <label htmlFor="name" className="block text-xs font-medium text-neutral-300 mb-1">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  placeholder="John Doe"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label htmlFor="phone" className="block text-xs font-medium text-neutral-300 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  required
+                  className={`w-full px-3 py-2 bg-white/5 border rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 text-sm ${
+                    phoneError 
+                      ? 'border-red-500/50 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-white/10 focus:ring-indigo-500 focus:border-transparent'
+                  }`}
+                  placeholder="9876543210"
+                  disabled={loading}
+                />
+                {phoneError && (
+                  <p className="mt-1 text-xs text-red-400">{phoneError}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-xs font-medium text-neutral-300 mb-1">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  placeholder="your.email@example.com"
+                  disabled={loading}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !name.trim() || !phoneNumber.trim() || !email.trim() || !!phoneError}
+                className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {loading ? 'Sending OTP...' : 'Send OTP'}
+              </button>
+              <div className="text-center text-xs text-neutral-400 pt-0.5">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={onSwitchToLogin}
+                  className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                >
+                  Sign In
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <form onSubmit={handleVerifyOTP} className="space-y-2">
+            <div>
+              <label htmlFor="otp" className="block text-xs font-medium text-neutral-300 mb-1">
+                OTP Code
+              </label>
+              <input
+                id="otp"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                required
+                maxLength={6}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-widest"
+                placeholder="000000"
+                disabled={loading}
+              />
+            </div>
+            <div className="text-xs text-neutral-400 text-center">
+              OTP sent to <span className="text-white">{email}</span>
+            </div>
+            <button
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {loading ? 'Verifying...' : 'Verify OTP & Create Account'}
+            </button>
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              disabled={loading}
+              className="w-full py-0.5 text-indigo-400 hover:text-indigo-300 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Resend OTP
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStep('details');
+                setOtp('');
+                setError('');
+              }}
+              className="w-full py-0.5 text-neutral-400 hover:text-neutral-300 text-xs transition-colors"
+            >
+              Change Email
+            </button>
+          </form>
+        )}
+        </div>
+      </div>
+    </div>
+  );
+};

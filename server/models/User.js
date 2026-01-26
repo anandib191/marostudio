@@ -2,12 +2,25 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      trim: true,
+    },
+    phoneNumber: {
+      type: String,
+      trim: true,
+    },
     email: {
       type: String,
       required: [true, 'Please provide an email'],
       unique: true,
       lowercase: true,
       trim: true,
+    },
+    googleId: {
+      type: String,
+      trim: true,
+      sparse: true, // Allows multiple null values
     },
     role: {
       type: String,

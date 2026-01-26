@@ -10,7 +10,8 @@
     "build:silent": "vite build 2>&1 | grep -v 'deprecated node-domexception' || true",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "convert:webp": "node scripts/convert-to-webp.js"
   },
   "dependencies": {
     "@google/genai": "^1.19.0",
@@ -18,15 +19,18 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
     "jszip": "^3.10.1",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.0.0",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "swiper": "^12.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "cross-env": "^7.0.3",
+    "sharp": "^0.33.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

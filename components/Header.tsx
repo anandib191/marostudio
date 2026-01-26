@@ -17,9 +17,9 @@ interface HeaderProps {
     activeSection: string;
 }
 
-const navLinks = [
+const navLinks: Array<{ path: string; label: string; isScroll?: boolean }> = [
   { path: '/', label: 'Overview' },
-  { path: '/workflow', label: 'Workflow' },
+  { path: '#our-flow', label: 'Workflow', isScroll: true },
   { path: '/pricing', label: 'Pricing' },
   { path: '/contact', label: 'Have Query?' },
 ];
@@ -29,33 +29,128 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeNavItem, setActiveNavItem] = useState<string>('/');
+
+  // Initialize active nav item based on location and hash
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      // For other pages, set based on pathname
+      setActiveNavItem(location.pathname);
+    } else if (location.hash === '#our-flow') {
+      setActiveNavItem('#our-flow');
+    } else {
+      // Check initial scroll position
+      const scrollY = window.scrollY;
+      const workflowSection = document.getElementById('our-flow');
+      if (workflowSection && scrollY > 300) {
+        const rect = workflowSection.getBoundingClientRect();
+        if (rect.top < 200) {
+          setActiveNavItem('#our-flow');
+        } else {
+          setActiveNavItem('/');
+        }
+      } else {
+        setActiveNavItem('/');
+      }
+    }
+  }, [location.pathname, location.hash]);
 
   const isActive = (path: string) => {
+    // For non-home pages, check pathname
+    if (location.pathname !== '/') {
+      return location.pathname === path;
+    }
+    
+    // For home page, check activeNavItem
     if (path === '/') {
-      return location.pathname === '/';
+      return activeNavItem === '/';
+    }
+    if (path === '#our-flow') {
+      return activeNavItem === '#our-flow';
     }
     return location.pathname === path;
   };
+
+  // Scroll detection for active nav item on home page
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+
+    const handleScroll = () => {
+      const workflowSection = document.getElementById('our-flow');
+      const scrollPosition = window.scrollY;
+      const headerHeight = 100;
+      
+      if (workflowSection) {
+        const rect = workflowSection.getBoundingClientRect();
+        const sectionTop = rect.top + scrollPosition;
+        const viewportTop = scrollPosition;
+        
+        // More precise detection: Workflow is active when section is near top of viewport
+        // Consider it active when section top is within 250px of viewport top
+        const isWorkflowActive = (
+          sectionTop <= viewportTop + 250 && 
+          sectionTop >= viewportTop - 100
+        );
+        
+        if (isWorkflowActive && scrollPosition > 200) {
+          setActiveNavItem('#our-flow');
+        } else if (scrollPosition < 150) {
+          // Overview is active when near top of page
+          setActiveNavItem('/');
+        }
+      } else {
+        // If section doesn't exist, default to overview
+        setActiveNavItem('/');
+      }
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    handleScroll(); // Check initial state
+    
+    return () => window.removeEventListener('scroll', throttledHandleScroll);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_role');
-    navigate('/login');
+    localStorage.removeItem('user_name');
+    // Force page reload to refresh all components
+    window.location.href = '/';
     };
 
   useEffect(() => {
-    // Get user email from localStorage
-    const email = localStorage.getItem('user_email');
-    setUserEmail(email);
+    // Check if user is authenticated
+    const token = localStorage.getItem('access_token');
+    const storedName = localStorage.getItem('user_name');
+    
+    setIsAuthenticated(!!token);
+    
+    // Set name from localStorage if available
+    if (storedName) {
+      setUserName(storedName);
+    }
 
-    const fetchSubscriptionPlan = async () => {
+    const fetchUserData = async () => {
       try {
         // Only check user token, not admin token
-        const token = localStorage.getItem('access_token');
         if (!token) {
           setSubscriptionPlan(null);
+          setUserName(null);
           return;
         }
 
@@ -64,6 +159,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         });
         const data = await res.json();
         if (res.ok && data.success) {
+          // Update user name from API response
+          if (data.userName) {
+            setUserName(data.userName);
+            localStorage.setItem('user_name', data.userName);
+          }
+          
           // Check if subscription is still valid
           if (data.subscriptionPlan && data.subscriptionExpiresAt) {
             const expiresAt = new Date(data.subscriptionExpiresAt);
@@ -78,20 +179,20 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
           }
         }
       } catch (err) {
-        // Silently fail - don't break the app if subscription fetch fails
-        console.error('Failed to fetch subscription plan:', err);
+        // Silently fail - don't break the app if fetch fails
+        console.error('Failed to fetch user data:', err);
         setSubscriptionPlan(null);
       }
     };
 
-    fetchSubscriptionPlan();
+    fetchUserData();
     // Refresh every 30 seconds
-    const interval = setInterval(fetchSubscriptionPlan, 30000);
+    const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
+    <header className="sticky top-0 z-[101] bg-black/60 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0 flex flex-col gap-1">
@@ -109,29 +210,87 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
               </span>
             )}
           </div>
-          {userEmail && (
+          {userName && (
             <p className="text-xs text-neutral-400 font-medium">
-              Welcome, {userEmail}
+              {userName}
             </p>
           )}
         </div>
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold">
-          {navLinks.map(link => (
-            <Link
-              key={link.path}
-              to={link.path}
+          {navLinks.map(link => {
+            if (link.isScroll) {
+              return (
+                <button
+                  key={link.path}
+                  onClick={() => {
+                    setActiveNavItem('#our-flow');
+                    if (location.pathname !== '/') {
+                      navigate('/');
+                      setTimeout(() => {
+                        const element = document.getElementById('our-flow');
+                        if (element) {
+                          const headerHeight = 100;
+                          const elementPosition = element.offsetTop;
+                          // Increased offset to skip the carousel section above
+                          const offsetPosition = elementPosition - headerHeight - 40;
+                          window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                          });
+                        }
+                      }, 100);
+                    } else {
+                      const element = document.getElementById('our-flow');
+                      if (element) {
+                        const headerHeight = 100;
+                        const elementPosition = element.offsetTop;
+                        // Increased offset to skip the carousel section above
+                        const offsetPosition = elementPosition - headerHeight - 40;
+                        window.scrollTo({
+                          top: offsetPosition,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }
+                  }}
                   className={`relative transition-colors ${
-                isActive(link.path) ? 'text-white' : 'text-neutral-500 hover:text-white'
+                    isActive(link.path) ? 'text-white' : 'text-neutral-500 hover:text-white'
                   }`}
-              >
+                >
                   {link.label}
-              {isActive(link.path) && (
-                      <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
+                  {isActive(link.path) && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
                   )}
-            </Link>
-          ))}
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => {
+                  if (link.path === '/') {
+                    setActiveNavItem('/');
+                    if (location.pathname !== '/') {
+                      navigate('/');
+                    } else {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }
+                }}
+                className={`relative transition-colors ${
+                  isActive(link.path) ? 'text-white' : 'text-neutral-500 hover:text-white'
+                }`}
+              >
+                {link.label}
+                {isActive(link.path) && (
+                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
             
         {/* Actions */}
@@ -146,13 +305,15 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
               </button>
             )}
 
-            <button 
-            onClick={() => setShowLogoutModal(true)}
-            className="hidden md:block text-[9px] md:text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300"
-            title="Logout"
-          >
-            Logout
-          </button>
+            {isAuthenticated && (
+              <button 
+                onClick={() => setShowLogoutModal(true)}
+                className="hidden md:block text-[9px] md:text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300"
+                title="Logout"
+              >
+                Logout
+              </button>
+            )}
 
           <button 
             onClick={() => location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')} 

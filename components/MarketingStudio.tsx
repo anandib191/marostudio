@@ -10,6 +10,7 @@ import { DownloadIcon } from './icons/DownloadIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 import { LoadingScreen } from './LoadingScreen';
+import { CreditsSummaryBox } from './CreditsSummaryBox';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -22,6 +23,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     const [generatedPoster, setGeneratedPoster] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [marketingPosterCredits, setMarketingPosterCredits] = useState<number | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
@@ -46,10 +49,16 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     }, []);
 
     useEffect(() => {
-        fetchCredits();
-        // Refresh credits more frequently to catch payment updates
-        const interval = setInterval(fetchCredits, 10000); // Every 10 seconds
-        return () => clearInterval(interval);
+        // Check authentication status
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
+        
+        if (token) {
+            fetchCredits();
+            // Refresh credits more frequently to catch payment updates
+            const interval = setInterval(fetchCredits, 10000); // Every 10 seconds
+            return () => clearInterval(interval);
+        }
     }, [fetchCredits]);
 
     // Also refresh credits when component becomes visible (user navigates back)
@@ -79,8 +88,14 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
             return;
         }
 
-        // Check credits before generation
+        // Check if user is authenticated
         const token = localStorage.getItem('access_token');
+        if (!token) {
+            navigate('/login', { state: { from: { pathname: '/studio' } } });
+            return;
+        }
+
+        // Check credits before generation
         if (token) {
             try {
                 const checkRes = await fetch(`${API_URL}/api/credits/check`, {
@@ -231,37 +246,64 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         />
                     </div>
 
-                    <button
-                        onClick={handleGenerate}
-                        disabled={!imageFile || isLoading || (marketingPosterCredits !== null && marketingPosterCredits <= 0)}
-                        className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                        <SparklesIcon className="w-5 h-5" />
-                        GENERATE POSTER
-                    </button>
-                    {marketingPosterCredits !== null && (
-                        <div className="mt-3 text-center">
-                            {marketingPosterCredits > 0 ? (
-                                <p className="text-xs">
-                                    <span className="text-amber-400">You have {marketingPosterCredits} poster credit{marketingPosterCredits !== 1 ? 's' : ''} remaining</span>
-                                </p>
-                            ) : (
-                                <div className="space-y-2">
-                                    <p className="text-xs text-red-400">No poster credits remaining</p>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            navigate('/pricing');
-                                        }}
-                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-orange-900/20"
-                                    >
-                                        Purchase plan for more generation
-                                    </button>
+                    {!isAuthenticated ? (
+                        <button
+                            onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                            className="w-full text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            LOG IN TO GENERATE
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                onClick={handleGenerate}
+                                disabled={!imageFile || isLoading || (marketingPosterCredits !== null && marketingPosterCredits <= 0)}
+                                className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                            >
+                                <SparklesIcon className="w-5 h-5" />
+                                GENERATE POSTER
+                            </button>
+                            {marketingPosterCredits !== null && (
+                                <div className="mt-3">
+                                    {marketingPosterCredits > 0 ? (
+                                        <CreditsSummaryBox 
+                                            credits={marketingPosterCredits} 
+                                            creditType="marketing"
+                                        />
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="bg-neutral-700/50 rounded-lg p-2">
+                                                        <SparklesIcon className="w-4 h-4 text-red-400" />
+                                                    </div>
+                                                    <span className="text-white text-sm font-medium">
+                                                        Credits Summary
+                                                    </span>
+                                                </div>
+                                                <div className="text-red-400 text-sm font-medium">
+                                                    0 Available
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    navigate('/pricing');
+                                                }}
+                                                className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-orange-900/20"
+                                            >
+                                                Purchase plan for more generation
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                        </div>
+                        </>
                     )}
                 </div>
 

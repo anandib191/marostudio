@@ -9,7 +9,6 @@ import { GlassFilter } from './components/ui/GlassFilter';
 import { BookDemoPage } from './components/BookDemoPage';
 import { StudioWrapper } from './components/StudioWrapper';
 import { LandingPage } from './components/LandingPage';
-import { WorkflowPage } from './components/pages/WorkflowPage';
 import { PricingPageRoute } from './components/pages/PricingPageRoute';
 import { ContactPage } from './components/pages/ContactPage';
 import { UserLoginPage } from './components/pages/UserLoginPage';
@@ -36,7 +35,6 @@ const AppContent: React.FC = () => {
 
   // Determine if we should show landing background
   const isLandingPage = location.pathname === '/' || 
-                       location.pathname === '/workflow' || 
                        location.pathname === '/pricing' ||
                        location.pathname === '/contact' ||
                        location.pathname === '/book-demo';
@@ -45,7 +43,6 @@ const AppContent: React.FC = () => {
   // Determine current route for active section
   const getActiveSection = () => {
     if (location.pathname === '/') return 'home';
-    if (location.pathname === '/workflow') return 'workflow';
     if (location.pathname === '/pricing') return 'pricing';
     if (location.pathname === '/contact') return 'contact';
     return '';
@@ -69,8 +66,8 @@ const AppContent: React.FC = () => {
         </>
       )}
 
-      {/* Only show header on public pages (hide for /admin, /login, /dashboard) */}
-      {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/dashboard') && (
+      {/* Only show header on public pages (hide for /admin, /dashboard) */}
+      {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/dashboard') && (
         <>
       <Header 
         hasGeneratedContent={hasGeneratedContent}
@@ -87,14 +84,14 @@ const AppContent: React.FC = () => {
         </>
       )}
       
-      {!showLandingBackground && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/dashboard') && (
+      {!showLandingBackground && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/dashboard') && (
           <GlassFilter />
       )}
       
       <main className={`relative z-10 flex-grow flex flex-col ${
         location.pathname.startsWith('/dashboard')
           ? 'p-0 items-stretch justify-start'
-          : `${showLandingBackground ? 'justify-start' : 'items-center justify-center'} px-4 sm:px-5 md:px-6 lg:px-8 ${(location.pathname === '/contact' || location.pathname === '/pricing' || location.pathname === '/workflow' || location.pathname === '/') ? 'py-4 md:py-6' : 'py-8 md:py-16'}`
+          : `${showLandingBackground ? 'justify-start' : 'items-center justify-center'} px-4 sm:px-5 md:px-6 lg:px-8 ${(location.pathname === '/contact' || location.pathname === '/pricing' || location.pathname === '/workflow' || location.pathname === '/') ? 'pt-0 pb-4 md:pb-6' : 'py-8 md:py-16'}`
       }`}>
         {isCheckingAuth ? (
           <div className="flex items-center justify-center min-h-screen">
@@ -109,40 +106,17 @@ const AppContent: React.FC = () => {
             <Route path="/login" element={<UserLoginPage />} />
             <Route path="/admin/login" element={<AdminLoginPage />} />
             
-            {/* Protected Routes - Require Authentication */}
+            {/* Public Routes - Viewable without authentication, but generation requires auth */}
           <Route path="/" element={
-            <ProtectedRoute>
               <LandingPage 
                 onStart={() => navigate('/studio')} 
                 onBookDemo={() => navigate('/contact')} 
               />
-            </ProtectedRoute>
           } />
-            <Route path="/workflow" element={
-              <ProtectedRoute>
-                <WorkflowPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/pricing" element={
-              <ProtectedRoute>
-                <PricingPageRoute />
-              </ProtectedRoute>
-            } />
-            <Route path="/contact" element={
-              <ProtectedRoute>
-                <ContactPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/book-demo" element={
-              <ProtectedRoute>
-                <BookDemoPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/studio" element={
-              <ProtectedRoute>
-                <StudioWrapper />
-              </ProtectedRoute>
-            } />
+            <Route path="/pricing" element={<PricingPageRoute />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/book-demo" element={<BookDemoPage />} />
+            <Route path="/studio" element={<StudioWrapper />} />
             
             {/* Admin Routes */}
             <Route 
@@ -170,8 +144,8 @@ const AppContent: React.FC = () => {
               } 
             />
             
-            {/* Default redirect to login if not authenticated */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Default redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
       </main>

@@ -39,7 +39,7 @@ interface User {
   isActive?: boolean;
 }
 
-type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits';
+type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits' | 'statistics';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -59,6 +59,8 @@ export const Dashboard: React.FC = () => {
   const [usersTotal, setUsersTotal] = useState(0);
   const [usersPages, setUsersPages] = useState(0);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [activeSubscriptions, setActiveSubscriptions] = useState(0);
+  const [loadingUserStats, setLoadingUserStats] = useState(false);
 
   // Admins state
   const [admins, setAdmins] = useState<User[]>([]);
@@ -74,6 +76,16 @@ export const Dashboard: React.FC = () => {
   });
   const [loadingFreeTier, setLoadingFreeTier] = useState(false);
   const [savingFreeTier, setSavingFreeTier] = useState(false);
+
+  // Statistics state
+  const [statistics, setStatistics] = useState({
+    categories: '4+',
+    activeUsers: '10k+',
+    imageGenerated: '50k+',
+    activeSubscription: '1k+',
+  });
+  const [loadingStatistics, setLoadingStatistics] = useState(false);
+  const [savingStatistics, setSavingStatistics] = useState(false);
 
   // Add Admin state
   const [addAdminEmail, setAddAdminEmail] = useState('');
@@ -116,11 +128,14 @@ export const Dashboard: React.FC = () => {
       loadPlans(token);
     } else if (section === 'users') {
       loadUsers(token, usersPage);
+      loadUserStats(token);
     } else if (section === 'admins') {
       loadAdmins(token, adminsPage);
     } else if (section === 'credits') {
       loadPlans(token); // Load plans to show credits
       loadFreeTierCredits(token); // Load free tier credits
+    } else if (section === 'statistics') {
+      loadStatistics(token);
     }
   }, [navigate, section, usersPage, adminsPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -165,6 +180,53 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const loadStatistics = async (token: string) => {
+    setLoadingStatistics(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/statistics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.statistics) {
+        setStatistics({
+          categories: data.statistics.categories || '4+',
+          activeUsers: data.statistics.activeUsers || '10k+',
+          imageGenerated: data.statistics.imageGenerated || '50k+',
+          activeSubscription: data.statistics.activeSubscription || '1k+',
+        });
+      } else {
+        toast.error(data.message || 'Failed to load statistics', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load statistics', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingStatistics(false);
+    }
+  };
+
+  const saveStatistics = async () => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    setSavingStatistics(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/statistics`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(statistics),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Statistics updated successfully', { position: "top-right", autoClose: 3000 });
+      } else {
+        toast.error(data.message || 'Failed to save statistics', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to save statistics', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setSavingStatistics(false);
+    }
+  };
+
   const loadUsers = async (token: string, page: number) => {
     setLoadingUsers(true);
     try {
@@ -188,6 +250,34 @@ export const Dashboard: React.FC = () => {
       toast.error('Failed to load users', { position: "top-right", autoClose: 3000 });
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const loadUserStats = async (token: string) => {
+    setLoadingUserStats(true);
+    try {
+      // Get all users (no pagination) to count active subscriptions
+      const res = await fetch(`${API_URL}/api/admin/users?role=user&page=1&limit=1000`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const usersList = Array.isArray(data.users) ? data.users : [];
+        // Count users with active subscriptions
+        const activeCount = usersList.filter((user: User) => {
+          if (user.subscriptionPlan && user.subscriptionExpiresAt) {
+            const expiresAt = new Date(user.subscriptionExpiresAt);
+            const now = new Date();
+            return expiresAt > now;
+          }
+          return false;
+        }).length;
+        setActiveSubscriptions(activeCount);
+      }
+    } catch (e) {
+      console.error('Error loading user stats:', e);
+    } finally {
+      setLoadingUserStats(false);
     }
   };
 
@@ -321,7 +411,8 @@ export const Dashboard: React.FC = () => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_email');
     localStorage.removeItem('admin_role');
-    navigate('/admin/login');
+    // Force page reload to refresh all components
+    window.location.href = '/admin/login';
   };
 
   const handleDeleteAdmin = async () => {
@@ -663,6 +754,17 @@ export const Dashboard: React.FC = () => {
         >
           Credits
         </button>
+        <button
+          onClick={() => {
+            setSection('statistics');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+            section === 'statistics' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          Statistics
+        </button>
       </nav>
     </aside>
   );
@@ -794,12 +896,12 @@ export const Dashboard: React.FC = () => {
                         <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
                         <div className="mt-4 flex items-baseline justify-center gap-x-2">
                           <span className="text-5xl font-bold tracking-tight text-white">
-                            ${plan.price}
+                            ₹{plan.price}
                           </span>
                           <span className="text-sm font-semibold leading-6 tracking-wide text-neutral-400">/ month</span>
                         </div>
                         <p className="mt-1 text-xs leading-5 text-neutral-500">billed monthly</p>
-                        <p className="mt-1 text-xs leading-5 text-neutral-500">${plan.yearlyPrice}/mo billed annually</p>
+                        <p className="mt-1 text-xs leading-5 text-neutral-500">₹{plan.yearlyPrice}/mo billed annually</p>
 
                         <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
                           {(plan.features || []).map((feature, idx) => (
@@ -824,6 +926,49 @@ export const Dashboard: React.FC = () => {
           {section === 'users' && (
             <div className="w-full max-w-6xl">
               <h2 className="text-xl sm:text-2xl font-bold font-serif-display mb-4 sm:mb-6">Users</h2>
+              
+              {/* User Statistics Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {/* Total Users Card */}
+                <div className="bg-gradient-to-br from-indigo-900/30 to-indigo-800/20 border border-indigo-500/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Total Users</p>
+                      {loadingUserStats ? (
+                        <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
+                      ) : (
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white">{usersTotal.toLocaleString()}</h3>
+                      )}
+                    </div>
+                    <div className="bg-indigo-500/20 p-3 rounded-lg">
+                      <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Subscriptions Card */}
+                <div className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Active Subscriptions</p>
+                      {loadingUserStats ? (
+                        <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
+                      ) : (
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white">{activeSubscriptions.toLocaleString()}</h3>
+                      )}
+                      <p className="text-xs text-neutral-500 mt-1">Currently active plans</p>
+                    </div>
+                    <div className="bg-green-500/20 p-3 rounded-lg">
+                      <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {loadingUsers ? (
                 <div className="flex items-center justify-center py-12 sm:py-16">
                   <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-indigo-500 border-t-transparent" />
@@ -1282,6 +1427,121 @@ export const Dashboard: React.FC = () => {
               )}
             </div>
           )}
+
+          {section === 'statistics' && (
+            <div className="w-full">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold font-serif-display">Statistics Management</h2>
+                <p className="text-sm text-neutral-400">Update statistics displayed on the landing page</p>
+              </div>
+
+              {loadingStatistics ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-indigo-500/30 rounded-xl p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Categories
+                        </label>
+                        <input
+                          type="text"
+                          value={statistics.categories}
+                          onChange={(e) => setStatistics(prev => ({ ...prev, categories: e.target.value }))}
+                          placeholder="e.g., 4+"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.categories} Categories"</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Active Users
+                        </label>
+                        <input
+                          type="text"
+                          value={statistics.activeUsers}
+                          onChange={(e) => setStatistics(prev => ({ ...prev, activeUsers: e.target.value }))}
+                          placeholder="e.g., 10k+"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeUsers} Active Users"</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Image Generated
+                        </label>
+                        <input
+                          type="text"
+                          value={statistics.imageGenerated}
+                          onChange={(e) => setStatistics(prev => ({ ...prev, imageGenerated: e.target.value }))}
+                          placeholder="e.g., 50k+"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.imageGenerated} Image Generated"</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Active Subscription
+                        </label>
+                        <input
+                          type="text"
+                          value={statistics.activeSubscription}
+                          onChange={(e) => setStatistics(prev => ({ ...prev, activeSubscription: e.target.value }))}
+                          placeholder="e.g., 1k+"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeSubscription} Active Subscription"</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end pt-4 border-t border-white/10">
+                      <button
+                        onClick={saveStatistics}
+                        disabled={savingStatistics}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {savingStatistics ? 'Saving...' : 'Save Statistics'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Preview Section */}
+                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                          {statistics.categories}
+                        </h3>
+                        <p className="text-sm text-neutral-400">Categories</p>
+                      </div>
+                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                          {statistics.activeUsers}
+                        </h3>
+                        <p className="text-sm text-neutral-400">Active Users</p>
+                      </div>
+                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                          {statistics.imageGenerated}
+                        </h3>
+                        <p className="text-sm text-neutral-400">Image Generated</p>
+                      </div>
+                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                          {statistics.activeSubscription}
+                        </h3>
+                        <p className="text-sm text-neutral-400">Active Subscription</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           </div>
         </div>
       </div>
@@ -1375,7 +1635,7 @@ export const Dashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price ($/mo)</label>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price (₹/mo)</label>
                   <input
                     value={newPlan.yearlyPrice}
                     onChange={(e) => updateNewPlan('yearlyPrice', e.target.value)}
@@ -1561,7 +1821,7 @@ export const Dashboard: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price ($/mo)</label>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Yearly Price (₹/mo)</label>
                     <input
                       value={plans[editingPlanIndex].yearlyPrice}
                       onChange={(e) => updatePlan(editingPlanIndex, 'yearlyPrice', e.target.value)}

@@ -1,20 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { Logo } from '../Logo';
 
 interface EmailOTPAuthProps {
   onAuthSuccess: (email: string, token: string) => void;
   isAdmin?: boolean;
+  onSwitchToSignup?: () => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdmin = false }) => {
+export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdmin = false, onSwitchToSignup }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const container = document.querySelector('.auth-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, []);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +115,12 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_role', data.role || 'user');
+        // Store user name if available
+        if (data.user?.name) {
+          localStorage.setItem('user_name', data.user.name);
+        } else if (data.name) {
+          localStorage.setItem('user_name', data.name);
+        }
         // Don't set admin token for user login
       }
       
@@ -141,8 +158,49 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+    
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Google authentication failed');
+      }
+
+      // Store tokens
+      if (isAdmin) {
+        localStorage.setItem('admin_token', data.access_token);
+        localStorage.setItem('admin_email', data.user?.email || '');
+        localStorage.setItem('admin_role', data.role || 'admin');
+      } else {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', data.user?.email || '');
+        localStorage.setItem('user_role', data.role || 'user');
+        if (data.user?.name) {
+          localStorage.setItem('user_name', data.user.name);
+        }
+      }
+      
+      onAuthSuccess(data.user?.email || '', data.access_token);
+    } catch (err: any) {
+      setError(err.message || 'Google authentication failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center p-8 z-[100]">
+    <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center z-[100]" style={{ overflow: 'hidden', height: '100vh', top: '80px' }}>
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-[-1]">
         <img 
@@ -153,19 +211,15 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
       </div>
 
-      {/* Header with Logo */}
-      <header className="w-full mb-8">
-        <div className="flex justify-center">
-          <Logo />
-        </div>
-      </header>
+      {/* Content Container - Centered */}
+      <div className="flex flex-col items-center justify-center w-full h-full" style={{ overflow: 'hidden' }}>
 
-      {/* Auth Form */}
-      <div className="w-full max-w-md mx-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
-        <h1 className="text-3xl font-bold text-white font-serif-display mb-2 text-center">
+        {/* Auth Form */}
+        <div className="w-full max-w-md mx-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+        <h1 className="text-lg font-bold text-white font-serif-display mb-0.5 text-center">
           {isAdmin ? 'Admin Sign In' : 'Sign In'}
         </h1>
-        <p className="text-sm text-neutral-400 mb-8 text-center">
+        <p className="text-xs text-neutral-400 mb-2 text-center">
           {step === 'email' 
             ? 'Enter your email to receive an OTP'
             : 'Enter the OTP sent to your email'
@@ -173,40 +227,75 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         </p>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
+          <div className="mb-2 p-1.5 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-xs">
             {error}
           </div>
         )}
 
         {step === 'email' ? (
-          <form onSubmit={handleSendOTP} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="your.email@example.com"
-                disabled={loading}
-              />
+          <>
+            {!isAdmin && (
+              <div className="mb-2">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google sign in failed. Please try again.')}
+                  theme="outline"
+                  shape="rectangular"
+                  text="signin_with"
+                  size="large"
+                  width="100%"
+                />
+              </div>
+            )}
+            <div className="relative mb-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-black/60 text-neutral-400">OR</span>
+              </div>
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Sending...' : 'Send OTP'}
-            </button>
-          </form>
+            <form onSubmit={handleSendOTP} className="space-y-2">
+              <div>
+                <label htmlFor="email" className="block text-xs font-medium text-neutral-300 mb-1">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  placeholder="your.email@example.com"
+                  disabled={loading}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {loading ? 'Sending...' : 'Send OTP'}
+              </button>
+              {!isAdmin && onSwitchToSignup && (
+                <div className="text-center text-xs text-neutral-400 pt-0.5">
+                  Don't have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={onSwitchToSignup}
+                    className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
+            </form>
+          </>
         ) : (
-          <form onSubmit={handleVerifyOTP} className="space-y-4">
+          <form onSubmit={handleVerifyOTP} className="space-y-2">
             <div>
-              <label htmlFor="otp" className="block text-sm font-medium text-neutral-300 mb-2">
+              <label htmlFor="otp" className="block text-xs font-medium text-neutral-300 mb-1">
                 OTP Code
               </label>
               <input
@@ -216,18 +305,18 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 required
                 maxLength={6}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-2xl tracking-widest"
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-widest"
                 placeholder="000000"
                 disabled={loading}
               />
             </div>
-            <div className="text-sm text-neutral-400 text-center">
+            <div className="text-xs text-neutral-400 text-center">
               OTP sent to <span className="text-white">{email}</span>
             </div>
             <button
               type="submit"
               disabled={loading || otp.length !== 6}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {loading ? 'Verifying...' : 'Verify OTP'}
             </button>
@@ -235,7 +324,7 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
               type="button"
               onClick={handleResendOTP}
               disabled={loading}
-              className="w-full py-2 text-indigo-400 hover:text-indigo-300 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-0.5 text-indigo-400 hover:text-indigo-300 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Resend OTP
             </button>
@@ -246,12 +335,13 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
                 setOtp('');
                 setError('');
               }}
-              className="w-full py-2 text-neutral-400 hover:text-neutral-300 text-sm transition-colors"
+              className="w-full py-0.5 text-neutral-400 hover:text-neutral-300 text-xs transition-colors"
             >
               Change Email
             </button>
           </form>
         )}
+        </div>
       </div>
     </div>
   );

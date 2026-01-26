@@ -11,7 +11,7 @@ const router = express.Router();
  */
 router.get('/', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('photoshootCredits marketingPosterCredits subscriptionPlan subscriptionExpiresAt');
+    const user = await User.findById(req.user._id).select('name photoshootCredits marketingPosterCredits subscriptionPlan subscriptionExpiresAt');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -21,6 +21,7 @@ router.get('/', protect, async (req, res) => {
       marketingPosterCredits: user.marketingPosterCredits || 0,
       subscriptionPlan: user.subscriptionPlan,
       subscriptionExpiresAt: user.subscriptionExpiresAt,
+      userName: user.name || null,
     });
   } catch (error) {
     console.error('Get credits error:', error);

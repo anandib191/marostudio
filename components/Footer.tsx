@@ -33,7 +33,7 @@ const Footer = React.forwardRef<HTMLElement>((props, ref) => {
 
                 {/* Bottom Row */}
                 <div className="mt-24 pt-10 border-t border-white/5 flex justify-center items-center text-[10px] uppercase tracking-[0.2em] text-neutral-600 font-bold">
-                    <p>&copy; {new Date().getFullYear()} NextGen Photo Studio. All rights reserved By Growlouder Production</p>
+                    <p>&copy; {new Date().getFullYear()} NextGen Photo Studio. All rights reserved By Growlouder Productions</p>
                 </div>
             </div>
         </footer>

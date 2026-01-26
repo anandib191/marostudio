@@ -9,9 +9,10 @@ import adminRoutes from './routes/admin.js';
 import paymentRoutes from './routes/payment.js';
 import pricePlansRoutes from './routes/pricePlans.js';
 import creditsRoutes from './routes/credits.js';
+import statisticsRoutes from './routes/statistics.js';
 import { validateEnv } from './utils/validateEnv.js';
 import logger from './utils/logger.js';
-import { generalLimiter, authLimiter } from './middleware/rateLimiter.js';
+import { generalLimiter, authLimiter, otpLimiter } from './middleware/rateLimiter.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -138,15 +139,18 @@ app.use(async (req, res, next) => {
 });
 
 // Routes (Bladdit image gen is called directly from frontend → https://api.bladdit.com/v1/generate, no backend proxy)
+// Note: OTP rate limiting is handled within auth routes, so we don't apply authLimiter globally
 if (isVercel) {
   app.use('/api/auth', authRoutes);
 } else {
-  app.use('/api/auth', authLimiter, authRoutes);
+  // Apply authLimiter only to non-OTP routes (OTP has its own limiter)
+  app.use('/api/auth', authRoutes);
 }
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/price-plans', pricePlansRoutes);
 app.use('/api/credits', creditsRoutes);
+app.use('/api/statistics', statisticsRoutes);
 
 // Root route
 app.get('/', (req, res) => {

@@ -47,5 +47,6 @@ export default defineConfig(({ mode }) => {
           },
         } : undefined,
       },
+      publicDir: 'public',
     };
 });

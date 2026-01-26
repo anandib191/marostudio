@@ -223,28 +223,46 @@ export const PricingPage: React.FC = () => {
                                     : 'bg-neutral-950/50 border border-neutral-800'
                             } lg:transform-gpu ${plan.isPopular ? 'lg:scale-100 lg:-translate-y-4' : 'lg:scale-95'}`}
                         >
-                            {/* Badges Container - Both badges side by side to avoid hiding plan name */}
+                            {/* Badges on Card Border - Desktop Only */}
                             {(plan.isPopular || isCurrentPlan) && (
-                                <div className="flex flex-row justify-center items-center gap-2 mb-2 flex-wrap">
-                                    {isCurrentPlan && (
-                                        <div className="bg-indigo-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
-                                            Your Current Plan
-                                        </div>
-                                    )}
-                                    {plan.isPopular && (
-                                        <div className="bg-rose-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
-                                            <StarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 fill-current" />
-                                            Most Popular
-                                        </div>
-                                    )}
-                                </div>
+                                <>
+                                    {/* Desktop: On Border */}
+                                    <div className="hidden lg:flex absolute -top-4 left-1/2 -translate-x-1/2 flex-row items-center gap-2 z-20">
+                                        {isCurrentPlan && (
+                                            <div className="bg-indigo-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                                Your Current Plan
+                                            </div>
+                                        )}
+                                        {plan.isPopular && (
+                                            <div className="bg-rose-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                                <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
+                                                Most Popular
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Mobile/Tablet: Inside Card */}
+                                    <div className="flex lg:hidden flex-row justify-center items-center gap-2 mb-2 flex-wrap">
+                                        {isCurrentPlan && (
+                                            <div className="bg-indigo-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                                Your Current Plan
+                                            </div>
+                                        )}
+                                        {plan.isPopular && (
+                                            <div className="bg-rose-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                                <StarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 fill-current" />
+                                                Most Popular
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
                             )}
 
                             <div className="flex-1 flex flex-col">
                                 <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
                                 <div className="mt-4 flex items-baseline justify-center gap-x-2">
                                     <span key={isMonthly ? plan.price : plan.yearlyPrice} className="text-5xl font-bold tracking-tight text-white animate-price-fade-in">
-                                        ${isMonthly ? plan.price : plan.yearlyPrice}
+                                        ₹{isMonthly ? plan.price : plan.yearlyPrice}
                                     </span>
                                     <span className="text-sm font-semibold leading-6 tracking-wide text-neutral-400">/ month</span>
                                 </div>

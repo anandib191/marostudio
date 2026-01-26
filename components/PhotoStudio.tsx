@@ -41,6 +41,7 @@ import { BoyCrestIcon } from './icons/BoyCrestIcon';
 import { GirlCrestIcon } from './icons/GirlCrestIcon';
 import { FurnitureIcon } from './icons/FurnitureIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { CreditsSummaryBox } from './CreditsSummaryBox';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { AspectRatio16x9Icon } from './icons/AspectRatio16x9Icon';
 import { AspectRatio9x16Icon } from './icons/AspectRatio9x16Icon';
@@ -307,7 +308,8 @@ interface DetailsStepProps {
     customBackground: string;
     onCustomBackgroundChange: (val: string) => void;
     photoshootCredits?: number | null;
-    navigate: (path: string) => void;
+    navigate: ReturnType<typeof useNavigate>;
+    isAuthenticated: boolean;
 }
 
 const DetailsStep: React.FC<DetailsStepProps> = ({
@@ -335,7 +337,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     customBackground,
     onCustomBackgroundChange,
     photoshootCredits,
-    navigate
+    navigate,
+    isAuthenticated
 }) => {
     const isOtherOrnament = productType === 'other_ornament';
     
@@ -493,36 +496,63 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                     </div>
 
                     <div className="pt-10">
-                        <button
-                            onClick={onGenerate}
-                            disabled={!creatorName || isLoading || (photoshootCredits !== null && photoshootCredits <= 0)}
-                            className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-indigo-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
-                        >
-                            {isLoading ? 'Processing Neural Sequence...' : 'Generate Photoshoot'}
-                        </button>
-                        {photoshootCredits !== null && (
-                            <div className="mt-3 text-center">
-                                {photoshootCredits > 0 ? (
-                                    <p className="text-xs">
-                                        <span className="text-indigo-400">You have {photoshootCredits} photoshoot credit{photoshootCredits !== 1 ? 's' : ''} remaining</span>
-                                    </p>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-red-400">No photoshoot credits remaining</p>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                navigate('/pricing');
-                                            }}
-                                            className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
-                                        >
-                                            Purchase plan for more generation
-                                        </button>
+                        {!isAuthenticated ? (
+                            <button
+                                onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-6 px-12 rounded-xl shadow-2xl shadow-orange-950/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                LOG IN TO GENERATE
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={onGenerate}
+                                    disabled={!creatorName || isLoading || (photoshootCredits !== null && photoshootCredits <= 0)}
+                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-indigo-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
+                                >
+                                    {isLoading ? 'Processing Neural Sequence...' : 'Generate Photoshoot'}
+                                </button>
+                                {photoshootCredits !== null && (
+                                    <div className="mt-3">
+                                        {photoshootCredits > 0 ? (
+                                            <CreditsSummaryBox 
+                                                credits={photoshootCredits} 
+                                                creditType="photoshoot"
+                                            />
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-neutral-700/50 rounded-lg p-2">
+                                                            <SparklesIcon className="w-4 h-4 text-red-400" />
+                                                        </div>
+                                                        <span className="text-white text-sm font-medium">
+                                                            Credits Summary
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-red-400 text-sm font-medium">
+                                                        0 Available
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        navigate('/pricing');
+                                                    }}
+                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
+                                                >
+                                                    Purchase plan for more generation
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -534,6 +564,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; }> = ({ onExit, onContentGenerated }) => {
     const navigate = useNavigate();
     const [photoshootCredits, setPhotoshootCredits] = useState<number | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
@@ -557,9 +588,15 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     }, []);
 
     useEffect(() => {
-        fetchCredits();
-        const interval = setInterval(fetchCredits, 30000);
-        return () => clearInterval(interval);
+        // Check authentication status
+        const token = localStorage.getItem('access_token');
+        setIsAuthenticated(!!token);
+        
+        if (token) {
+            fetchCredits();
+            const interval = setInterval(fetchCredits, 30000);
+            return () => clearInterval(interval);
+        }
     }, [fetchCredits]);
     const [phase, setPhase] = useState<StudioPhase>('category');
     const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);
@@ -829,22 +866,47 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 <p className="text-[10px] uppercase tracking-widest font-bold text-indigo-400 mb-2">Match found</p>
                                 <p className="text-4xl font-bold font-serif-display text-white mb-10 capitalize">"{identifiedProductName}"</p>
                                 <div className="flex flex-col gap-4">
-                                    <button 
-                                        onClick={() => handleGeneration(identifiedProductName)} 
-                                        disabled={photoshootCredits !== null && photoshootCredits <= 0}
-                                        className="text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full transition-all"
-                                    >
-                                        Confirm
-                                    </button>
+                                    {!isAuthenticated ? (
+                                        <button 
+                                            onClick={() => setShowAuthModal(true)}
+                                            className="text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            LOG IN TO GENERATE
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => handleGeneration(identifiedProductName)} 
+                                            disabled={photoshootCredits !== null && photoshootCredits <= 0}
+                                            className="text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full transition-all"
+                                        >
+                                            Confirm
+                                        </button>
+                                    )}
                                     {photoshootCredits !== null && (
-                                        <div className="text-center space-y-2">
+                                        <div className="space-y-2">
                                             {photoshootCredits > 0 ? (
-                                                <p className="text-xs">
-                                                    <span className="text-indigo-400">{photoshootCredits} credit{photoshootCredits !== 1 ? 's' : ''} remaining</span>
-                                                </p>
+                                                <CreditsSummaryBox 
+                                                    credits={photoshootCredits} 
+                                                    creditType="photoshoot"
+                                                />
                                             ) : (
                                                 <div className="space-y-2">
-                                                    <p className="text-xs text-red-400">No credits remaining</p>
+                                                    <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="bg-neutral-700/50 rounded-lg p-2">
+                                                                <SparklesIcon className="w-4 h-4 text-red-400" />
+                                                            </div>
+                                                            <span className="text-white text-sm font-medium">
+                                                                Credits Summary
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-red-400 text-sm font-medium">
+                                                            0 Available
+                                                        </div>
+                                                    </div>
                                                     <button
                                                         type="button"
                                                         onClick={(e) => {
@@ -877,22 +939,47 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                     placeholder="Enter Label"
                                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-4 px-6 text-white text-center focus:outline-none"
                                 />
-                                <button 
-                                    onClick={() => handleGeneration(manualProductName)} 
-                                    disabled={!manualProductName || (photoshootCredits !== null && photoshootCredits <= 0)}
-                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
-                                >
-                                    Continue
-                                </button>
+                                {!isAuthenticated ? (
+                                    <button 
+                                        onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        LOG IN TO GENERATE
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => handleGeneration(manualProductName)} 
+                                        disabled={!manualProductName || (photoshootCredits !== null && photoshootCredits <= 0)}
+                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
+                                    >
+                                        Continue
+                                    </button>
+                                )}
                                 {photoshootCredits !== null && (
-                                    <div className="text-center mt-2 space-y-2">
+                                    <div className="mt-2 space-y-2">
                                         {photoshootCredits > 0 ? (
-                                            <p className="text-xs">
-                                                <span className="text-indigo-400">{photoshootCredits} credit{photoshootCredits !== 1 ? 's' : ''} remaining</span>
-                                            </p>
+                                            <CreditsSummaryBox 
+                                                credits={photoshootCredits} 
+                                                creditType="photoshoot"
+                                            />
                                         ) : (
                                             <div className="space-y-2">
-                                                <p className="text-xs text-red-400">No credits remaining</p>
+                                                <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-neutral-700/50 rounded-lg p-2">
+                                                            <SparklesIcon className="w-4 h-4 text-red-400" />
+                                                        </div>
+                                                        <span className="text-white text-sm font-medium">
+                                                            Credits Summary
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-red-400 text-sm font-medium">
+                                                        0 Available
+                                                    </div>
+                                                </div>
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
@@ -967,6 +1054,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         onBackgroundChange={setBackground}
                         customBackground={customBackground}
                         onCustomBackgroundChange={setCustomBackground}
+                        isAuthenticated={isAuthenticated}
                     />
                 );
             case 'results':
