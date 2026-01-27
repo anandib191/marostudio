@@ -805,7 +805,6 @@ const App: React.FC = () => {
       {/* FIX: Removed unnecessary comment. */}
       {!showLandingBackground && (
         <footer className="text-center py-6 text-sm text-neutral-500 relative z-10">
-            <p>App by <a href="#" className="font-semibold text-neutral-400 hover:text-rose-400">Om Jasoliya</a></p>
         </footer>
       )}
     </div>

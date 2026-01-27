@@ -23,39 +23,6 @@ export const GenerateContentSection: React.FC = () => {
 
   const categories = categoryConfig.map(cat => cat.name);
 
-  // Auto-slide between categories every 5 seconds with smooth transition
-  useEffect(() => {
-    if (isHovered) return; // Don't auto-slide when hovering
-
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      
-      setTimeout(() => {
-        const currentIndex = categories.indexOf(activeCategory);
-        const nextIndex = (currentIndex + 1) % categories.length;
-        setActiveCategory(categories[nextIndex]);
-        
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 50);
-      }, 300);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [activeCategory, isHovered, categories]);
-
-  // Get folder name from category
-  const getCategoryFolder = (categoryName: string): string => {
-    const config = categoryConfig.find(cat => cat.name === categoryName);
-    return config ? config.folder : 'fashion';
-  };
-
-  // Helper function to get image path with multiple format support
-  const getImagePath = (folder: string, imageNumber: number): string => {
-    // Return base path without extension - we'll try multiple formats
-    return `/assets/images/image_carousel/${folder}/${folder}-${imageNumber}`;
-  };
-
   // Generate 3 images per category using new folder structure
   const generateImageArray = () => {
     const images: Array<{ 
@@ -82,15 +49,91 @@ export const GenerateContentSection: React.FC = () => {
   const images = generateImageArray();
   const filteredImages = images.filter(img => img.category === activeCategory);
 
+  // Auto-scroll through images of active category, then move to next category
+  useEffect(() => {
+    if (isHovered) {
+      // When hovering, pause auto-scroll but don't clear intervals
+      // This ensures smooth resume when mouse leaves
+      return;
+    }
+
+    let imageIndex = 0;
+    const currentFilteredImages = images.filter(img => img.category === activeCategory);
+    const totalImages = currentFilteredImages.length; // Should be 3 per category
+
+    // Check if small screen (mobile/tablet)
+    const isSmallScreen = window.innerWidth < 1024;
+    // On small screens: Match button animation (5s) - show 3 images in 5s = ~1.67s per image
+    // On desktop: Keep original timing
+    const imageChangeInterval = isSmallScreen ? 1667 : 2500; // ~1.67s per image on small screens (5s / 3 images)
+    const categoryChangeInterval = isSmallScreen ? 5000 : 7500; // Match button animation (5s) on small screens
+
+    // Scroll through all images of current category one by one
+    const imageInterval = setInterval(() => {
+      if (!isHovered && swiperRef.current && swiperRef.current.swiper) {
+        imageIndex = (imageIndex + 1) % totalImages;
+        swiperRef.current.swiper.slideTo(imageIndex);
+      }
+    }, imageChangeInterval);
+
+    // After showing all images of current category, move to next category
+    const categoryInterval = setInterval(() => {
+      if (!isHovered) {
+        setIsTransitioning(true);
+        
+        setTimeout(() => {
+          const currentIndex = categories.indexOf(activeCategory);
+          const nextIndex = (currentIndex + 1) % categories.length;
+          setActiveCategory(categories[nextIndex]);
+          imageIndex = 0; // Reset image index for new category
+          
+          // Reset swiper to first slide of new category
+          setTimeout(() => {
+            if (swiperRef.current && swiperRef.current.swiper) {
+              swiperRef.current.swiper.slideTo(0);
+            }
+            setIsTransitioning(false);
+          }, 300);
+        }, 300);
+      }
+    }, categoryChangeInterval);
+
+    return () => {
+      clearInterval(imageInterval);
+      clearInterval(categoryInterval);
+    };
+  }, [activeCategory, isHovered, categories, images]);
+
+  // Get folder name from category
+  const getCategoryFolder = (categoryName: string): string => {
+    const config = categoryConfig.find(cat => cat.name === categoryName);
+    return config ? config.folder : 'fashion';
+  };
+
+  // Helper function to get image path with multiple format support
+  const getImagePath = (folder: string, imageNumber: number): string => {
+    // Return base path without extension - we'll try multiple formats
+    return `/assets/images/image_carousel/${folder}/${folder}-${imageNumber}`;
+  };
+
+  // Helper function to get WebP image path
+  const getWebPImagePath = (folder: string, imageNumber: number): string => {
+    return `/assets/images/image_carousel/${folder}/webp/${folder}-${imageNumber}.webp`;
+  };
+
   const handleCategoryClick = (category: string) => {
     if (category === activeCategory) return;
     
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveCategory(category);
+      // Reset swiper to first slide when category changes
       setTimeout(() => {
+        if (swiperRef.current && swiperRef.current.swiper) {
+          swiperRef.current.swiper.slideTo(0);
+        }
         setIsTransitioning(false);
-      }, 50);
+      }, 300);
     }, 300);
   };
 
@@ -121,7 +164,7 @@ export const GenerateContentSection: React.FC = () => {
             >
               <span className="relative z-10">{category}</span>
               {activeCategory === category && !isHovered && (
-                <div className="absolute bottom-0 left-0 h-0.5 bg-white/80 animate-progress z-0"></div>
+                <div className="absolute bottom-0 left-0 h-0.5 bg-white/80 animate-progress z-0 progress-bar-small-screen"></div>
               )}
               {activeCategory !== category && (
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-rose-500/0 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
@@ -142,19 +185,30 @@ export const GenerateContentSection: React.FC = () => {
         <Swiper
           ref={swiperRef}
           spaceBetween={24}
-          slidesPerView={3}
+          slidesPerView={1}
           speed={600}
+          loop={false}
+          allowTouchMove={true}
+          grabCursor={true}
           breakpoints={{
             320: {
               slidesPerView: 1,
               spaceBetween: 16,
             },
+            640: {
+              slidesPerView: 1,
+              spaceBetween: 20,
+            },
             768: {
-              slidesPerView: 2,
+              slidesPerView: 1,
               spaceBetween: 20,
             },
             1024: {
-              slidesPerView: 3,
+              slidesPerView: 1,
+              spaceBetween: 24,
+            },
+            1280: {
+              slidesPerView: 1,
               spaceBetween: 24,
             },
           }}
@@ -180,32 +234,33 @@ export const GenerateContentSection: React.FC = () => {
                       </div>
                     )}
                     
-                    {/* Actual Image with Lazy Loading - Support multiple formats */}
-                    <img
-                      src={`${basePath}.png`}
-                      alt={`${image.category} - Image ${image.imageNumber}`}
-                      className={`carousel-image ${isLoaded ? 'loaded' : 'loading'}`}
-                      loading="lazy"
-                      decoding="async"
-                      onLoad={() => handleImageLoad(image.id)}
-                      onError={(e) => {
-                        const currentSrc = e.currentTarget.src;
-                        console.error(`Failed to load: ${currentSrc}`);
-                        
-                        // Try different formats
-                        if (currentSrc.endsWith('.png')) {
-                          e.currentTarget.src = `${basePath}.jpg`;
-                        } else if (currentSrc.endsWith('.jpg')) {
-                          e.currentTarget.src = `${basePath}.jpeg`;
-                        } else if (currentSrc.endsWith('.jpeg')) {
-                          e.currentTarget.src = `${basePath}.webp`;
-                        } else {
-                          // All failed, use fallback
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=800&auto=format&fit=crop';
-                          handleImageLoad(image.id);
-                        }
-                      }}
-                    />
+                    {/* Actual Image with Lazy Loading - WebP with fallback */}
+                    <picture>
+                      <source srcSet={getWebPImagePath(image.folder, image.imageNumber)} type="image/webp" />
+                      <img
+                        src={`${basePath}.png`}
+                        alt={`${image.category} - Image ${image.imageNumber}`}
+                        className={`carousel-image ${isLoaded ? 'loaded' : 'loading'}`}
+                        loading="lazy"
+                        decoding="async"
+                        onLoad={() => handleImageLoad(image.id)}
+                        onError={(e) => {
+                          const currentSrc = e.currentTarget.src;
+                          console.error(`Failed to load: ${currentSrc}`);
+                          
+                          // Try different formats
+                          if (currentSrc.endsWith('.png')) {
+                            e.currentTarget.src = `${basePath}.jpg`;
+                          } else if (currentSrc.endsWith('.jpg')) {
+                            e.currentTarget.src = `${basePath}.jpeg`;
+                          } else {
+                            // All failed, use fallback
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=800&auto=format&fit=crop';
+                            handleImageLoad(image.id);
+                          }
+                        }}
+                      />
+                    </picture>
                     <div className="image-overlay"></div>
                   </div>
                   <div className="image-label">
@@ -458,7 +513,13 @@ export const GenerateContentSection: React.FC = () => {
         }
 
         .animate-progress {
-          animation: progress 5s linear;
+          animation: progress 7.5s linear;
+        }
+        
+        @media (max-width: 1023px) {
+          .progress-bar-small-screen {
+            animation: progress 5s linear;
+          }
         }
 
         /* Performance Optimizations */

@@ -19,6 +19,8 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [canResend, setCanResend] = useState(true);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -112,9 +114,45 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
+        // Handle rate limit errors professionally with user-friendly messages
+        if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
+          const retryAfter = errorData.retryAfter || 0;
+          const canRetry = errorData.canRetry !== false; // Default to true if not specified
+          
+          let userMessage = '';
+          if (canRetry && retryAfter > 0 && retryAfter < 60) {
+            // Short wait (less than 1 minute) - friendly message
+            userMessage = `Please wait ${retryAfter} second${retryAfter !== 1 ? 's' : ''} before requesting a new code.`;
+          } else if (retryAfter > 0) {
+            // Longer wait - show minutes and seconds
+            const minutes = Math.floor(retryAfter / 60);
+            const seconds = retryAfter % 60;
+            if (minutes > 0) {
+              userMessage = `Please wait ${minutes} minute${minutes !== 1 ? 's' : ''}${seconds > 0 ? ` and ${seconds} second${seconds !== 1 ? 's' : ''}` : ''} before requesting a new code.`;
+            } else {
+              userMessage = `Please wait ${seconds} second${seconds !== 1 ? 's' : ''} before requesting a new code.`;
+            }
+          } else {
+            // Use server message or default
+            userMessage = errorData.message || 'Please wait a moment before requesting a new code.';
+          }
+          
+          const error: any = new Error(userMessage);
+          error.status = 429;
+          error.errorType = 'RATE_LIMIT';
+          error.retryAfter = retryAfter;
+          error.canRetry = canRetry;
+          throw error;
+        }
+        
         // Check if user already exists
         if (errorData.userExists) {
           throw new Error('User already registered. Please login instead.');
+        }
+        
+        // Check if email is invalid (disposable/fake)
+        if (errorData.invalidEmail) {
+          throw new Error(errorData.message || 'Invalid email address. Please use a valid email.');
         }
         
         throw new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
@@ -128,9 +166,33 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
 
       setOtpSent(true);
       setStep('otp');
+      // Start 20 second cooldown for resend (signup is more lenient)
+      setResendCooldown(20);
+      setCanResend(false);
+      
+      // Countdown timer
+      const countdownInterval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (err: any) {
       console.error('Send OTP error:', err);
-      setError(err.message || 'Failed to send OTP. Please try again.');
+      
+      // Handle rate limit errors with better messages
+      if (err.status === 429 || err.errorType === 'RATE_LIMIT') {
+        // Error message already set in the catch block above
+        setError(err.message || 'Please wait a moment before requesting a new code.');
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      } else {
+        setError(err.message || 'Failed to send OTP. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -151,7 +213,11 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || data.detail || 'Invalid OTP');
+        const error: any = new Error(data.message || data.detail || 'Invalid OTP');
+        error.status = response.status;
+        error.errorType = data.errorType;
+        error.retryAfter = data.retryAfter;
+        throw error;
       }
 
       // Store user token and name
@@ -161,6 +227,8 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       if (data.user?.name) {
         localStorage.setItem('user_name', data.user.name);
       }
+      // Dispatch custom event to notify Header component
+      window.dispatchEvent(new Event('userAuthChanged'));
       
       onAuthSuccess(email, data.access_token);
     } catch (err: any) {
@@ -171,6 +239,10 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
   };
 
   const handleResendOTP = async () => {
+    if (!canResend || resendCooldown > 0) {
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
@@ -186,14 +258,78 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         }),
       });
 
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        // Handle rate limit errors professionally
+        if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
+          const retryAfter = errorData.retryAfter || 0;
+          const canRetry = errorData.canRetry !== false;
+          
+          let userMessage = '';
+          if (canRetry && retryAfter > 0 && retryAfter < 60) {
+            userMessage = `Please wait ${retryAfter} second${retryAfter !== 1 ? 's' : ''} before requesting a new code.`;
+            setResendCooldown(retryAfter);
+            setCanResend(false);
+            
+            // Start countdown
+            const countdownInterval = setInterval(() => {
+              setResendCooldown((prev) => {
+                if (prev <= 1) {
+                  clearInterval(countdownInterval);
+                  setCanResend(true);
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          } else if (retryAfter > 0) {
+            const minutes = Math.floor(retryAfter / 60);
+            const seconds = retryAfter % 60;
+            if (minutes > 0) {
+              userMessage = `Please wait ${minutes} minute${minutes !== 1 ? 's' : ''}${seconds > 0 ? ` and ${seconds} second${seconds !== 1 ? 's' : ''}` : ''} before requesting a new code.`;
+            } else {
+              userMessage = `Please wait ${seconds} second${seconds !== 1 ? 's' : ''} before requesting a new code.`;
+            }
+          } else {
+            userMessage = errorData.message || 'Please wait a moment before requesting a new code.';
+          }
+          
+          setError(userMessage);
+          return;
+        }
+        
+        throw new Error(errorData.message || errorData.detail || 'Failed to resend OTP');
+      }
+
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || data.detail || 'Failed to resend OTP');
       }
 
       setOtp('');
       setError('');
+      // Reset cooldown
+      setResendCooldown(20);
+      setCanResend(false);
+      
+      // Start countdown timer
+      const countdownInterval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (err: any) {
       setError(err.message || 'Failed to resend OTP. Please try again.');
     } finally {
@@ -227,6 +363,8 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         if (data.user?.name) {
           localStorage.setItem('user_name', data.user.name);
         }
+        // Dispatch custom event to notify Header component
+        window.dispatchEvent(new Event('userAuthChanged'));
       
       onAuthSuccess(data.user?.email || '', data.access_token);
     } catch (err: any) {
@@ -393,10 +531,14 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
             <button
               type="button"
               onClick={handleResendOTP}
-              disabled={loading}
-              className="w-full py-0.5 text-indigo-400 hover:text-indigo-300 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canResend || resendCooldown > 0 || loading}
+              className={`w-full py-0.5 text-xs transition-colors ${
+                !canResend || resendCooldown > 0 || loading
+                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                  : 'text-indigo-400 hover:text-indigo-300'
+              }`}
             >
-              Resend OTP
+              {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend OTP'}
             </button>
             <button
               type="button"

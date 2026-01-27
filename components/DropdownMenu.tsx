@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ConfirmationModal } from './ui/ConfirmationModal';
 
 interface DropdownMenuProps {
     onClose: () => void;
@@ -18,7 +17,6 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
     const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState<string>('/');
 
   // Initialize active nav item based on location
@@ -113,20 +111,19 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
     return location.pathname === path;
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_email');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('user_name');
-    // Force page reload to refresh all components
-    window.location.href = '/';
-    };
 
     return (
-        <div
-            ref={menuRef}
-            className="fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] max-w-sm bg-neutral-950/90 backdrop-blur-xl rounded-2xl border border-neutral-700/50 shadow-2xl p-8 animate-fade-in-down-right"
-        >
+        <>
+            {/* Backdrop blur overlay */}
+            <div 
+                className="fixed inset-0 z-[59] bg-black/30 backdrop-blur-md"
+                onClick={onClose}
+                aria-hidden="true"
+            />
+            <div
+                ref={menuRef}
+                className="fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] max-w-sm bg-neutral-950/90 backdrop-blur-xl rounded-2xl border border-neutral-700/50 shadow-2xl p-8 animate-fade-in-down-right"
+            >
             <nav className="flex flex-col items-center space-y-6">
                  {navLinks.map((link) => {
                   if (link.isScroll) {
@@ -196,27 +193,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
                 >
                   Launch Studio
                 </button>
-        <button 
-          onClick={() => {
-            setShowLogoutModal(true);
-            onClose();
-          }}
-          className="mt-2 w-full text-neutral-400 hover:text-white border border-neutral-700 hover:border-neutral-500 font-semibold py-3 px-4 rounded-full transition-all duration-300"
-        >
-          Logout
-                </button>
             </nav>
-
-      <ConfirmationModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-        title="Confirm Logout"
-        message="Are you sure you want to logout? You'll need to sign in again to access the site."
-        confirmText="Logout"
-        cancelText="Cancel"
-        confirmButtonClass="bg-red-600 hover:bg-red-500"
-      />
         </div>
+        </>
     );
 };

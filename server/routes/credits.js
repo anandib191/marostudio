@@ -11,10 +11,25 @@ const router = express.Router();
  */
 router.get('/', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('name photoshootCredits marketingPosterCredits subscriptionPlan subscriptionExpiresAt');
+    // Always fetch fresh data from database (no caching)
+    const user = await User.findById(req.user._id).select('name photoshootCredits marketingPosterCredits subscriptionPlan subscriptionExpiresAt originalPlanPhotoshootCredits originalPlanMarketingPosterCredits');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+    
+    // Set cache-control headers to prevent client-side caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    
+    // Calculate used credits for transparency
+    const totalPhotoshootCredits = user.originalPlanPhotoshootCredits || user.photoshootCredits || 0;
+    const totalMarketingCredits = user.originalPlanMarketingPosterCredits || user.marketingPosterCredits || 0;
+    const usedPhotoshootCredits = Math.max(0, totalPhotoshootCredits - (user.photoshootCredits || 0));
+    const usedMarketingCredits = Math.max(0, totalMarketingCredits - (user.marketingPosterCredits || 0));
+    
     res.status(200).json({
       success: true,
       photoshootCredits: user.photoshootCredits || 0,
@@ -22,9 +37,36 @@ router.get('/', protect, async (req, res) => {
       subscriptionPlan: user.subscriptionPlan,
       subscriptionExpiresAt: user.subscriptionExpiresAt,
       userName: user.name || null,
+      // Credit transparency data
+      totalPhotoshootCredits,
+      totalMarketingCredits,
+      usedPhotoshootCredits,
+      usedMarketingCredits,
     });
   } catch (error) {
     console.error('Get credits error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * @route   GET /api/credits/history
+ * @desc    Get user's credit change history
+ * @access  Private
+ */
+router.get('/history', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('creditHistory');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    res.status(200).json({
+      success: true,
+      history: user.creditHistory || [],
+    });
+  } catch (error) {
+    console.error('Get credit history error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

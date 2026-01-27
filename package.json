@@ -9,9 +9,13 @@
     "build:prod": "cross-env NODE_ENV=production vite build",
     "build:silent": "vite build 2>&1 | grep -v 'deprecated node-domexception' || true",
     "preview": "vite preview",
+    "preview:prod": "vite preview --mode production",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "convert:webp": "node scripts/convert-to-webp.js"
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "convert:webp": "node scripts/convert-to-webp.js",
+    "prebuild": "npm run type-check",
+    "analyze": "vite-bundle-visualizer"
   },
   "dependencies": {
     "@google/genai": "^1.19.0",

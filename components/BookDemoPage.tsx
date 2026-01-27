@@ -49,11 +49,18 @@ export const BookDemoPage: React.FC = () => {
         const fullPhoneNumber = `${selectedCountry.code}${phoneNumber}`;
 
         try {
-            const response = await fetch('http://10.0.0.194:8000/submit-form/', {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const FORM_API_KEY = import.meta.env.VITE_FORM_API_KEY || '';
+            
+            if (!FORM_API_KEY) {
+                throw new Error('Form API key is not configured');
+            }
+            
+            const response = await fetch(`${API_URL}/submit-form/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'API_KEY': 'TMKOC23RollForm437888090',
+                    'API_KEY': FORM_API_KEY,
                 },
                 body: JSON.stringify({
                     full_name: fullName,

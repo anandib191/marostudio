@@ -51,7 +51,12 @@ export const Dashboard: React.FC = () => {
   // Price Plans state
   const [plans, setPlans] = useState<PricePlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [refreshingPlans, setRefreshingPlans] = useState(false);
   const [savingPlans, setSavingPlans] = useState(false);
+  const [syncingCredits, setSyncingCredits] = useState(false);
+  const [showSyncPreview, setShowSyncPreview] = useState(false);
+  const [syncPreview, setSyncPreview] = useState<any>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   // Users state
   const [users, setUsers] = useState<User[]>([]);
@@ -140,21 +145,32 @@ export const Dashboard: React.FC = () => {
   }, [navigate, section, usersPage, adminsPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPlans = async (token: string) => {
-    setLoadingPlans(true);
+    // Don't set loading or clear plans if we already have plans (prevents flash)
+    const hasExistingPlans = plans.length > 0;
+    if (!hasExistingPlans) {
+      setLoadingPlans(true);
+    } else {
+      setRefreshingPlans(true); // Show subtle loading overlay for refresh
+    }
+    
     try {
       const res = await fetch(`${API_URL}/api/admin/price-plans`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok && data.success && Array.isArray(data.plans)) {
-        setPlans(data.plans);
+        setPlans(data.plans); // Directly replace old data with new data
       } else {
         toast.error(data.message || 'Failed to load plans', { position: "top-right", autoClose: 3000 });
       }
     } catch (e) {
       toast.error('Failed to load price plans', { position: "top-right", autoClose: 3000 });
     } finally {
-      setLoadingPlans(false);
+      if (!hasExistingPlans) {
+        setLoadingPlans(false);
+      } else {
+        setRefreshingPlans(false);
+      }
     }
   };
 
@@ -228,7 +244,12 @@ export const Dashboard: React.FC = () => {
   };
 
   const loadUsers = async (token: string, page: number) => {
-    setLoadingUsers(true);
+    // Don't show loading if we already have users (prevents flash)
+    const hasExistingUsers = users.length > 0;
+    if (!hasExistingUsers) {
+      setLoadingUsers(true);
+    }
+    
     try {
       const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -237,7 +258,7 @@ export const Dashboard: React.FC = () => {
       if (res.ok && data.success) {
         // Ensure users is always an array
         const usersList = Array.isArray(data.users) ? data.users : [];
-        setUsers(usersList);
+        setUsers(usersList); // Directly replace old data with new data
         setUsersTotal(data.pagination?.total || 0);
         setUsersPages(data.pagination?.pages || 0);
       } else {
@@ -249,7 +270,9 @@ export const Dashboard: React.FC = () => {
       setUsers([]); // Set empty array on error
       toast.error('Failed to load users', { position: "top-right", autoClose: 3000 });
     } finally {
-      setLoadingUsers(false);
+      if (!hasExistingUsers) {
+        setLoadingUsers(false);
+      }
     }
   };
 
@@ -282,14 +305,19 @@ export const Dashboard: React.FC = () => {
   };
 
   const loadAdmins = async (token: string, page: number) => {
-    setLoadingAdmins(true);
+    // Don't show loading if we already have admins (prevents flash)
+    const hasExistingAdmins = admins.length > 0;
+    if (!hasExistingAdmins) {
+      setLoadingAdmins(true);
+    }
+    
     try {
       const res = await fetch(`${API_URL}/api/admin/users?role=admin&page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setAdmins(data.users || []);
+        setAdmins(data.users || []); // Directly replace old data with new data
         setAdminsTotal(data.pagination?.total || 0);
         setAdminsPages(data.pagination?.pages || 0);
       } else {
@@ -298,7 +326,9 @@ export const Dashboard: React.FC = () => {
     } catch (e) {
       toast.error('Failed to load admins', { position: "top-right", autoClose: 3000 });
     } finally {
-      setLoadingAdmins(false);
+      if (!hasExistingAdmins) {
+        setLoadingAdmins(false);
+      }
     }
   };
 
@@ -347,6 +377,67 @@ export const Dashboard: React.FC = () => {
       toast.error('Failed to save price plans', { position: "top-right", autoClose: 3000 });
     } finally {
       setSavingPlans(false);
+    }
+  };
+
+  const handlePreviewSync = async () => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/sync-credits/preview`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setSyncPreview(data.preview);
+        setShowSyncPreview(true);
+      } else {
+        toast.error(data.message || 'Failed to load preview', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e: any) {
+      console.error('Preview sync error:', e);
+      toast.error('Failed to load preview. Please try again.', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const handleSyncCredits = async () => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    
+    setSyncingCredits(true);
+    setShowSyncPreview(false);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/sync-credits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        const stats = data.stats || {};
+        const message = `Credits synced successfully! Updated: ${stats.updated || 0}, Skipped: ${stats.skipped || 0}, Expired Reset: ${stats.expiredReset || 0}`;
+        toast.success(message, { position: "top-right", autoClose: 5000 });
+        
+        // Refresh users list to show updated credits
+        if (section === 'users') {
+          await loadUsers(token, usersPage);
+        }
+        setSyncPreview(null);
+      } else {
+        toast.error(data.message || 'Failed to sync credits', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e: any) {
+      console.error('Sync credits error:', e);
+      toast.error('Failed to sync credits. Please try again.', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setSyncingCredits(false);
     }
   };
 
@@ -820,6 +911,16 @@ export const Dashboard: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-bold font-serif-display">Price Plans</h2>
                 <div className="flex gap-3">
+                  {refreshingPlans && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
+                      <div className="sparkle-loader">
+                        <div className="sparkle"></div>
+                        <div className="sparkle"></div>
+                        <div className="sparkle"></div>
+                      </div>
+                      <span className="text-xs text-indigo-400 font-medium">Refreshing...</span>
+                    </div>
+                  )}
                   <button
                     onClick={addPlan}
                     className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
@@ -886,7 +987,10 @@ export const Dashboard: React.FC = () => {
                       </div>
 
                       {plan.isPopular && (
-                        <div className="absolute top-0 right-6 -translate-y-1/2 bg-rose-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider">
+                        <div 
+                          key={`badge-${plan._id || i}-${plan.isPopular}`}
+                          className="absolute top-0 right-6 -translate-y-1/2 bg-rose-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider"
+                        >
                           <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
                           Most Popular
                         </div>
@@ -977,27 +1081,27 @@ export const Dashboard: React.FC = () => {
                 <>
                   <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
-                      <table className="w-full min-w-[800px]">
+                      <table className="w-full min-w-[600px] sm:min-w-[800px]">
                         <thead className="bg-neutral-800/50">
                           <tr>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Used Credits</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Created</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Login</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Used Credits</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Created</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Last Login</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {users && users.length > 0 ? users.map((user) => (
                             <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30">
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white">
-                                <div className="max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm text-white">
+                                <div className="max-w-[120px] xs:max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
                               </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm">
-                                <div className="flex flex-col gap-1">
-                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium ${
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm">
+                                <div className="flex flex-col gap-0.5 xs:gap-1">
+                                  <span className={`inline-block px-1.5 xs:px-2 py-0.5 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${
                                     user?.planName === 'Free' 
                                       ? 'bg-neutral-500/20 text-neutral-300' 
                                       : user?.planName === 'Gold'
@@ -1009,28 +1113,28 @@ export const Dashboard: React.FC = () => {
                                     {user?.planName || 'Free'}
                                   </span>
                                   {user?.isActive !== undefined && (
-                                    <span className={`text-[9px] ${user.isActive ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    <span className={`text-[8px] xs:text-[9px] ${user.isActive ? 'text-emerald-400' : 'text-red-400'}`}>
                                       {user.isActive ? '● Active' : '● Expired'}
                                     </span>
                                   )}
                                 </div>
                               </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
-                                <span className={`inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium ${
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
+                                <span className={`inline-block px-1.5 xs:px-2 py-0.5 xs:py-1 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${
                                   user?.isVerified ? 'bg-emerald-500/20 text-emerald-300' : 'bg-yellow-500/20 text-yellow-300'
                                 }`}>
                                   {user?.isVerified ? 'Verified' : 'Unverified'}
                                 </span>
                               </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 hidden md:table-cell">
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400">
                                 <div className="flex flex-col gap-0.5">
-                                  <span>Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}</span>
-                                  <span>Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}</span>
+                                  <span className="whitespace-nowrap">Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}</span>
+                                  <span className="whitespace-nowrap">Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}</span>
                                 </div>
                               </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden sm:table-cell">{formatDate(user?.createdAt)}</td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden lg:table-cell">{formatDate(user?.lastLogin)}</td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.createdAt)}</td>
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.lastLogin)}</td>
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
                                 {user?._id && (
                                   <button
                                     onClick={() => {
@@ -1396,7 +1500,48 @@ export const Dashboard: React.FC = () => {
                     </div>
                   ))}
                   
-                  <div className="flex justify-end pt-4">
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      onClick={handlePreviewSync}
+                      disabled={loadingPreview || syncingCredits || savingPlans}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                      title="Preview credit changes before syncing"
+                    >
+                      {loadingPreview ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          Preview Changes
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleSyncCredits}
+                      disabled={syncingCredits || savingPlans}
+                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                      title="Sync credits for all users based on their subscription plans"
+                    >
+                      {syncingCredits ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Sync Credits
+                        </>
+                      )}
+                    </button>
                     <button
                       onClick={async () => {
                         const token = localStorage.getItem('admin_token');
@@ -1417,7 +1562,7 @@ export const Dashboard: React.FC = () => {
                           setSavingPlans(false);
                         }
                       }}
-                      disabled={savingPlans}
+                      disabled={savingPlans || syncingCredits}
                       className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       {savingPlans ? 'Saving...' : 'Save Credits'}
@@ -1965,6 +2110,176 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Sync Credits Preview Modal */}
+      {showSyncPreview && syncPreview && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border-2 border-indigo-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Credit Sync Preview</h2>
+                  <p className="text-sm text-neutral-400">Review changes before syncing credits to users</p>
+                </div>
+                <button
+                  onClick={() => setShowSyncPreview(false)}
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-neutral-800/50 rounded-lg p-4 border border-white/10">
+                  <div className="text-xs text-neutral-400 uppercase mb-1">Total Users</div>
+                  <div className="text-2xl font-bold text-white">{syncPreview.totalUsers}</div>
+                </div>
+                <div className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/30">
+                  <div className="text-xs text-emerald-400 uppercase mb-1">Will Increase</div>
+                  <div className="text-2xl font-bold text-emerald-400">{syncPreview.usersWithIncrease}</div>
+                </div>
+                <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
+                  <div className="text-xs text-red-400 uppercase mb-1">Will Decrease</div>
+                  <div className="text-2xl font-bold text-red-400">{syncPreview.usersWithDecrease}</div>
+                </div>
+              </div>
+              
+              {syncPreview.changes && syncPreview.changes.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-white mb-3">Affected Users ({syncPreview.affectedUsers})</h3>
+                  <div className="max-h-96 overflow-y-auto space-y-2">
+                    {syncPreview.changes.map((change: any, idx: number) => (
+                      <div key={idx} className="bg-neutral-800/50 rounded-lg p-4 border border-white/10">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="text-sm font-semibold text-white mb-1">{change.email}</div>
+                            <div className="text-xs text-neutral-400">Plan: {change.plan}</div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                          <div>
+                            <div className="text-xs text-neutral-400 mb-1">Photoshoot Credits</div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-neutral-300">{change.current.photoshoot}</span>
+                              <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                              <span className={`text-sm font-semibold ${change.change.photoshoot >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {change.new.photoshoot}
+                              </span>
+                              {change.change.photoshoot !== 0 && (
+                                <span className={`text-xs ${change.change.photoshoot >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  ({change.change.photoshoot >= 0 ? '+' : ''}{change.change.photoshoot})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-neutral-400 mb-1">Marketing Credits</div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-neutral-300">{change.current.marketing}</span>
+                              <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                              <span className={`text-sm font-semibold ${change.change.marketing >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {change.new.marketing}
+                              </span>
+                              {change.change.marketing !== 0 && (
+                                <span className={`text-xs ${change.change.marketing >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  ({change.change.marketing >= 0 ? '+' : ''}{change.change.marketing})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-neutral-500">
+                          Used: {change.used.photoshoot} photoshoot, {change.used.marketing} marketing
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {syncPreview.affectedUsers > 50 && (
+                    <div className="text-xs text-neutral-400 text-center mt-2">
+                      Showing first 50 of {syncPreview.affectedUsers} affected users
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-neutral-400">
+                  No changes detected. All users already have correct credits.
+                </div>
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-white/10 flex gap-3">
+              <button
+                onClick={() => setShowSyncPreview(false)}
+                className="flex-1 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSyncCredits}
+                disabled={syncingCredits}
+                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {syncingCredits ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    Syncing...
+                  </>
+                ) : (
+                  'Confirm & Sync Credits'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .sparkle-loader {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+        }
+        
+        .sparkle {
+          width: 4px;
+          height: 4px;
+          background: linear-gradient(135deg, #818cf8, #c084fc);
+          border-radius: 50%;
+          animation: sparkle 1.4s ease-in-out infinite;
+        }
+        
+        .sparkle:nth-child(1) {
+          animation-delay: 0s;
+        }
+        
+        .sparkle:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        
+        .sparkle:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        
+        @keyframes sparkle {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
+          }
+          50% {
+            transform: scale(1.5);
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(129, 140, 248, 0.8);
+          }
+        }
+      `}</style>
     </div>
   );
 };

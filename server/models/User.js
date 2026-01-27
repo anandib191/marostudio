@@ -49,6 +49,39 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Store original plan credits when user purchases (for accurate used credits calculation)
+    originalPlanPhotoshootCredits: {
+      type: Number,
+      default: null,
+    },
+    originalPlanMarketingPosterCredits: {
+      type: Number,
+      default: null,
+    },
+    // Credit change history for transparency
+    creditHistory: [{
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+      action: {
+        type: String,
+        enum: ['purchase', 'admin_sync', 'usage', 'expiry', 'manual_adjustment'],
+      },
+      planName: String,
+      photoshootCredits: {
+        previous: Number,
+        new: Number,
+        change: Number, // positive = increase, negative = decrease
+      },
+      marketingPosterCredits: {
+        previous: Number,
+        new: Number,
+        change: Number,
+      },
+      reason: String, // e.g., "Plan credits updated by admin", "Subscription expired"
+      adminEmail: String, // If changed by admin
+    }],
     createdAt: {
       type: Date,
       default: Date.now,

@@ -60,12 +60,53 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         } catch {
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
-        throw new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
+        
+        // Handle rate limit errors professionally with user-friendly messages
+        if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
+          const retryAfter = errorData.retryAfter || 0;
+          const canRetry = errorData.canRetry !== false;
+          
+          let userMessage = '';
+          if (canRetry && retryAfter > 0 && retryAfter < 60) {
+            // Short wait (less than 1 minute) - friendly message
+            userMessage = `Please wait ${retryAfter} second${retryAfter !== 1 ? 's' : ''} before requesting a new code.`;
+          } else if (retryAfter > 0) {
+            // Longer wait - show minutes and seconds
+            const minutes = Math.floor(retryAfter / 60);
+            const seconds = retryAfter % 60;
+            if (minutes > 0) {
+              userMessage = `Please wait ${minutes} minute${minutes !== 1 ? 's' : ''}${seconds > 0 ? ` and ${seconds} second${seconds !== 1 ? 's' : ''}` : ''} before requesting a new code.`;
+            } else {
+              userMessage = `Please wait ${seconds} second${seconds !== 1 ? 's' : ''} before requesting a new code.`;
+            }
+          } else {
+            // Use server message or default
+            userMessage = errorData.message || 'Please wait a moment before requesting a new code.';
+          }
+          
+          const error: any = new Error(userMessage);
+          error.status = 429;
+          error.errorType = 'RATE_LIMIT';
+          error.retryAfter = retryAfter;
+          error.canRetry = canRetry;
+          throw error;
+        }
+        
+        const error: any = new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
+        error.status = response.status;
+        error.errorType = errorData.errorType;
+        error.retryAfter = errorData.retryAfter;
+        throw error;
       }
 
       const data = await response.json();
 
       if (!data.success) {
+        // If user not found during login, show helpful message with signup option
+        if (data.userNotFound && onSwitchToSignup) {
+          setError(data.message || 'No account found. Please sign up first.');
+          return;
+        }
         throw new Error(data.message || data.detail || 'Failed to send OTP');
       }
 
@@ -102,7 +143,11 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || data.detail || 'Invalid OTP');
+        const error: any = new Error(data.message || data.detail || 'Invalid OTP');
+        error.status = response.status;
+        error.errorType = data.errorType;
+        error.retryAfter = data.retryAfter;
+        throw error;
       }
 
       // Store tokens separately for admin and user
@@ -121,12 +166,38 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         } else if (data.name) {
           localStorage.setItem('user_name', data.name);
         }
+        // Dispatch custom event to notify Header component
+        window.dispatchEvent(new Event('userAuthChanged'));
         // Don't set admin token for user login
       }
       
       onAuthSuccess(email, data.access_token);
     } catch (err: any) {
-      setError(err.message || 'Invalid OTP. Please try again.');
+      // Handle rate limit errors professionally with user-friendly messages
+      if (err.status === 429 || err.errorType === 'RATE_LIMIT') {
+        const retryAfter = err.retryAfter || 0;
+        const canRetry = err.canRetry !== false;
+        
+        let userMessage = '';
+        if (canRetry && retryAfter > 0 && retryAfter < 60) {
+          userMessage = `Please wait ${retryAfter} second${retryAfter !== 1 ? 's' : ''} before requesting a new code.`;
+        } else if (retryAfter > 0) {
+          const minutes = Math.floor(retryAfter / 60);
+          const seconds = retryAfter % 60;
+          if (minutes > 0) {
+            userMessage = `Please wait ${minutes} minute${minutes !== 1 ? 's' : ''}${seconds > 0 ? ` and ${seconds} second${seconds !== 1 ? 's' : ''}` : ''} before requesting a new code.`;
+          } else {
+            userMessage = `Please wait ${seconds} second${seconds !== 1 ? 's' : ''} before requesting a new code.`;
+          }
+        } else {
+          userMessage = err.message || 'Please wait a moment before requesting a new code.';
+        }
+        setError(userMessage);
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      } else {
+        setError(err.message || 'Invalid OTP. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -189,6 +260,8 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         if (data.user?.name) {
           localStorage.setItem('user_name', data.user.name);
         }
+        // Dispatch custom event to notify Header component
+        window.dispatchEvent(new Event('userAuthChanged'));
       }
       
       onAuthSuccess(data.user?.email || '', data.access_token);

@@ -171,8 +171,42 @@ router.post(
         user.subscriptionExpiresAt = expirationDate;
 
         // Set credits to plan amount (not add, replace with plan credits)
+        const oldPhotoshootCredits = user.photoshootCredits || 0;
+        const oldMarketingCredits = user.marketingPosterCredits || 0;
+        
         user.photoshootCredits = plan.photoshootCredits || 0;
         user.marketingPosterCredits = plan.marketingPosterCredits || 0;
+        
+        // Store original plan credits for accurate used credits calculation
+        // This helps when admin updates plan credits later
+        user.originalPlanPhotoshootCredits = plan.photoshootCredits || 0;
+        user.originalPlanMarketingPosterCredits = plan.marketingPosterCredits || 0;
+        
+        // Log credit purchase in history
+        if (!user.creditHistory) {
+          user.creditHistory = [];
+        }
+        user.creditHistory.push({
+          date: new Date(),
+          action: 'purchase',
+          planName: planName,
+          photoshootCredits: {
+            previous: oldPhotoshootCredits,
+            new: user.photoshootCredits,
+            change: user.photoshootCredits - oldPhotoshootCredits,
+          },
+          marketingPosterCredits: {
+            previous: oldMarketingCredits,
+            new: user.marketingPosterCredits,
+            change: user.marketingPosterCredits - oldMarketingCredits,
+          },
+          reason: `Purchased ${planName} plan (${billingPeriod})`,
+        });
+        
+        // Keep only last 50 history entries
+        if (user.creditHistory.length > 50) {
+          user.creditHistory = user.creditHistory.slice(-50);
+        }
         
         // Normalize plan name to match database (capitalize first letter)
         if (planName) {

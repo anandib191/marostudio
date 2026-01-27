@@ -85,8 +85,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           zIndex: 100,
           cursor: 'pointer',
           pointerEvents: 'auto',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)'
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)'
         }}
       />
       

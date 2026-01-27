@@ -195,23 +195,26 @@ export const HowItWorksSection: React.FC = () => {
                   className="photo-grid-item rounded-lg overflow-hidden border border-white/10 hover:border-indigo-500/50 transition-all animate-fade-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <img
-                    src={`/assets/images/flow/hero${item}.png`}
-                    alt={`Photo ${item}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => {
-                      console.error(`Failed to load hero${item}.png, trying .jpg`);
-                      const currentSrc = e.currentTarget.src;
-                      if (currentSrc.endsWith('.png')) {
-                        e.currentTarget.src = `/assets/images/flow/hero${item}.jpg`;
-                      } else {
-                        console.error(`All formats failed for hero${item}`);
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
-                      }
-                    }}
-                  />
+                  <picture>
+                    <source srcSet={`/assets/images/flow/webp/hero${item}.webp`} type="image/webp" />
+                    <img
+                      src={`/assets/images/flow/hero${item}.png`}
+                      alt={`Photo ${item}`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        console.error(`Failed to load hero${item}.png, trying .jpg`);
+                        const currentSrc = e.currentTarget.src;
+                        if (currentSrc.endsWith('.png')) {
+                          e.currentTarget.src = `/assets/images/flow/hero${item}.jpg`;
+                        } else {
+                          console.error(`All formats failed for hero${item}`);
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
+                        }
+                      }}
+                    />
+                  </picture>
                 </div>
               ))}
             </div>

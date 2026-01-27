@@ -11,67 +11,16 @@ declare const confetti: (options: any) => void;
 
 type PlanItem = { name: string; price: string; yearlyPrice: string; description: string; features: string[]; isPopular: boolean };
 
-const FALLBACK_PLANS: PlanItem[] = [
-    {
-        name: 'Silver',
-        price: '49',
-        yearlyPrice: '40',
-        description: 'For early brands and creators',
-        features: [
-            "Access to model library",
-            "Background presets",
-            "Max upload file size: 10 MB",
-            "Max output resolution: HD (up to 1080px)",
-            "No watermark",
-            "Regenerations per image: 1",
-            "Edits per image: 1",
-            "Email Support within 48 hours"
-        ],
-        isPopular: false,
-    },
-    {
-        name: 'Gold',
-        price: '59',
-        yearlyPrice: '47',
-        description: 'For growing teams',
-        features: [
-            "Access to model library",
-            "Background presets",
-            "Max upload file size: 10 MB",
-            "Max output resolution: 2K (up to 2048px)",
-            "No watermark",
-            "Regenerations per image: 2",
-            "Edits per image: 1",
-            "Email Support within 24 hours"
-        ],
-        isPopular: true,
-    },
-    {
-        name: 'Platinum',
-        price: '68',
-        yearlyPrice: '54',
-        description: 'For high-velocity teams',
-        features: [
-            "Access to model library",
-            "Background presets",
-            "Max upload file size: 10 MB",
-            "Max output resolution: 2K (up to 2048px)",
-            "No watermark",
-            "Regenerations per image: 3",
-            "Edits per image: 1",
-            "Email Support within 12 hours"
-        ],
-        isPopular: false,
-    }
-];
-
 export const PricingPage: React.FC = () => {
-    const [plans, setPlans] = useState<PlanItem[]>(FALLBACK_PLANS);
+    const [plans, setPlans] = useState<PlanItem[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(true);
     const [isMonthly, setIsMonthly] = useState(true);
     const switchRef = useRef<HTMLButtonElement>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PlanItem | null>(null);
     const [currentSubscriptionPlan, setCurrentSubscriptionPlan] = useState<string | null>(null);
+    const [photoshootCredits, setPhotoshootCredits] = useState<number | null>(null);
+    const [marketingPosterCredits, setMarketingPosterCredits] = useState<number | null>(null);
 
     // Plan hierarchy: Silver < Gold < Platinum
     const planHierarchy: { [key: string]: number } = {
@@ -88,11 +37,19 @@ export const PricingPage: React.FC = () => {
         }
 
         try {
-            const res = await fetch(`${API_URL}/api/credits`, {
+            const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` },
+                cache: 'no-store',
             });
             const data = await res.json();
             if (res.ok && data.success) {
+                // Store credits to check if they're over
+                const photoshoot = data.photoshootCredits || 0;
+                const marketing = data.marketingPosterCredits || 0;
+                setPhotoshootCredits(photoshoot);
+                setMarketingPosterCredits(marketing);
+                
+                
                 // Check if subscription is still valid
                 if (data.subscriptionPlan && data.subscriptionExpiresAt) {
                     const expiresAt = new Date(data.subscriptionExpiresAt);
@@ -112,11 +69,28 @@ export const PricingPage: React.FC = () => {
     };
 
     useEffect(() => {
-        fetch(`${API_URL}/api/price-plans`)
-            .then((res) => res.json())
-            .then((data) => { if (data.success && Array.isArray(data.plans) && data.plans.length) setPlans(data.plans); })
-            .catch(() => {});
-        
+        const fetchPlans = async () => {
+            setLoadingPlans(true);
+            try {
+                const res = await fetch(`${API_URL}/api/price-plans`);
+                const data = await res.json();
+                if (data.success && Array.isArray(data.plans) && data.plans.length > 0) {
+                    setPlans(data.plans);
+                } else {
+                    // No fallback - show empty state or error
+                    setPlans([]);
+                    console.warn('No plans available from API');
+                }
+            } catch (error) {
+                console.error('Failed to fetch plans:', error);
+                // No fallback - show empty state
+                setPlans([]);
+            } finally {
+                setLoadingPlans(false);
+            }
+        };
+
+        fetchPlans();
         fetchSubscriptionPlan();
     }, []);
 
@@ -201,16 +175,50 @@ export const PricingPage: React.FC = () => {
                     </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6 lg:gap-4 items-stretch perspective-container">
-                    {plans.map((plan, index) => {
+                {loadingPlans ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-4">
+                        <div className="sparkle-loader-large">
+                            <div className="sparkle-large"></div>
+                            <div className="sparkle-large"></div>
+                            <div className="sparkle-large"></div>
+                        </div>
+                        <p className="text-indigo-400 text-sm font-medium">Loading pricing plans...</p>
+                    </div>
+                ) : plans.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-4">
+                        <p className="text-neutral-400 text-lg">No pricing plans available at the moment.</p>
+                        <p className="text-neutral-500 text-sm">Please check back later or contact support.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6 lg:gap-4 items-stretch perspective-container">
+                        {plans.map((plan, index) => {
                         // Case-insensitive comparison for current plan
                         const isCurrentPlan = currentSubscriptionPlan && plan.name 
                             ? currentSubscriptionPlan.toLowerCase().trim() === plan.name.toLowerCase().trim()
                             : false;
                         const currentPlanLevel = currentSubscriptionPlan ? (planHierarchy[currentSubscriptionPlan] || 0) : 0;
                         const planLevel = planHierarchy[plan.name] || 0;
+                        
+                        // Check if user has no credits (either photoshoot OR marketing credits are 0)
+                        // If any credit type is 0, enable all plans so user can purchase
+                        const hasNoCredits = photoshootCredits !== null && marketingPosterCredits !== null 
+                            && (photoshootCredits === 0 || marketingPosterCredits === 0);
+                        
+                        // Logic:
+                        // 1. If credits are 0: Enable ALL plans (including current plan - user can repurchase)
+                        // 2. If user has credits > 0 and has a plan: Disable current plan and lower plans (only allow upgrades)
                         const isLowerPlan = currentPlanLevel > 0 && planLevel < currentPlanLevel;
-                        const isDisabled = isLowerPlan || isCurrentPlan;
+                        
+                        // If credits are 0, enable ALL plans (no restrictions). 
+                        // Otherwise, disable current plan and lower plans (upgrade only).
+                        let isDisabled = false;
+                        if (hasNoCredits) {
+                            // Credits are 0 - enable ALL plans
+                            isDisabled = false;
+                        } else {
+                            // Credits available - apply normal restrictions
+                            isDisabled = isCurrentPlan || isLowerPlan;
+                        }
 
                         return (
                         <div
@@ -289,7 +297,7 @@ export const PricingPage: React.FC = () => {
                                                     : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:scale-105'
                                         }`}
                                     >
-                                        {isCurrentPlan ? 'Current Plan' : 'Choose Plan'}
+                                        {isCurrentPlan && !hasNoCredits ? 'Current Plan' : hasNoCredits ? 'Purchase Plan' : 'Choose Plan'}
                                     </button>
                                     <p className="mt-6 text-xs leading-5 text-neutral-500 h-8">{plan.description}</p>
                                 </div>
@@ -297,7 +305,8 @@ export const PricingPage: React.FC = () => {
                         </div>
                         );
                     })}
-                </div>
+                    </div>
+                )}
             </div>
 
             {showPaymentModal && selectedPlan && (
@@ -314,6 +323,47 @@ export const PricingPage: React.FC = () => {
                     onPaymentError={handlePaymentError}
                 />
             )}
+            
+            <style>{`
+                .sparkle-loader-large {
+                    display: flex;
+                    gap: 12px;
+                    align-items: center;
+                }
+                
+                .sparkle-large {
+                    width: 16px;
+                    height: 16px;
+                    background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+                    border-radius: 50%;
+                    animation: sparkleLarge 1.4s ease-in-out infinite;
+                }
+                
+                .sparkle-large:nth-child(1) {
+                    animation-delay: 0s;
+                }
+                
+                .sparkle-large:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+                
+                .sparkle-large:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+                
+                @keyframes sparkleLarge {
+                    0%, 100% {
+                        transform: scale(1);
+                        opacity: 0.4;
+                    }
+                    50% {
+                        transform: scale(1.8);
+                        opacity: 1;
+                        box-shadow: 0 0 20px rgba(129, 140, 248, 0.8),
+                                    0 0 40px rgba(192, 132, 252, 0.4);
+                    }
+                }
+            `}</style>
         </div>
     );
 };

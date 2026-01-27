@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CameraIcon } from './icons/CameraIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { GlassButton } from './ui/GlassButton';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
+import { getCacheStats } from '../utils/cacheManager';
 
 type Studio = 'photo' | 'marketing';
 
@@ -13,6 +15,28 @@ interface StudioSelectionProps {
 }
 
 export const StudioSelection: React.FC<StudioSelectionProps> = ({ onSelect, onBack }) => {
+    const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [cachedCount, setCachedCount] = useState(0);
+
+    useEffect(() => {
+        // Check if user is logged in
+        const token = localStorage.getItem('access_token');
+        setIsLoggedIn(!!token);
+
+        // Get cached images count (async)
+        const loadCacheStats = async () => {
+            try {
+                const stats = await getCacheStats();
+                setCachedCount(stats.totalImages);
+            } catch (error) {
+                console.error('Failed to load cache stats:', error);
+                setCachedCount(0);
+            }
+        };
+        loadCacheStats();
+    }, []);
+
     return (
         <div className="w-full max-w-4xl mx-auto animate-fade-in-up">
             <div className="text-center relative mb-12 md:mb-16">
@@ -43,6 +67,31 @@ export const StudioSelection: React.FC<StudioSelectionProps> = ({ onSelect, onBa
                     </div>
                 </GlassButton>
             </div>
+
+            {/* Previously Generated Button - Only show if user is logged in */}
+            {isLoggedIn && (
+                <div className="mt-8 flex justify-center">
+                    <button
+                        onClick={() => navigate('/previously-generated')}
+                        className="group relative px-6 py-3 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/30 hover:border-indigo-500/50 rounded-xl transition-all duration-300 flex items-center gap-3"
+                    >
+                        <div className="flex items-center gap-3">
+                            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-semibold text-white">Previously Generated</span>
+                            {cachedCount > 0 && (
+                                <span className="px-2 py-0.5 bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-full">
+                                    {cachedCount}
+                                </span>
+                            )}
+                        </div>
+                        <svg className="w-4 h-4 text-indigo-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

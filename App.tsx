@@ -16,6 +16,7 @@ import { AdminLoginPage } from './components/pages/AdminLoginPage';
 import { AdminDashboard } from './components/pages/AdminDashboard';
 import { Dashboard } from './components/pages/Dashboard';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { PreviouslyGenerated } from './components/PreviouslyGenerated';
 
 // --- Main App Component ---
 const AppContent: React.FC = () => {
@@ -117,6 +118,7 @@ const AppContent: React.FC = () => {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/book-demo" element={<BookDemoPage />} />
             <Route path="/studio" element={<StudioWrapper />} />
+            <Route path="/previously-generated" element={<PreviouslyGenerated />} />
             
             {/* Admin Routes */}
             <Route 
@@ -152,7 +154,6 @@ const AppContent: React.FC = () => {
       
       {!showLandingBackground && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/dashboard') && location.pathname !== '/studio' && (
         <footer className="text-center py-6 text-sm text-neutral-500 relative z-10">
-            <p>App by <a href="#" className="font-semibold text-neutral-400 hover:text-indigo-400">Om Jasoliya</a></p>
         </footer>
       )}
       

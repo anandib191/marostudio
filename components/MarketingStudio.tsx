@@ -11,6 +11,8 @@ import { SparklesIcon } from './icons/SparklesIcon';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 import { LoadingScreen } from './LoadingScreen';
 import { CreditsSummaryBox } from './CreditsSummaryBox';
+import { addToCache, getCachedItems } from '../utils/cacheManager';
+import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -34,8 +36,9 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
         }
 
         try {
-            const res = await fetch(`${API_URL}/api/credits`, {
+            const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` },
+                cache: 'no-store',
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -55,8 +58,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
         
         if (token) {
             fetchCredits();
-            // Refresh credits more frequently to catch payment updates
-            const interval = setInterval(fetchCredits, 10000); // Every 10 seconds
+            // Refresh credits every 5 seconds to catch payment/admin updates (reduced to avoid rate limits)
+            const interval = setInterval(fetchCredits, 5000); // Every 5 seconds
             return () => clearInterval(interval);
         }
     }, [fetchCredits]);
@@ -109,7 +112,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                 const checkData = await checkRes.json();
                 
                 if (!checkData.success || !checkData.hasCredits) {
-                    setError(checkData.message || 'You have no marketing poster credits remaining. Please upgrade your plan.');
+                    const errorMsg = checkData.message || 'You have no marketing poster credits remaining.';
+                    setError(errorMsg);
                     return;
                 }
             } catch (err) {
@@ -126,6 +130,126 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
             const poster = await generateMarketingPoster(imageFile, extraDetails, logoFile);
             setGeneratedPoster(poster);
             onContentGenerated();
+
+            // Add poster to cache for "Previously Generated" page
+            // Convert URL to data URL if needed (for persistence in localStorage)
+            try {
+                console.log('🔄 Starting cache process for marketing poster...');
+                console.log('📋 Poster URL type:', poster ? (poster.startsWith('data:') ? 'data URL' : 'remote URL') : 'null');
+                
+                let posterDataUrl = poster;
+                
+                // If poster is a URL (not already a data URL), convert it to data URL
+                if (poster && !poster.startsWith('data:')) {
+                    console.log('🔄 Converting remote URL to data URL...');
+                    console.log('📋 Poster URL:', poster.substring(0, 100));
+                    
+                    // Check if URL is valid
+                    if (!poster.startsWith('http://') && !poster.startsWith('https://')) {
+                        console.error('❌ Invalid URL format:', poster.substring(0, 100));
+                        throw new Error('Invalid URL format');
+                    }
+                    
+                    try {
+                        console.log('📡 Fetching poster from URL...');
+                        const response = await fetch(poster, {
+                            mode: 'cors',
+                            cache: 'no-cache'
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        console.log('✅ Response OK, converting to blob...');
+                        const blob = await response.blob();
+                        console.log('✅ Fetched blob, size:', blob.size, 'bytes, type:', blob.type);
+                        
+                        if (blob.size === 0) {
+                            throw new Error('Blob is empty');
+                        }
+                        
+                        const reader = new FileReader();
+                        posterDataUrl = await new Promise<string>((resolve, reject) => {
+                            const timeout = setTimeout(() => {
+                                reject(new Error('FileReader timeout'));
+                            }, 10000); // 10 second timeout
+                            
+                            reader.onloadend = () => {
+                                clearTimeout(timeout);
+                                const result = reader.result as string;
+                                if (!result || result.length === 0) {
+                                    reject(new Error('Empty data URL'));
+                                    return;
+                                }
+                                console.log('✅ Converted to data URL, length:', result.length, 'chars');
+                                resolve(result);
+                            };
+                            reader.onerror = (error) => {
+                                clearTimeout(timeout);
+                                console.error('❌ FileReader error:', error);
+                                reject(new Error('FileReader failed'));
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                        console.log('✅ Successfully converted URL to data URL');
+                    } catch (fetchError) {
+                        console.error('❌ Failed to convert poster URL to data URL:', fetchError);
+                        console.error('📋 Error details:', {
+                            message: fetchError instanceof Error ? fetchError.message : String(fetchError),
+                            posterUrl: poster?.substring(0, 100),
+                            stack: fetchError instanceof Error ? fetchError.stack : undefined
+                        });
+                        // If conversion fails, try to cache the original URL anyway
+                        // Some URLs might be persistent (CDN URLs)
+                        console.warn('⚠️ Conversion failed, caching original URL as fallback');
+                        posterDataUrl = poster;
+                    }
+                } else if (poster && poster.startsWith('data:')) {
+                    console.log('✅ Poster is already a data URL, no conversion needed');
+                    posterDataUrl = poster;
+                } else {
+                    console.error('❌ Poster is null or empty');
+                    throw new Error('Poster is null or empty');
+                }
+                
+                // Ensure we have a valid URL/data URL before caching
+                if (!posterDataUrl || posterDataUrl.length === 0) {
+                    throw new Error('Invalid poster data URL');
+                }
+                
+                const cachePrompt = `Marketing poster${extraDetails ? ` - ${extraDetails.substring(0, 50)}` : ''}`;
+                console.log('💾 Adding to cache with prompt:', cachePrompt);
+                console.log('📋 Data URL length:', posterDataUrl?.length);
+                console.log('📋 Data URL preview:', posterDataUrl?.substring(0, 50) + '...');
+                
+                await addToCache(posterDataUrl, 'marketing', cachePrompt);
+                console.log('✅ Marketing poster added to cache successfully');
+                
+                // Verify it was cached
+                setTimeout(async () => {
+                    try {
+                        const verifyCache = await getCachedItems();
+                        const marketingItems = verifyCache.filter(item => item.studioType === 'marketing');
+                        console.log('✅ Verification: Total cached marketing items:', marketingItems.length);
+                        if (marketingItems.length === 0) {
+                            console.error('❌ WARNING: No marketing items found in cache after adding!');
+                        } else {
+                            console.log('✅ Latest marketing item:', {
+                                id: marketingItems[0].id,
+                                timestamp: new Date(marketingItems[0].timestamp).toISOString(),
+                                prompt: marketingItems[0].prompt
+                            });
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to verify cache:', error);
+                    }
+                }, 100);
+            } catch (cacheError) {
+                console.error('❌ Failed to cache marketing poster:', cacheError);
+                console.error('📋 Cache error details:', cacheError);
+                // Don't fail generation if caching fails
+            }
 
             // Deduct credit after successful generation
             if (token) {
@@ -182,14 +306,36 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
         }
     };
     
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!generatedPoster) return;
-        const link = document.createElement('a');
-        link.href = generatedPoster;
-        link.download = 'marketing-poster.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        try {
+            // Convert data URL to blob for reliable download
+            const response = await fetch(generatedPoster);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `marketing-poster-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up the blob URL
+            window.URL.revokeObjectURL(url);
+            
+            toast.success('Poster downloaded successfully!', {
+                position: 'top-right',
+                autoClose: 2000,
+            });
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error('Failed to download poster. Please try again.', {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+        }
     };
 
     if (isLoading) {
@@ -295,9 +441,12 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                                                     e.stopPropagation();
                                                     navigate('/pricing');
                                                 }}
-                                                className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-orange-900/20"
+                                                    className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                                             >
-                                                Purchase plan for more generation
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                                Purchase Plan to Get Credits
                                             </button>
                                         </div>
                                     )}

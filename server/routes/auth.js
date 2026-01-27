@@ -5,6 +5,7 @@ import OTP from '../models/OTP.js';
 import AppConfig from '../models/AppConfig.js';
 import { generateOTP } from '../utils/generateOTP.js';
 import { sendOTPEmail } from '../utils/sendEmail.js';
+import { validateEmail } from '../utils/validateEmail.js';
 import jwt from 'jsonwebtoken';
 import logger from '../utils/logger.js';
 import { otpLimiter } from '../middleware/rateLimiter.js';
@@ -40,14 +41,41 @@ router.post(
       const { email, is_admin, is_signup, name, phoneNumber } = req.body;
       const normalizedEmail = email.toLowerCase().trim();
 
-      // If signup, check if user already exists
+      // Validate email for disposable/fake domains (strict validation for signup)
       if (is_signup) {
-        const existingUser = await User.findOne({ email: normalizedEmail });
+        logger.info(`🔍 Validating email for signup: ${normalizedEmail}`);
+        const emailValidation = await validateEmail(normalizedEmail);
+        
+        if (!emailValidation.valid) {
+          logger.warn(`❌ Email validation failed for ${normalizedEmail}: ${emailValidation.message}`);
+          return res.status(400).json({
+            success: false,
+            message: emailValidation.message,
+            invalidEmail: true,
+          });
+        }
+        logger.info(`✅ Email validation passed for ${normalizedEmail}`);
+      }
+
+      // Check user existence based on signup/login
+      const existingUser = await User.findOne({ email: normalizedEmail });
+      
+      if (is_signup) {
+        // For signup: User should NOT exist
         if (existingUser) {
           return res.status(400).json({
             success: false,
             message: 'User already registered. Please login instead.',
             userExists: true,
+          });
+        }
+      } else {
+        // For login: User MUST exist
+        if (!existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'No account found with this email. Please sign up first.',
+            userNotFound: true,
           });
         }
       }

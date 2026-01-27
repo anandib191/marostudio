@@ -99,13 +99,20 @@ router.get('/users', protect, admin, async (req, res) => {
       const planName = user.subscriptionPlan;
       const plan = planName ? (planMap[planName.toLowerCase()] || planMap[planName]) : null;
       
-      // Calculate total credits based on plan or free tier
+      // Calculate total credits based on CURRENT plan (after admin updates)
       const totalPhotoshootCredits = plan ? (plan.photoshootCredits || 0) : freePhotoshootCredits;
       const totalMarketingCredits = plan ? (plan.marketingPosterCredits || 0) : freeMarketingCredits;
       
-      // Calculate used credits
-      const usedPhotoshootCredits = Math.max(0, totalPhotoshootCredits - (user.photoshootCredits || 0));
-      const usedMarketingCredits = Math.max(0, totalMarketingCredits - (user.marketingPosterCredits || 0));
+      // Calculate used credits correctly:
+      // If user has originalPlanCredits stored, use that (more accurate)
+      // Otherwise, use current plan total (for users who purchased before this update)
+      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || totalPhotoshootCredits;
+      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || totalMarketingCredits;
+      
+      // Calculate used credits: used = originalTotal - remaining
+      // This shows actual usage even if admin updated plan credits
+      const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
+      const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
       
       // Check if subscription is active
       const isActive = user.subscriptionPlan && user.subscriptionExpiresAt 
@@ -356,16 +363,13 @@ router.delete('/price-plans/:id', protect, admin, async (req, res) => {
 });
 
 /**
- * @route   POST /api/admin/sync-credits
- * @desc    Sync user credits based on their subscription plans (admin only)
+ * @route   GET /api/admin/sync-credits/preview
+ * @desc    Preview credit changes before syncing (admin only)
  * @access  Private/Admin
  */
-router.post('/sync-credits', protect, admin, async (req, res) => {
+router.get('/sync-credits/preview', protect, admin, async (req, res) => {
   try {
-    // Get all plans
     const plans = await PricePlan.find({});
-    
-    // Create a map of plan names (case-insensitive) to credits
     const planCreditsMap = {};
     plans.forEach(plan => {
       planCreditsMap[plan.name.toLowerCase()] = {
@@ -378,10 +382,107 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
       };
     });
 
-    // Get all users with subscription plans
     const users = await User.find({
-      subscriptionPlan: { $ne: null, $exists: true },
-      subscriptionExpiresAt: { $gt: new Date() } // Only active subscriptions
+      subscriptionPlan: { $ne: null, $exists: true }
+    }).select('email subscriptionPlan photoshootCredits marketingPosterCredits originalPlanPhotoshootCredits originalPlanMarketingPosterCredits');
+
+    const preview = [];
+    let totalAffected = 0;
+    let totalIncrease = 0;
+    let totalDecrease = 0;
+
+    for (const user of users) {
+      const planName = user.subscriptionPlan;
+      const planKey = planName?.toLowerCase();
+      const newPlanCredits = planCreditsMap[planKey] || planCreditsMap[planName];
+      
+      if (!newPlanCredits) continue;
+
+      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits;
+      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits;
+      
+      const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
+      const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
+      
+      const newPhotoshootCredits = Math.max(0, newPlanCredits.photoshootCredits - usedPhotoshootCredits);
+      const newMarketingCredits = Math.max(0, newPlanCredits.marketingPosterCredits - usedMarketingCredits);
+      
+      const photoshootChange = newPhotoshootCredits - (user.photoshootCredits || 0);
+      const marketingChange = newMarketingCredits - (user.marketingPosterCredits || 0);
+      
+      if (photoshootChange !== 0 || marketingChange !== 0) {
+        preview.push({
+          email: user.email,
+          plan: planName,
+          current: {
+            photoshoot: user.photoshootCredits || 0,
+            marketing: user.marketingPosterCredits || 0,
+          },
+          new: {
+            photoshoot: newPhotoshootCredits,
+            marketing: newMarketingCredits,
+          },
+          change: {
+            photoshoot: photoshootChange,
+            marketing: marketingChange,
+          },
+          used: {
+            photoshoot: usedPhotoshootCredits,
+            marketing: usedMarketingCredits,
+          },
+        });
+        totalAffected++;
+        if (photoshootChange > 0 || marketingChange > 0) totalIncrease++;
+        if (photoshootChange < 0 || marketingChange < 0) totalDecrease++;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      preview: {
+        totalUsers: users.length,
+        affectedUsers: totalAffected,
+        usersWithIncrease: totalIncrease,
+        usersWithDecrease: totalDecrease,
+        changes: preview.slice(0, 50), // Limit to first 50 for preview
+      },
+    });
+  } catch (error) {
+    logger.error('Preview sync credits error:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/admin/sync-credits
+ * @desc    Sync user credits based on their subscription plans (admin only)
+ * @access  Private/Admin
+ */
+router.post('/sync-credits', protect, admin, async (req, res) => {
+  try {
+    // Get all plans
+    const plans = await PricePlan.find({});
+    
+    // Create a map of plan names (case-insensitive) to credits
+    const planCreditsMap = {};
+    const planObjectMap = {}; // Store full plan objects for used credits calculation
+    plans.forEach(plan => {
+      planCreditsMap[plan.name.toLowerCase()] = {
+        photoshootCredits: plan.photoshootCredits || 0,
+        marketingPosterCredits: plan.marketingPosterCredits || 0,
+      };
+      planCreditsMap[plan.name] = {
+        photoshootCredits: plan.photoshootCredits || 0,
+        marketingPosterCredits: plan.marketingPosterCredits || 0,
+      };
+      planObjectMap[plan.name.toLowerCase()] = plan;
+      planObjectMap[plan.name] = plan;
+    });
+
+    // Get ALL users with subscription plans (including expired ones)
+    // This ensures users who purchased at old prices get updated credits
+    const users = await User.find({
+      subscriptionPlan: { $ne: null, $exists: true }
     });
 
     let updated = 0;
@@ -399,23 +500,85 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
           continue;
         }
 
-        const credits = planCreditsMap[planKey] || planCreditsMap[planName];
+        // Get the NEW plan credits (after admin update)
+        const newPlanCredits = planCreditsMap[planKey] || planCreditsMap[planName];
         
-        // Check if credits need updating
-        const needsUpdate = 
-          user.photoshootCredits !== credits.photoshootCredits ||
-          user.marketingPosterCredits !== credits.marketingPosterCredits;
-
-        if (needsUpdate) {
-          user.photoshootCredits = credits.photoshootCredits;
-          user.marketingPosterCredits = credits.marketingPosterCredits;
-          await user.save();
+        // Calculate USED credits based on ORIGINAL plan credits (when user purchased)
+        // This is the correct way to calculate used credits even after admin updates plan
+        const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits;
+        const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits;
+        
+        // Calculate USED credits: used = originalTotal - remaining
+        // This correctly calculates how many credits user has actually consumed
+        const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
+        const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
+        
+        // Calculate NEW remaining credits: newRemaining = newTotal - usedCredits
+        // This preserves the used amount when admin updates plan credits
+        const newPhotoshootCredits = Math.max(0, newPlanCredits.photoshootCredits - usedPhotoshootCredits);
+        const newMarketingCredits = Math.max(0, newPlanCredits.marketingPosterCredits - usedMarketingCredits);
+        
+        const oldPhotoshootCredits = user.photoshootCredits;
+        const oldMarketingCredits = user.marketingPosterCredits;
+        
+        // Update user credits with new remaining (preserving used amount)
+        user.photoshootCredits = newPhotoshootCredits;
+        user.marketingPosterCredits = newMarketingCredits;
+        
+        // Log credit change history for transparency
+        if (oldPhotoshootCredits !== newPhotoshootCredits || oldMarketingCredits !== newMarketingCredits) {
+          if (!user.creditHistory) {
+            user.creditHistory = [];
+          }
+          
+          user.creditHistory.push({
+            date: new Date(),
+            action: 'admin_sync',
+            planName: planName,
+            photoshootCredits: {
+              previous: oldPhotoshootCredits,
+              new: newPhotoshootCredits,
+              change: newPhotoshootCredits - oldPhotoshootCredits,
+            },
+            marketingPosterCredits: {
+              previous: oldMarketingCredits,
+              new: newMarketingCredits,
+              change: newMarketingCredits - oldMarketingCredits,
+            },
+            reason: `Plan "${planName}" credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
+            adminEmail: req.user.email,
+          });
+          
+          // Keep only last 50 history entries to prevent unbounded growth
+          if (user.creditHistory.length > 50) {
+            user.creditHistory = user.creditHistory.slice(-50);
+          }
+        }
+        
+        // Update original plan credits to new plan credits (for future syncs)
+        user.originalPlanPhotoshootCredits = newPlanCredits.photoshootCredits;
+        user.originalPlanMarketingPosterCredits = newPlanCredits.marketingPosterCredits;
+        
+        await user.save();
+        
+        // Check if credits actually changed
+        if (oldPhotoshootCredits !== user.photoshootCredits || 
+            oldMarketingCredits !== user.marketingPosterCredits) {
           updated++;
+          logger.info(`Credits synced for ${user.email}:`, {
+            plan: planName,
+            old: { photoshoot: oldPhotoshootCredits, marketing: oldMarketingCredits },
+            new: { photoshoot: user.photoshootCredits, marketing: user.marketingPosterCredits },
+            used: { photoshoot: usedPhotoshootCredits, marketing: usedMarketingCredits },
+            newTotal: { photoshoot: newPlanCredits.photoshootCredits, marketing: newPlanCredits.marketingPosterCredits },
+            originalTotal: { photoshoot: user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits, marketing: user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits }
+          });
         } else {
           skipped++;
         }
       } catch (error) {
         errors.push(`Error updating user ${user.email}: ${error.message}`);
+        logger.error(`Error syncing credits for ${user.email}:`, error);
       }
     }
 

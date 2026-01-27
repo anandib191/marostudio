@@ -46,6 +46,7 @@ import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { AspectRatio16x9Icon } from './icons/AspectRatio16x9Icon';
 import { AspectRatio9x16Icon } from './icons/AspectRatio9x16Icon';
 import { UserIcon } from './icons/UserIcon';
+import { addLookbookToCache, addToCache, getCachedItems } from '../utils/cacheManager';
 
 
 type ViewMode = 'gallery' | 'catalogue';
@@ -544,9 +545,12 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                         e.stopPropagation();
                                                         navigate('/pricing');
                                                     }}
-                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
+                                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                                 >
-                                                    Purchase plan for more generation
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    </svg>
+                                                    Purchase Plan to Get Credits
                                                 </button>
                                             </div>
                                         )}
@@ -575,8 +579,9 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
 
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const res = await fetch(`${API_URL}/api/credits`, {
+            const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` },
+                cache: 'no-store',
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -594,7 +599,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         
         if (token) {
             fetchCredits();
-            const interval = setInterval(fetchCredits, 30000);
+            // Refresh credits every 5 seconds to catch payment/admin updates (reduced to avoid rate limits)
+            const interval = setInterval(fetchCredits, 5000); // Every 5 seconds
             return () => clearInterval(interval);
         }
     }, [fetchCredits]);
@@ -709,7 +715,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 const checkData = await checkRes.json();
                 
                 if (!checkData.success || !checkData.hasCredits) {
-                    setError(checkData.message || 'You have no photoshoot credits remaining. Please upgrade your plan.');
+                    const errorMsg = checkData.message || 'You have no photoshoot credits remaining.';
+                    setError(errorMsg);
                     return;
                 }
             } catch (err) {
@@ -754,6 +761,80 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setModelImages(result.modelImages);
             setPhase('results');
             onContentGenerated();
+
+            // Add images to cache for "Previously Generated" page
+            // Convert remote URLs to data URLs for persistence in localStorage
+            try {
+                console.log('🔄 Starting cache process for PhotoStudio images...');
+                
+                // Helper function to convert URL to data URL
+                const convertUrlToDataUrl = async (url: string): Promise<string> => {
+                    if (url.startsWith('data:')) {
+                        return url; // Already a data URL
+                    }
+                    
+                    try {
+                        console.log('🔄 Converting remote URL to data URL:', url.substring(0, 100));
+                        const response = await fetch(url, { mode: 'cors', cache: 'no-cache' });
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        const blob = await response.blob();
+                        if (blob.size === 0) {
+                            throw new Error('Blob is empty');
+                        }
+                        const reader = new FileReader();
+                        return await new Promise<string>((resolve, reject) => {
+                            const timeout = setTimeout(() => {
+                                reject(new Error('FileReader timeout'));
+                            }, 10000);
+                            reader.onloadend = () => {
+                                clearTimeout(timeout);
+                                resolve(reader.result as string);
+                            };
+                            reader.onerror = () => {
+                                clearTimeout(timeout);
+                                reject(new Error('FileReader failed'));
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                    } catch (error) {
+                        console.error('❌ Failed to convert URL to data URL:', error);
+                        // Return original URL as fallback
+                        return url;
+                    }
+                };
+                
+                // Cache cover image
+                if (result.coverImage) {
+                    const cachePrompt = `${promptCategory} photoshoot - ${selectedStyle || 'Standard'} style`;
+                    const coverDataUrl = await convertUrlToDataUrl(result.coverImage);
+                    await addToCache(coverDataUrl, 'photo', cachePrompt);
+                    console.log('✅ Cover image cached');
+                }
+                
+                // Cache model images
+                if (result.modelImages && result.modelImages.length > 0) {
+                    for (let idx = 0; idx < result.modelImages.length; idx++) {
+                        const img = result.modelImages[idx];
+                        const imgPrompt = `${promptCategory} photo ${idx + 1} - ${selectedStyle || 'Standard'}`;
+                        const imgDataUrl = await convertUrlToDataUrl(img);
+                        await addToCache(imgDataUrl, 'photo', imgPrompt);
+                        console.log(`✅ Model image ${idx + 1} cached`);
+                    }
+                }
+                
+                console.log('✅ All PhotoStudio images added to cache successfully');
+                
+                // Verify cache
+                setTimeout(async () => {
+                    const photoItems = (await getCachedItems()).filter((item: any) => item.studioType === 'photo');
+                    console.log('✅ Verification: Total cached photo items:', photoItems.length);
+                }, 100);
+            } catch (cacheError) {
+                console.error('❌ Failed to cache images:', cacheError);
+                // Don't fail generation if caching fails
+            }
 
             // Deduct credit after successful generation
             if (token) {
@@ -812,7 +893,19 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 pdf.addPage([pageCanvas.width, pageCanvas.height], 'portrait');
                 pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageCanvas.width, pageCanvas.height, undefined, 'FAST');
             }
-            pdf.save(`${creatorName || 'campaign'}.pdf`);
+            
+            // Get PDF as blob
+            const pdfBlob = pdf.output('blob');
+            const pdfDataUrl = pdf.output('dataurlstring');
+            
+            // Cache the PDF lookbook
+            const cachePrompt = `${promptCategory} lookbook - ${selectedStyle || 'Standard'} style`;
+            const lookbookName = creatorName || 'campaign';
+            await addLookbookToCache(pdfDataUrl, 'photo', cachePrompt, lookbookName);
+            console.log('✅ Lookbook PDF cached');
+            
+            // Download the PDF
+            pdf.save(`${lookbookName}.pdf`);
         } catch (e) {
             setError("PDF Export failed.");
         } finally {
@@ -987,9 +1080,12 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                                         e.stopPropagation();
                                                         navigate('/pricing');
                                                     }}
-                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
+                                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                                 >
-                                                    Purchase plan for more generation
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    </svg>
+                                                    Purchase Plan to Get Credits
                                                 </button>
                                             </div>
                                         )}

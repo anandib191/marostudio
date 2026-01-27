@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { HomeIcon } from './icons/HomeIcon';
 import { NavMenuIcon } from './icons/NavMenuIcon';
 import { CloseIcon } from './icons/CloseIcon';
+import { LogoutIcon } from './icons/LogoutIcon';
 import { Logo } from './Logo';
 import { ConfirmationModal } from './ui/ConfirmationModal';
 
@@ -154,15 +155,24 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
           return;
         }
 
-        const res = await fetch(`${API_URL}/api/credits`, {
+        // Add cache-busting query parameter to ensure fresh data
+        const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
           headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          // Update user name from API response
-          if (data.userName) {
-            setUserName(data.userName);
-            localStorage.setItem('user_name', data.userName);
+          // Update user name from API response (only use actual name from database, not email)
+          if (data.userName && data.userName.trim()) {
+            setUserName(data.userName.trim());
+            localStorage.setItem('user_name', data.userName.trim());
+          } else if (storedName && storedName.trim()) {
+            // Keep existing stored name if API doesn't return one
+            setUserName(storedName.trim());
+          } else {
+            // Clear username if no name is available (don't use email)
+            setUserName(null);
+            localStorage.removeItem('user_name');
           }
           
           // Check if subscription is still valid
@@ -186,9 +196,35 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     };
 
     fetchUserData();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchUserData, 30000);
-    return () => clearInterval(interval);
+    // Refresh every 5 seconds to catch auth/credit updates (reduced from 3s to avoid rate limits)
+    const interval = setInterval(fetchUserData, 5000);
+    
+    // Listen for custom auth change events (when user logs in/registers)
+    const handleAuthChange = () => {
+      const newToken = localStorage.getItem('access_token');
+      const newName = localStorage.getItem('user_name');
+      setIsAuthenticated(!!newToken);
+      if (newName) {
+        setUserName(newName);
+      }
+      fetchUserData();
+    };
+    
+    // Also listen for storage changes (when user logs in/registers in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'access_token' || e.key === 'user_name') {
+        handleAuthChange();
+      }
+    };
+    
+    window.addEventListener('userAuthChanged', handleAuthChange);
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('userAuthChanged', handleAuthChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (
@@ -210,8 +246,9 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
               </span>
             )}
           </div>
-          {userName && (
-            <p className="text-xs text-neutral-400 font-medium">
+          {/* Show username only for authenticated/active users (only actual name, not email) */}
+          {isAuthenticated && userName && userName.trim() && (
+            <p className="text-xs text-white/90 font-medium truncate max-w-[200px] sm:max-w-none mt-0.5" title={userName}>
               {userName}
             </p>
           )}
@@ -294,7 +331,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         </nav>
             
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
             {hasGeneratedContent && (
               <button 
               onClick={() => navigate('/')}
@@ -305,6 +342,19 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
               </button>
             )}
 
+            {/* Logout Icon - Visible on small screens */}
+            {isAuthenticated && (
+              <button 
+                onClick={() => setShowLogoutModal(true)}
+                className="md:hidden p-2 text-red-500 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogoutIcon className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Logout Button - Visible on medium+ screens */}
             {isAuthenticated && (
               <button 
                 onClick={() => setShowLogoutModal(true)}

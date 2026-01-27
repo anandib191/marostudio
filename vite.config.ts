@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react()],
+      esbuild: {
+        // Drop console and debugger in production builds
+        drop: isProduction ? ['console', 'debugger'] : [],
+        // Keep console.error and console.warn for production debugging
+        pure: isProduction ? ['console.log', 'console.info', 'console.debug'] : [],
+      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
@@ -29,23 +35,37 @@ export default defineConfig(({ mode }) => {
       build: {
         // Production build optimizations
         minify: 'esbuild',
-        sourcemap: !isProduction, // Only generate sourcemaps in development
+        sourcemap: false, // Disable sourcemaps in production for security
+        target: 'es2015', // Better browser compatibility
+        cssCodeSplit: true, // Split CSS for better caching
         rollupOptions: {
           output: {
             manualChunks: {
               'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-              'ui-vendor': ['react-toastify'],
+              'ui-vendor': ['react-toastify', 'swiper'],
+              'pdf-vendor': ['jspdf', 'html2canvas', 'jszip'],
+            },
+            // Optimize chunk names
+            chunkFileNames: 'assets/js/[name]-[hash].js',
+            entryFileNames: 'assets/js/[name]-[hash].js',
+            assetFileNames: (assetInfo) => {
+              const info = assetInfo.name.split('.');
+              const ext = info[info.length - 1];
+              if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext)) {
+                return `assets/images/[name]-[hash][extname]`;
+              }
+              if (/css/i.test(ext)) {
+                return `assets/css/[name]-[hash][extname]`;
+              }
+              return `assets/[name]-[hash][extname]`;
             },
           },
         },
         chunkSizeWarningLimit: 1000,
-        // Remove console.logs in production
-        terserOptions: isProduction ? {
-          compress: {
-            drop_console: true,
-            drop_debugger: true,
-          },
-        } : undefined,
+        // Report compressed sizes
+        reportCompressedSize: true,
+        // Reduce chunk size warnings
+        assetsInlineLimit: 4096, // Inline assets smaller than 4kb
       },
       publicDir: 'public',
     };

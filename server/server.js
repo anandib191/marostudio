@@ -12,7 +12,7 @@ import creditsRoutes from './routes/credits.js';
 import statisticsRoutes from './routes/statistics.js';
 import { validateEnv } from './utils/validateEnv.js';
 import logger from './utils/logger.js';
-import { generalLimiter, authLimiter, otpLimiter } from './middleware/rateLimiter.js';
+import { generalLimiter, authLimiter, otpLimiter, creditsLimiter, adminGetLimiter } from './middleware/rateLimiter.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -116,7 +116,28 @@ app.get('/favicon.ico', (req, res) => {
 
 // Apply rate limiting (only if not on Vercel, as Vercel has its own rate limiting)
 if (!isVercel) {
-  app.use(generalLimiter);
+  // Credits routes need higher limit due to frequent polling
+  // Apply credits limiter specifically to credits routes
+  app.use('/api/credits', creditsLimiter);
+  
+  // Apply general limiter to all routes EXCEPT credits, admin, and auth
+  // Admin routes completely bypass rate limiting (real-world solution)
+  app.use((req, res, next) => {
+    // Skip general limiter for credits routes (they have their own)
+    if (req.path.startsWith('/api/credits')) {
+      return next();
+    }
+    // Skip general limiter for admin routes (NO rate limiting for admin)
+    if (req.path.startsWith('/api/admin')) {
+      return next();
+    }
+    // Skip general limiter for auth routes (they have their own limiter)
+    if (req.path.startsWith('/api/auth')) {
+      return next();
+    }
+    // Apply general limiter to all other routes (authenticated users skip automatically)
+    return generalLimiter(req, res, next);
+  });
 }
 
 // Middleware to ensure DB connection before handling API requests
@@ -139,13 +160,14 @@ app.use(async (req, res, next) => {
 });
 
 // Routes (Bladdit image gen is called directly from frontend → https://api.bladdit.com/v1/generate, no backend proxy)
-// Note: OTP rate limiting is handled within auth routes, so we don't apply authLimiter globally
-if (isVercel) {
-  app.use('/api/auth', authRoutes);
-} else {
-  // Apply authLimiter only to non-OTP routes (OTP has its own limiter)
-  app.use('/api/auth', authRoutes);
+// Apply authLimiter to auth routes (OTP has its own limiter within the route)
+if (!isVercel) {
+  app.use('/api/auth', authLimiter);
 }
+app.use('/api/auth', authRoutes);
+// Admin routes: NO rate limiting at all (admin users can work freely)
+// Rate limiting is handled inside admin routes middleware (protect + admin)
+// Admin users skip rate limiting completely in rateLimiter middleware
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/price-plans', pricePlansRoutes);
