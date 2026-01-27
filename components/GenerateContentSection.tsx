@@ -64,8 +64,8 @@ export const GenerateContentSection: React.FC = () => {
     // Check if small screen (mobile/tablet)
     const isSmallScreen = window.innerWidth < 1024;
     // On small screens: Match button animation (5s) - show 3 images in 5s = ~1.67s per image
-    // On desktop: Keep original timing
-    const imageChangeInterval = isSmallScreen ? 1667 : 2500; // ~1.67s per image on small screens (5s / 3 images)
+    // On desktop: Show all 3 images at once, so no need to auto-scroll through individual images
+    const imageChangeInterval = isSmallScreen ? 1667 : null; // No auto-scroll on desktop (showing all 3)
     const categoryChangeInterval = isSmallScreen ? 5000 : 7500; // Match button animation (5s) on small screens
 
     // Scroll through all images of current category one by one
@@ -90,6 +90,7 @@ export const GenerateContentSection: React.FC = () => {
           // Reset swiper to first slide of new category
           setTimeout(() => {
             if (swiperRef.current && swiperRef.current.swiper) {
+              // On large screens, ensure we're at the start to show all 3 images
               swiperRef.current.swiper.slideTo(0);
             }
             setIsTransitioning(false);
@@ -99,7 +100,7 @@ export const GenerateContentSection: React.FC = () => {
     }, categoryChangeInterval);
 
     return () => {
-      clearInterval(imageInterval);
+      if (imageInterval) clearInterval(imageInterval);
       clearInterval(categoryInterval);
     };
   }, [activeCategory, isHovered, categories, images]);
@@ -204,11 +205,11 @@ export const GenerateContentSection: React.FC = () => {
               spaceBetween: 20,
             },
             1024: {
-              slidesPerView: 1,
-              spaceBetween: 24,
+              slidesPerView: 3,
+              spaceBetween: 20,
             },
             1280: {
-              slidesPerView: 1,
+              slidesPerView: 3,
               spaceBetween: 24,
             },
           }}
@@ -316,6 +317,22 @@ export const GenerateContentSection: React.FC = () => {
           aspect-ratio: 3/4;
           overflow: hidden;
           background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        }
+
+        /* Responsive image sizing for 3 images on large screens */
+        @media (min-width: 1024px) {
+          .image-container {
+            aspect-ratio: 4/5;
+            max-height: 450px;
+          }
+          
+          .image-card {
+            max-width: 100%;
+          }
+          
+          .mySwiper {
+            padding: 24px 0;
+          }
         }
 
         /* Loading Skeleton */
