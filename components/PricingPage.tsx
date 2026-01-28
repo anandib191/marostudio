@@ -6,6 +6,11 @@ import { PaymentModal } from './PaymentModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Log API URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('PricingPage API_URL:', API_URL);
+}
+
 // Declare confetti as a global function for TypeScript
 declare const confetti: (options: any) => void;
 
@@ -81,19 +86,68 @@ export const PricingPage: React.FC = () => {
         const fetchPlans = async () => {
             setLoadingPlans(true);
             try {
-                const res = await fetch(`${API_URL}/api/price-plans`);
-                const data = await res.json();
-                if (data.success && Array.isArray(data.plans) && data.plans.length > 0) {
-                    setPlans(data.plans);
-                } else {
-                    // No fallback - show empty state or error
-                    setPlans([]);
-                    console.warn('No plans available from API');
+                // Add cache-busting and timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const apiUrl = `${API_URL}/api/price-plans`;
+                console.log('Fetching plans from:', apiUrl);
+                
+                const res = await fetch(apiUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                    },
+                    mode: 'cors',
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) {
+                    console.error(`API error: ${res.status} ${res.statusText}`);
+                    throw new Error(`HTTP error! status: ${res.status}`);
                 }
-            } catch (error) {
+                
+                const data = await res.json();
+                console.log('Plans API response:', { success: data.success, plansCount: data.plans?.length });
+                
+                if (data.success && Array.isArray(data.plans) && data.plans.length > 0) {
+                    // Ensure plans have required fields
+                    const validPlans = data.plans.map((plan: any) => ({
+                        name: plan.name || '',
+                        price: plan.price || '0',
+                        yearlyPrice: plan.yearlyPrice || '0',
+                        description: plan.description || '',
+                        features: Array.isArray(plan.features) ? plan.features : [],
+                        isPopular: plan.isPopular || false,
+                        photoshootCredits: plan.photoshootCredits || 0,
+                        marketingPosterCredits: plan.marketingPosterCredits || 0,
+                    }));
+                    setPlans(validPlans);
+                } else {
+                    // Fallback to default plans if API returns empty
+                    console.warn('No plans available from API, using fallback');
+                    // Try to use default plans structure
+                    const fallbackPlans: PlanItem[] = [
+                        { name: 'Silver', price: '749', yearlyPrice: '699', description: 'Perfect for getting started', features: ['1000 Photoshoot generation', '1000 Marketing poster generation'], isPopular: false },
+                        { name: 'Gold', price: '1499', yearlyPrice: '1439', description: 'For growing businesses', features: ['2500 Photoshoot generation', '2500 Marketing poster generation'], isPopular: true },
+                        { name: 'Platinum', price: '5999', yearlyPrice: '5939', description: 'For high-volume needs', features: ['10000 Photoshoot generation', '10000 Marketing poster generation'], isPopular: false },
+                    ];
+                    setPlans(fallbackPlans);
+                }
+            } catch (error: any) {
                 console.error('Failed to fetch plans:', error);
-                // No fallback - show empty state
-                setPlans([]);
+                // Fallback to default plans on error
+                const fallbackPlans: PlanItem[] = [
+                    { name: 'Silver', price: '749', yearlyPrice: '699', description: 'Perfect for getting started', features: ['1000 Photoshoot generation', '1000 Marketing poster generation'], isPopular: false },
+                    { name: 'Gold', price: '1499', yearlyPrice: '1439', description: 'For growing businesses', features: ['2500 Photoshoot generation', '2500 Marketing poster generation'], isPopular: true },
+                    { name: 'Platinum', price: '5999', yearlyPrice: '5939', description: 'For high-volume needs', features: ['10000 Photoshoot generation', '10000 Marketing poster generation'], isPopular: false },
+                ];
+                setPlans(fallbackPlans);
+                // Show error toast only in development
+                if (import.meta.env.DEV) {
+                    console.error('Pricing plans fetch error:', error.message);
+                }
             } finally {
                 setLoadingPlans(false);
             }
