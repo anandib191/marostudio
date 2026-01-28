@@ -184,8 +184,10 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
     } catch (err: any) {
       console.error('Send OTP error:', err);
       
-      // Handle rate limit errors with better messages
-      if (err.status === 429 || err.errorType === 'RATE_LIMIT') {
+      // Handle user already exists error with login option
+      if (err.userExists) {
+        setError(err.message || 'An account with this email already exists. Please login instead.');
+      } else if (err.status === 429 || err.errorType === 'RATE_LIMIT') {
         // Error message already set in the catch block above
         setError(err.message || 'Please wait a moment before requesting a new code.');
       } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
@@ -402,23 +404,40 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         </p>
 
         {error && (
-          <div className="mb-2 p-1.5 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-xs">
-            {error}
+          <div className={`mb-2 p-1.5 rounded-lg text-xs ${
+            error.includes('already exists') || error.includes('login instead')
+              ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300'
+              : 'bg-red-500/20 border border-red-500/50 text-red-300'
+          }`}>
+            <div className="flex flex-col gap-1">
+              <span>{error}</span>
+              {(error.includes('already exists') || error.includes('login instead')) && onSwitchToLogin && (
+                <button
+                  type="button"
+                  onClick={onSwitchToLogin}
+                  className="text-blue-400 hover:text-blue-300 font-semibold underline mt-1 text-left"
+                >
+                  Sign in instead →
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {step === 'details' ? (
           <>
-            <div className="mb-2">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google sign up failed. Please try again.')}
-                theme="outline"
-                shape="rectangular"
-                text="signup_with"
-                size="large"
-                width="100%"
-              />
+            <div className="mb-2 w-full flex justify-center">
+              <div className="w-full max-w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google sign up failed. Please try again.')}
+                  theme="outline"
+                  shape="rectangular"
+                  text="signup_with"
+                  size="large"
+                  width="100%"
+                />
+              </div>
             </div>
             <div className="relative mb-2">
               <div className="absolute inset-0 flex items-center">

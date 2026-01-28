@@ -61,6 +61,13 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
+        // Handle user not found error (for login)
+        if (errorData.userNotFound) {
+          const error: any = new Error('No account found with this email. Please sign up first.');
+          error.userNotFound = true;
+          throw error;
+        }
+        
         // Handle rate limit errors professionally with user-friendly messages
         if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
           const retryAfter = errorData.retryAfter || 0;
@@ -117,8 +124,10 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
       console.error('API_URL used:', API_URL);
       console.error('Full URL:', `${API_URL}/api/auth/send-otp`);
       
-      // More specific error messages
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+      // Handle user not found error with signup option
+      if (err.userNotFound) {
+        setError(err.message || 'No account found with this email. Please sign up first.');
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
         setError(`Cannot connect to server. Please check if backend is running at: ${API_URL}`);
       } else {
         setError(err.message || 'Failed to send OTP. Please try again.');
@@ -300,24 +309,41 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         </p>
 
         {error && (
-          <div className="mb-2 p-1.5 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-xs">
-            {error}
+          <div className={`mb-2 p-1.5 rounded-lg text-xs ${
+            error.includes('No account found') || error.includes('sign up')
+              ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300'
+              : 'bg-red-500/20 border border-red-500/50 text-red-300'
+          }`}>
+            <div className="flex flex-col gap-1">
+              <span>{error}</span>
+              {error.includes('No account found') && onSwitchToSignup && (
+                <button
+                  type="button"
+                  onClick={onSwitchToSignup}
+                  className="text-blue-400 hover:text-blue-300 font-semibold underline mt-1 text-left"
+                >
+                  Create an account instead →
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {step === 'email' ? (
           <>
             {!isAdmin && (
-              <div className="mb-2">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setError('Google sign in failed. Please try again.')}
-                  theme="outline"
-                  shape="rectangular"
-                  text="signin_with"
-                  size="large"
-                  width="100%"
-                />
+              <div className="mb-2 w-full flex justify-center">
+                <div className="w-full max-w-full">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google sign in failed. Please try again.')}
+                    theme="outline"
+                    shape="rectangular"
+                    text="signin_with"
+                    size="large"
+                    width="100%"
+                  />
+                </div>
               </div>
             )}
             <div className="relative mb-2">
