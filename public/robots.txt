@@ -1,11 +1,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://nextgenphoto.com/sitemap.xml
-
-# Disallow admin and API routes
-Disallow: /api/
-Disallow: /admin/
-Disallow: /dashboard/
-Disallow: /previously-generated/
+Sitemap: https://maro.growlouder.in/sitemap.xml
