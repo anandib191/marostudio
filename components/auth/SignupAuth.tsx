@@ -427,16 +427,18 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         {step === 'details' ? (
           <>
             <div className="mb-2 w-full flex justify-center">
-              <div className="w-full max-w-full">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setError('Google sign up failed. Please try again.')}
-                  theme="outline"
-                  shape="rectangular"
-                  text="signup_with"
-                  size="large"
-                  width="100%"
-                />
+              <div className="w-full">
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google sign up failed. Please try again.')}
+                    theme="outline"
+                    shape="rectangular"
+                    text="signup_with"
+                    size="large"
+                    width="100%"
+                  />
+                </div>
               </div>
             </div>
             <div className="relative mb-2">
