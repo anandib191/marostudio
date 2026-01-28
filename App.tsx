@@ -17,6 +17,8 @@ import { AdminDashboard } from './components/pages/AdminDashboard';
 import { Dashboard } from './components/pages/Dashboard';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { PreviouslyGenerated } from './components/PreviouslyGenerated';
+import { PrivacyPolicy } from './components/pages/PrivacyPolicy';
+import { TermsOfService } from './components/pages/TermsOfService';
 
 // --- Main App Component ---
 const AppContent: React.FC = () => {
@@ -38,7 +40,9 @@ const AppContent: React.FC = () => {
   const isLandingPage = location.pathname === '/' || 
                        location.pathname === '/pricing' ||
                        location.pathname === '/contact' ||
-                       location.pathname === '/book-demo';
+                       location.pathname === '/book-demo' ||
+                       location.pathname === '/privacy-policy' ||
+                       location.pathname === '/terms';
   const showLandingBackground = isLandingPage;
 
   // Determine current route for active section
@@ -119,6 +123,8 @@ const AppContent: React.FC = () => {
             <Route path="/book-demo" element={<BookDemoPage />} />
             <Route path="/studio" element={<StudioWrapper />} />
             <Route path="/previously-generated" element={<PreviouslyGenerated />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             
             {/* Admin Routes */}
             <Route 

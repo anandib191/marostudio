@@ -32,8 +32,19 @@ const Footer = React.forwardRef<HTMLElement>((props, ref) => {
                 </div>
 
                 {/* Bottom Row */}
-                <div className="mt-24 pt-10 border-t border-white/5 flex justify-center items-center text-[10px] uppercase tracking-[0.2em] text-neutral-600 font-bold">
-                    <p>&copy; {new Date().getFullYear()} NextGen Photo Studio. All rights reserved By Growlouder Productions</p>
+                <div className="mt-24 pt-10 border-t border-white/5">
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-4">
+                        <Link to="/privacy-policy" className="text-neutral-400 hover:text-indigo-400 transition-colors text-sm">
+                            Privacy Policy
+                        </Link>
+                        <span className="text-neutral-600 hidden sm:inline">•</span>
+                        <Link to="/terms" className="text-neutral-400 hover:text-indigo-400 transition-colors text-sm">
+                            Terms of Service
+                        </Link>
+                    </div>
+                    <div className="flex justify-center items-center text-[10px] uppercase tracking-[0.2em] text-neutral-600 font-bold">
+                        <p>&copy; {new Date().getFullYear()} NextGen Photo Studio. All rights reserved By Growlouder Productions</p>
+                    </div>
                 </div>
             </div>
         </footer>
