@@ -160,27 +160,68 @@ router.post(
       if (plan) {
         // Update subscription plan
         user.subscriptionPlan = planName;
+        user.subscriptionBillingPeriod = billingPeriod;
+        
+        // Set purchase date (current date/time)
+        const purchaseDate = new Date();
+        user.subscriptionPurchasedAt = purchaseDate;
         
         // Calculate expiration date based on billing period
         const expirationDate = new Date();
         if (billingPeriod === 'monthly') {
+          // Add 1 month to current date
           expirationDate.setMonth(expirationDate.getMonth() + 1);
-        } else {
+        } else if (billingPeriod === 'yearly') {
+          // Add exactly 1 year (365 days) to current date
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+        } else {
+          // Default to monthly if billingPeriod is invalid
+          logger.warn(`Invalid billingPeriod: ${billingPeriod}, defaulting to monthly`);
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
         }
         user.subscriptionExpiresAt = expirationDate;
+        
+        // Calculate credits based on billing period
+        // Monthly plans: credits as per plan (monthly credits)
+        // Yearly plans: credits * 12 (yearly credits for full year)
+        const monthlyPhotoshootCredits = plan.photoshootCredits || 0;
+        const monthlyMarketingCredits = plan.marketingPosterCredits || 0;
+        
+        let totalPhotoshootCredits, totalMarketingCredits;
+        if (billingPeriod === 'yearly') {
+          // Yearly plan: multiply monthly credits by 12
+          totalPhotoshootCredits = monthlyPhotoshootCredits * 12;
+          totalMarketingCredits = monthlyMarketingCredits * 12;
+        } else {
+          // Monthly plan: use monthly credits as is
+          totalPhotoshootCredits = monthlyPhotoshootCredits;
+          totalMarketingCredits = monthlyMarketingCredits;
+        }
+        
+        // Log expiry calculation for debugging
+        logger.info('Subscription expiry set:', {
+          email: user.email,
+          planName: planName,
+          billingPeriod: billingPeriod,
+          purchaseDate: purchaseDate.toISOString(),
+          expiryDate: expirationDate.toISOString(),
+          daysUntilExpiry: Math.round((expirationDate - purchaseDate) / (1000 * 60 * 60 * 24)),
+          monthlyCredits: { photoshoot: monthlyPhotoshootCredits, marketing: monthlyMarketingCredits },
+          totalCredits: { photoshoot: totalPhotoshootCredits, marketing: totalMarketingCredits }
+        });
 
-        // Set credits to plan amount (not add, replace with plan credits)
+        // Set credits to calculated amount (not add, replace with plan credits)
         const oldPhotoshootCredits = user.photoshootCredits || 0;
         const oldMarketingCredits = user.marketingPosterCredits || 0;
         
-        user.photoshootCredits = plan.photoshootCredits || 0;
-        user.marketingPosterCredits = plan.marketingPosterCredits || 0;
+        user.photoshootCredits = totalPhotoshootCredits;
+        user.marketingPosterCredits = totalMarketingCredits;
         
         // Store original plan credits for accurate used credits calculation
-        // This helps when admin updates plan credits later
-        user.originalPlanPhotoshootCredits = plan.photoshootCredits || 0;
-        user.originalPlanMarketingPosterCredits = plan.marketingPosterCredits || 0;
+        // Store the TOTAL credits user received (yearly = monthly * 12, monthly = monthly)
+        // This helps when admin updates plan credits later for settlement
+        user.originalPlanPhotoshootCredits = totalPhotoshootCredits;
+        user.originalPlanMarketingPosterCredits = totalMarketingCredits;
         
         // Log credit purchase in history
         if (!user.creditHistory) {
@@ -223,13 +264,33 @@ router.post(
       } else {
         // If plan not found, still update subscription but don't change credits
         user.subscriptionPlan = planName;
+        user.subscriptionBillingPeriod = billingPeriod;
+        const purchaseDate = new Date();
+        user.subscriptionPurchasedAt = purchaseDate;
         const expirationDate = new Date();
         if (billingPeriod === 'monthly') {
+          // Add 1 month to current date
           expirationDate.setMonth(expirationDate.getMonth() + 1);
-        } else {
+        } else if (billingPeriod === 'yearly') {
+          // Add exactly 1 year (365 days) to current date
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+        } else {
+          // Default to monthly if billingPeriod is invalid
+          logger.warn(`Invalid billingPeriod: ${billingPeriod}, defaulting to monthly`);
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
         }
         user.subscriptionExpiresAt = expirationDate;
+        
+        // Log expiry calculation for debugging
+        logger.info('Subscription expiry set (plan not found):', {
+          email: user.email,
+          planName: planName,
+          billingPeriod: billingPeriod,
+          purchaseDate: purchaseDate.toISOString(),
+          expiryDate: expirationDate.toISOString(),
+          daysUntilExpiry: Math.round((expirationDate - purchaseDate) / (1000 * 60 * 60 * 24))
+        });
+        
         await user.save();
       }
 

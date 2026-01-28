@@ -406,49 +406,33 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         <>
                             <button
                                 onClick={handleGenerate}
-                                disabled={!imageFile || isLoading || (marketingPosterCredits !== null && marketingPosterCredits <= 0)}
+                                disabled={!imageFile || isLoading || (marketingPosterCredits !== null && marketingPosterCredits < 20)}
                                 className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                             >
                                 <SparklesIcon className="w-5 h-5" />
                                 GENERATE POSTER
                             </button>
                             {marketingPosterCredits !== null && (
-                                <div className="mt-3">
-                                    {marketingPosterCredits > 0 ? (
-                                        <CreditsSummaryBox 
-                                            credits={marketingPosterCredits} 
-                                            creditType="marketing"
-                                        />
-                                    ) : (
-                                        <div className="space-y-2">
-                                            <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-neutral-700/50 rounded-lg p-2">
-                                                        <SparklesIcon className="w-4 h-4 text-red-400" />
-                                                    </div>
-                                                    <span className="text-white text-sm font-medium">
-                                                        Credits Summary
-                                                    </span>
-                                                </div>
-                                                <div className="text-red-400 text-sm font-medium">
-                                                    0 Available
-                                                </div>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    navigate('/pricing');
-                                                }}
-                                                    className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                </svg>
-                                                Purchase Plan to Get Credits
-                                            </button>
-                                        </div>
+                                <div className="mt-3 space-y-2">
+                                    <CreditsSummaryBox 
+                                        credits={marketingPosterCredits} 
+                                        creditType="marketing"
+                                    />
+                                    {marketingPosterCredits < 20 && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                navigate('/pricing');
+                                            }}
+                                            className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            Purchase Plan to Get Credits
+                                        </button>
                                     )}
                                 </div>
                             )}

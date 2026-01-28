@@ -9,7 +9,16 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // Declare confetti as a global function for TypeScript
 declare const confetti: (options: any) => void;
 
-type PlanItem = { name: string; price: string; yearlyPrice: string; description: string; features: string[]; isPopular: boolean };
+type PlanItem = { 
+  name: string; 
+  price: string; 
+  yearlyPrice: string; 
+  description: string; 
+  features: string[]; 
+  isPopular: boolean;
+  photoshootCredits?: number;
+  marketingPosterCredits?: number;
+};
 
 export const PricingPage: React.FC = () => {
     const [plans, setPlans] = useState<PlanItem[]>([]);
@@ -277,12 +286,34 @@ export const PricingPage: React.FC = () => {
                                 <p className="mt-1 text-xs leading-5 text-neutral-500">{isMonthly ? 'billed monthly' : 'billed annually'}</p>
 
                                 <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
-                                    {(plan.features || []).map((feature) => (
-                                        <li key={feature} className="flex gap-x-3">
-                                            <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
-                                            {feature}
-                                        </li>
-                                    ))}
+                                    {/* Show credits from credit fields if available, otherwise use features */}
+                                    {plan.photoshootCredits !== undefined && plan.marketingPosterCredits !== undefined ? (
+                                        <>
+                                            <li className="flex gap-x-3">
+                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                <span>{plan.photoshootCredits.toLocaleString()} Photoshoot generation</span>
+                                            </li>
+                                            <li className="flex gap-x-3">
+                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                <span>{plan.marketingPosterCredits.toLocaleString()} Marketing poster generation</span>
+                                            </li>
+                                            {/* Show other features if any */}
+                                            {(plan.features || []).filter(f => f && !f.toLowerCase().includes('photoshoot') && !f.toLowerCase().includes('marketing')).map((feature) => (
+                                                <li key={feature} className="flex gap-x-3">
+                                                    <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        // Fallback to features array if credit fields not available
+                                        (plan.features || []).map((feature) => (
+                                            <li key={feature} className="flex gap-x-3">
+                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                {feature}
+                                            </li>
+                                        ))
+                                    )}
                                 </ul>
 
                                 <div className="mt-auto pt-8">
@@ -317,7 +348,7 @@ export const PricingPage: React.FC = () => {
                         setSelectedPlan(null);
                     }}
                     planName={selectedPlan.name}
-                    amount={parseFloat(isMonthly ? selectedPlan.price : selectedPlan.yearlyPrice)}
+                    amount={isMonthly ? parseFloat(selectedPlan.price) : parseFloat(selectedPlan.yearlyPrice) * 12}
                     billingPeriod={isMonthly ? 'monthly' : 'yearly'}
                     onPaymentSuccess={handlePaymentSuccess}
                     onPaymentError={handlePaymentError}

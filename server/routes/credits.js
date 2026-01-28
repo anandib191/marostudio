@@ -75,10 +75,12 @@ router.get('/history', protect, async (req, res) => {
  * @route   POST /api/credits/check
  * @desc    Check if user has enough credits for photoshoot generation
  * @access  Private
+ * @note    Each generation requires 20 credits
  */
 router.post('/check', protect, async (req, res) => {
   try {
     const { type } = req.body; // 'photoshoot' or 'marketing'
+    const CREDITS_PER_GENERATION = 20; // Each generation costs 20 credits
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -88,13 +90,14 @@ router.post('/check', protect, async (req, res) => {
       ? (user.marketingPosterCredits || 0)
       : (user.photoshootCredits || 0);
     
-    if (credits <= 0) {
+    if (credits < CREDITS_PER_GENERATION) {
       const creditType = type === 'marketing' ? 'marketing poster' : 'photoshoot';
       return res.status(200).json({
         success: false,
         hasCredits: false,
         credits: credits,
-        message: `You have no ${creditType} credits remaining. Please upgrade your plan.`,
+        requiredCredits: CREDITS_PER_GENERATION,
+        message: `You need ${CREDITS_PER_GENERATION} ${creditType} credits per generation. You have ${credits} credits remaining. Please upgrade your plan.`,
       });
     }
 
@@ -102,6 +105,7 @@ router.post('/check', protect, async (req, res) => {
       success: true,
       hasCredits: true,
       credits: credits,
+      requiredCredits: CREDITS_PER_GENERATION,
     });
   } catch (error) {
     console.error('Check credits error:', error);
@@ -111,12 +115,14 @@ router.post('/check', protect, async (req, res) => {
 
 /**
  * @route   POST /api/credits/deduct
- * @desc    Deduct one credit after generation (photoshoot or marketing poster)
+ * @desc    Deduct credits after generation (photoshoot or marketing poster)
  * @access  Private
+ * @note    Each generation costs 20 credits
  */
 router.post('/deduct', protect, async (req, res) => {
   try {
     const { type } = req.body; // 'photoshoot' or 'marketing'
+    const CREDITS_PER_GENERATION = 20; // Each generation costs 20 credits
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -124,22 +130,22 @@ router.post('/deduct', protect, async (req, res) => {
 
     if (type === 'marketing') {
       const currentCredits = user.marketingPosterCredits || 0;
-      if (currentCredits <= 0) {
+      if (currentCredits < CREDITS_PER_GENERATION) {
         return res.status(400).json({
           success: false,
-          message: 'Insufficient marketing poster credits',
+          message: `Insufficient marketing poster credits. You need ${CREDITS_PER_GENERATION} credits per generation.`,
         });
       }
-      user.marketingPosterCredits = Math.max(0, currentCredits - 1);
+      user.marketingPosterCredits = Math.max(0, currentCredits - CREDITS_PER_GENERATION);
     } else {
       const currentCredits = user.photoshootCredits || 0;
-      if (currentCredits <= 0) {
+      if (currentCredits < CREDITS_PER_GENERATION) {
         return res.status(400).json({
           success: false,
-          message: 'Insufficient photoshoot credits',
+          message: `Insufficient photoshoot credits. You need ${CREDITS_PER_GENERATION} credits per generation.`,
         });
       }
-      user.photoshootCredits = Math.max(0, currentCredits - 1);
+      user.photoshootCredits = Math.max(0, currentCredits - CREDITS_PER_GENERATION);
     }
     
     await user.save();
@@ -148,7 +154,7 @@ router.post('/deduct', protect, async (req, res) => {
       success: true,
       photoshootCredits: user.photoshootCredits,
       marketingPosterCredits: user.marketingPosterCredits,
-      message: 'Credit deducted successfully',
+      message: `${CREDITS_PER_GENERATION} credits deducted successfully`,
     });
   } catch (error) {
     console.error('Deduct credits error:', error);

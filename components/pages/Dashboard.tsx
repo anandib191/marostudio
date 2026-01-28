@@ -28,6 +28,8 @@ interface User {
   createdAt: string;
   lastLogin?: string;
   subscriptionPlan?: string | null;
+  subscriptionBillingPeriod?: 'monthly' | 'yearly' | null;
+  subscriptionPurchasedAt?: string | null;
   subscriptionExpiresAt?: string | null;
   photoshootCredits?: number;
   marketingPosterCredits?: number;
@@ -36,6 +38,10 @@ interface User {
   totalMarketingCredits?: number;
   usedPhotoshootCredits?: number;
   usedMarketingCredits?: number;
+  photoshootGenerationsUsed?: number;
+  marketingGenerationsUsed?: number;
+  photoshootGenerationsRemaining?: number;
+  marketingGenerationsRemaining?: number;
   isActive?: boolean;
 }
 
@@ -342,10 +348,30 @@ export const Dashboard: React.FC = () => {
       
       // Filter out blank features from all plans before saving
       // Also ensure only one plan is popular
-      const cleanedPlans = plansToProcess.map(plan => ({
-        ...plan,
-        features: (plan.features || []).filter((f: string) => f && f.trim().length > 0)
-      }));
+      // Auto-update features array to include credits if credit fields are set
+      const cleanedPlans = plansToProcess.map(plan => {
+        const filteredFeatures = (plan.features || []).filter((f: string) => f && f.trim().length > 0);
+        
+        // If photoshootCredits and marketingPosterCredits are set, ensure features array includes them
+        const creditFeatures: string[] = [];
+        if (plan.photoshootCredits !== undefined && plan.photoshootCredits !== null) {
+          creditFeatures.push(`${plan.photoshootCredits.toLocaleString()} Photoshoot generation`);
+        }
+        if (plan.marketingPosterCredits !== undefined && plan.marketingPosterCredits !== null) {
+          creditFeatures.push(`${plan.marketingPosterCredits.toLocaleString()} Marketing poster generation`);
+        }
+        
+        // Remove old credit features and add new ones
+        const nonCreditFeatures = filteredFeatures.filter(f => 
+          !f.toLowerCase().includes('photoshoot generation') && 
+          !f.toLowerCase().includes('marketing poster generation')
+        );
+        
+        return {
+          ...plan,
+          features: [...creditFeatures, ...nonCreditFeatures]
+        };
+      });
       
       // Ensure only one plan is popular (keep the first one found as popular)
       let foundPopular = false;
@@ -556,15 +582,39 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const updatePlan = (index: number, field: keyof PricePlan, value: string | string[] | boolean) => {
+  const updatePlan = (index: number, field: keyof PricePlan, value: string | string[] | boolean | number) => {
     setPlans((prev) => {
       const next = prev.map((p, i) => {
         if (i === index) {
+          const updatedPlan = { ...p, [field]: value };
+          
+          // If credits are updated, automatically sync features array
+          if (field === 'photoshootCredits' || field === 'marketingPosterCredits') {
+            const creditFeatures: string[] = [];
+            const photoshootCredits = field === 'photoshootCredits' ? (value as number) : updatedPlan.photoshootCredits;
+            const marketingCredits = field === 'marketingPosterCredits' ? (value as number) : updatedPlan.marketingPosterCredits;
+            
+            if (photoshootCredits !== undefined && photoshootCredits !== null) {
+              creditFeatures.push(`${photoshootCredits.toLocaleString()} Photoshoot generation`);
+            }
+            if (marketingCredits !== undefined && marketingCredits !== null) {
+              creditFeatures.push(`${marketingCredits.toLocaleString()} Marketing poster generation`);
+            }
+            
+            // Remove old credit features and add new ones
+            const nonCreditFeatures = (updatedPlan.features || []).filter(f => 
+              !f.toLowerCase().includes('photoshoot generation') && 
+              !f.toLowerCase().includes('marketing poster generation')
+            );
+            
+            updatedPlan.features = [...creditFeatures, ...nonCreditFeatures];
+          }
+          
           // If setting isPopular to true, unset all others
           if (field === 'isPopular' && value === true) {
-            return { ...p, [field]: value };
+            return updatedPlan;
           } else {
-            return { ...p, [field]: value };
+            return updatedPlan;
           }
         } else {
           // If another plan is being set as popular, unset this one
@@ -784,14 +834,43 @@ export const Dashboard: React.FC = () => {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
-      }) + ' ' + date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
       });
     } catch (error) {
       console.error('Error formatting date:', error, dateString);
       return 'Invalid Date';
+    }
+  };
+
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return '';
+    }
+  };
+
+  const getDaysUntilExpiry = (dateString?: string) => {
+    if (!dateString) return 0;
+    try {
+      const expiryDate = new Date(dateString);
+      const now = new Date();
+      if (isNaN(expiryDate.getTime())) {
+        return 0;
+      }
+      const diffTime = expiryDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch (error) {
+      return 0;
     }
   };
 
@@ -1081,13 +1160,15 @@ export const Dashboard: React.FC = () => {
                 <>
                   <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
-                      <table className="w-full min-w-[600px] sm:min-w-[800px]">
+                      <table className="w-full min-w-[900px] sm:min-w-[1200px]">
                         <thead className="bg-neutral-800/50">
                           <tr>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Used Credits</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Credits (Used/Total)</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Purchase Date</th>
+                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Created</th>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Last Login</th>
                             <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
@@ -1128,9 +1209,55 @@ export const Dashboard: React.FC = () => {
                               </td>
                               <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400">
                                 <div className="flex flex-col gap-0.5">
-                                  <span className="whitespace-nowrap">Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}</span>
-                                  <span className="whitespace-nowrap">Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}</span>
+                                  <span className="whitespace-nowrap">
+                                    Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}
+                                    {user?.photoshootGenerationsUsed !== undefined && (
+                                      <span className="text-neutral-500 ml-1">({user.photoshootGenerationsUsed} gen)</span>
+                                    )}
+                                  </span>
+                                  <span className="whitespace-nowrap">
+                                    Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}
+                                    {user?.marketingGenerationsUsed !== undefined && (
+                                      <span className="text-neutral-500 ml-1">({user.marketingGenerationsUsed} gen)</span>
+                                    )}
+                                  </span>
+                                  {(user?.photoshootGenerationsRemaining !== undefined || user?.marketingGenerationsRemaining !== undefined) && (
+                                    <div className="mt-1 pt-1 border-t border-white/5">
+                                      <span className="text-[8px] text-emerald-400">
+                                        Remaining: Photo {user?.photoshootGenerationsRemaining ?? 0} | Marketing {user?.marketingGenerationsRemaining ?? 0}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
+                              </td>
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">
+                                {user?.subscriptionPurchasedAt ? (
+                                  <div className="flex flex-col">
+                                    <span>{formatDate(user.subscriptionPurchasedAt)}</span>
+                                    <span className="text-[8px] text-neutral-500">{formatDateTime(user.subscriptionPurchasedAt)}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-neutral-600">N/A</span>
+                                )}
+                              </td>
+                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                {user?.subscriptionExpiresAt ? (
+                                  <div className="flex flex-col">
+                                    <span className={user?.isActive ? 'text-emerald-400' : 'text-red-400'}>
+                                      {formatDate(user.subscriptionExpiresAt)}
+                                    </span>
+                                    <span className={`text-[8px] ${user?.isActive ? 'text-emerald-500' : 'text-red-500'}`}>
+                                      {formatDateTime(user.subscriptionExpiresAt)}
+                                    </span>
+                                    {user?.isActive && (
+                                      <span className="text-[8px] text-neutral-500 mt-0.5">
+                                        {getDaysUntilExpiry(user.subscriptionExpiresAt)} days left
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-neutral-600">N/A</span>
+                                )}
                               </td>
                               <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.createdAt)}</td>
                               <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.lastLogin)}</td>
@@ -1154,7 +1281,7 @@ export const Dashboard: React.FC = () => {
                             </tr>
                           )) : (
                             <tr>
-                              <td colSpan={7} className="px-4 py-8 text-center text-neutral-400 text-sm">
+                              <td colSpan={9} className="px-4 py-8 text-center text-neutral-400 text-sm">
                                 No users found
                               </td>
                             </tr>
@@ -2067,7 +2194,24 @@ export const Dashboard: React.FC = () => {
                       setSavingPlans(true);
                       try {
                         // Filter blank features
-                        const cleanedFeatures = (planToEdit.features || []).filter((f: string) => f && f.trim().length > 0);
+                        const filteredFeatures = (planToEdit.features || []).filter((f: string) => f && f.trim().length > 0);
+                        
+                        // Auto-update features array to include credits if credit fields are set
+                        const creditFeatures: string[] = [];
+                        if (planToEdit.photoshootCredits !== undefined && planToEdit.photoshootCredits !== null) {
+                          creditFeatures.push(`${planToEdit.photoshootCredits.toLocaleString()} Photoshoot generation`);
+                        }
+                        if (planToEdit.marketingPosterCredits !== undefined && planToEdit.marketingPosterCredits !== null) {
+                          creditFeatures.push(`${planToEdit.marketingPosterCredits.toLocaleString()} Marketing poster generation`);
+                        }
+                        
+                        // Remove old credit features and add new ones
+                        const nonCreditFeatures = filteredFeatures.filter(f => 
+                          !f.toLowerCase().includes('photoshoot generation') && 
+                          !f.toLowerCase().includes('marketing poster generation')
+                        );
+                        
+                        const cleanedFeatures = [...creditFeatures, ...nonCreditFeatures];
 
                         // Update plan via PUT
                         const res = await fetch(`${API_URL}/api/admin/price-plans/${planToEdit._id}`, {

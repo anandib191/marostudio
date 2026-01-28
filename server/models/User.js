@@ -45,6 +45,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null, // null means free user
     },
+    subscriptionBillingPeriod: {
+      type: String,
+      enum: ['monthly', 'yearly'],
+      default: null, // 'monthly' or 'yearly' - null means free user
+    },
+    subscriptionPurchasedAt: {
+      type: Date,
+      default: null, // Date when user purchased the subscription
+    },
     subscriptionExpiresAt: {
       type: Date,
       default: null,

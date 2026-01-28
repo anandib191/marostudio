@@ -74,7 +74,7 @@ router.get('/users', protect, admin, async (req, res) => {
 
     const query = role ? { role } : {};
     const users = await User.find(query)
-      .select('-__v')
+      .select('-__v -creditHistory')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -111,8 +111,18 @@ router.get('/users', protect, admin, async (req, res) => {
       
       // Calculate used credits: used = originalTotal - remaining
       // This shows actual usage even if admin updated plan credits
+      // Note: Each generation costs 20 credits, so calculate generations used
+      const CREDITS_PER_GENERATION = 20;
       const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
       const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
+      
+      // Calculate generations used (for display)
+      const photoshootGenerationsUsed = Math.floor(usedPhotoshootCredits / CREDITS_PER_GENERATION);
+      const marketingGenerationsUsed = Math.floor(usedMarketingCredits / CREDITS_PER_GENERATION);
+      
+      // Calculate remaining generations
+      const photoshootGenerationsRemaining = Math.floor((user.photoshootCredits || 0) / CREDITS_PER_GENERATION);
+      const marketingGenerationsRemaining = Math.floor((user.marketingPosterCredits || 0) / CREDITS_PER_GENERATION);
       
       // Check if subscription is active
       const isActive = user.subscriptionPlan && user.subscriptionExpiresAt 
@@ -126,6 +136,10 @@ router.get('/users', protect, admin, async (req, res) => {
         totalMarketingCredits,
         usedPhotoshootCredits,
         usedMarketingCredits,
+        photoshootGenerationsUsed,
+        marketingGenerationsUsed,
+        photoshootGenerationsRemaining,
+        marketingGenerationsRemaining,
         isActive,
       };
     });
@@ -384,7 +398,7 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
 
     const users = await User.find({
       subscriptionPlan: { $ne: null, $exists: true }
-    }).select('email subscriptionPlan photoshootCredits marketingPosterCredits originalPlanPhotoshootCredits originalPlanMarketingPosterCredits');
+    }).select('email subscriptionPlan subscriptionBillingPeriod photoshootCredits marketingPosterCredits originalPlanPhotoshootCredits originalPlanMarketingPosterCredits');
 
     const preview = [];
     let totalAffected = 0;
@@ -398,14 +412,28 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
       
       if (!newPlanCredits) continue;
 
-      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits;
-      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits;
+      // Determine billing period (yearly or monthly)
+      const billingPeriod = user.subscriptionBillingPeriod || 'monthly'; // Default to monthly for backward compatibility
+      
+      // Calculate NEW total credits based on billing period
+      const newMonthlyPhotoshootCredits = newPlanCredits.photoshootCredits || 0;
+      const newMonthlyMarketingCredits = newPlanCredits.marketingPosterCredits || 0;
+      
+      const newTotalPhotoshootCredits = billingPeriod === 'yearly' 
+        ? newMonthlyPhotoshootCredits * 12 
+        : newMonthlyPhotoshootCredits;
+      const newTotalMarketingCredits = billingPeriod === 'yearly' 
+        ? newMonthlyMarketingCredits * 12 
+        : newMonthlyMarketingCredits;
+
+      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newTotalPhotoshootCredits;
+      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newTotalMarketingCredits;
       
       const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
       const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
       
-      const newPhotoshootCredits = Math.max(0, newPlanCredits.photoshootCredits - usedPhotoshootCredits);
-      const newMarketingCredits = Math.max(0, newPlanCredits.marketingPosterCredits - usedMarketingCredits);
+      const newPhotoshootCredits = Math.max(0, newTotalPhotoshootCredits - usedPhotoshootCredits);
+      const newMarketingCredits = Math.max(0, newTotalMarketingCredits - usedMarketingCredits);
       
       const photoshootChange = newPhotoshootCredits - (user.photoshootCredits || 0);
       const marketingChange = newMarketingCredits - (user.marketingPosterCredits || 0);
@@ -545,7 +573,7 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
               new: newMarketingCredits,
               change: newMarketingCredits - oldMarketingCredits,
             },
-            reason: `Plan "${planName}" credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
+            reason: `Plan "${planName}" credits updated by admin (${billingPeriod}). Settlement: Used credits preserved (${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing). New total: ${newTotalPhotoshootCredits} photoshoot (${billingPeriod === 'yearly' ? `${newMonthlyPhotoshootCredits}/month × 12` : `${newMonthlyPhotoshootCredits}/month`}), ${newTotalMarketingCredits} marketing (${billingPeriod === 'yearly' ? `${newMonthlyMarketingCredits}/month × 12` : `${newMonthlyMarketingCredits}/month`}).`,
             adminEmail: req.user.email,
           });
           
@@ -555,9 +583,10 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
           }
         }
         
-        // Update original plan credits to new plan credits (for future syncs)
-        user.originalPlanPhotoshootCredits = newPlanCredits.photoshootCredits;
-        user.originalPlanMarketingPosterCredits = newPlanCredits.marketingPosterCredits;
+        // Update original plan credits to new TOTAL credits (for future syncs)
+        // Store the total credits user should have based on billing period
+        user.originalPlanPhotoshootCredits = newTotalPhotoshootCredits;
+        user.originalPlanMarketingPosterCredits = newTotalMarketingCredits;
         
         await user.save();
         
@@ -661,6 +690,10 @@ router.put('/free-tier-credits', protect, admin, [
     const { freeTierPhotoshootCredits, freeTierMarketingPosterCredits } = req.body;
     const config = await AppConfig.getConfig();
 
+    // Store old values to check if they changed
+    const oldPhotoshootCredits = config.freeTierPhotoshootCredits;
+    const oldMarketingCredits = config.freeTierMarketingPosterCredits;
+
     if (freeTierPhotoshootCredits !== undefined) {
       config.freeTierPhotoshootCredits = parseInt(freeTierPhotoshootCredits);
     }
@@ -670,11 +703,92 @@ router.put('/free-tier-credits', protect, admin, [
 
     await config.save();
 
+    // Update all existing free users (users without subscription plan) with new free tier credits
+    // Only update if credits actually changed
+    const creditsChanged = 
+      (freeTierPhotoshootCredits !== undefined && parseInt(freeTierPhotoshootCredits) !== oldPhotoshootCredits) ||
+      (freeTierMarketingPosterCredits !== undefined && parseInt(freeTierMarketingPosterCredits) !== oldMarketingCredits);
+
+    let updatedUsers = 0;
+    if (creditsChanged) {
+      // Find all free users (users without subscription plan)
+      const freeUsers = await User.find({
+        $or: [
+          { subscriptionPlan: null },
+          { subscriptionPlan: { $exists: false } }
+        ]
+      });
+
+      const newPhotoshootCredits = freeTierPhotoshootCredits !== undefined 
+        ? parseInt(freeTierPhotoshootCredits) 
+        : config.freeTierPhotoshootCredits;
+      const newMarketingCredits = freeTierMarketingPosterCredits !== undefined 
+        ? parseInt(freeTierMarketingPosterCredits) 
+        : config.freeTierMarketingPosterCredits;
+
+      for (const user of freeUsers) {
+        // Calculate used credits to preserve usage
+        const CREDITS_PER_GENERATION = 20;
+        const usedPhotoshootCredits = Math.max(0, oldPhotoshootCredits - (user.photoshootCredits || 0));
+        const usedMarketingCredits = Math.max(0, oldMarketingCredits - (user.marketingPosterCredits || 0));
+
+        // Calculate new remaining credits: newTotal - usedCredits
+        const newRemainingPhotoshoot = Math.max(0, newPhotoshootCredits - usedPhotoshootCredits);
+        const newRemainingMarketing = Math.max(0, newMarketingCredits - usedMarketingCredits);
+
+        // Only update if credits actually changed
+        if (user.photoshootCredits !== newRemainingPhotoshoot || user.marketingPosterCredits !== newRemainingMarketing) {
+          const oldPhotoshoot = user.photoshootCredits;
+          const oldMarketing = user.marketingPosterCredits;
+
+          user.photoshootCredits = newRemainingPhotoshoot;
+          user.marketingPosterCredits = newRemainingMarketing;
+
+          // Log credit change in history
+          if (!user.creditHistory) {
+            user.creditHistory = [];
+          }
+          user.creditHistory.push({
+            date: new Date(),
+            action: 'admin_sync',
+            planName: 'Free',
+            photoshootCredits: {
+              previous: oldPhotoshoot,
+              new: newRemainingPhotoshoot,
+              change: newRemainingPhotoshoot - oldPhotoshoot,
+            },
+            marketingPosterCredits: {
+              previous: oldMarketing,
+              new: newRemainingMarketing,
+              change: newRemainingMarketing - oldMarketing,
+            },
+            reason: `Free tier credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
+            adminEmail: req.user.email,
+          });
+
+          // Keep only last 50 history entries
+          if (user.creditHistory.length > 50) {
+            user.creditHistory = user.creditHistory.slice(-50);
+          }
+
+          await user.save();
+          updatedUsers++;
+          logger.info(`Free tier credits updated for ${user.email}:`, {
+            old: { photoshoot: oldPhotoshoot, marketing: oldMarketing },
+            new: { photoshoot: newRemainingPhotoshoot, marketing: newRemainingMarketing },
+            used: { photoshoot: usedPhotoshootCredits, marketing: usedMarketingCredits },
+            newTotal: { photoshoot: newPhotoshootCredits, marketing: newMarketingCredits }
+          });
+        }
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Free tier credits updated successfully',
+      message: `Free tier credits updated successfully${updatedUsers > 0 ? `. Updated ${updatedUsers} free users.` : ''}`,
       freeTierPhotoshootCredits: config.freeTierPhotoshootCredits,
       freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
+      updatedUsers: updatedUsers,
     });
   } catch (error) {
     logger.error('Update free tier credits error:', error);

@@ -511,48 +511,32 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             <>
                                 <button
                                     onClick={onGenerate}
-                                    disabled={!creatorName || isLoading || (photoshootCredits !== null && photoshootCredits <= 0)}
+                                    disabled={!creatorName || isLoading || (photoshootCredits !== null && photoshootCredits < 20)}
                                     className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-indigo-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
                                 >
                                     {isLoading ? 'Processing Neural Sequence...' : 'Generate Photoshoot'}
                                 </button>
                                 {photoshootCredits !== null && (
-                                    <div className="mt-3">
-                                        {photoshootCredits > 0 ? (
-                                            <CreditsSummaryBox 
-                                                credits={photoshootCredits} 
-                                                creditType="photoshoot"
-                                            />
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="bg-neutral-700/50 rounded-lg p-2">
-                                                            <SparklesIcon className="w-4 h-4 text-red-400" />
-                                                        </div>
-                                                        <span className="text-white text-sm font-medium">
-                                                            Credits Summary
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-red-400 text-sm font-medium">
-                                                        0 Available
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        navigate('/pricing');
-                                                    }}
-                                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                    </svg>
-                                                    Purchase Plan to Get Credits
-                                                </button>
-                                            </div>
+                                    <div className="mt-3 space-y-2">
+                                        <CreditsSummaryBox 
+                                            credits={photoshootCredits} 
+                                            creditType="photoshoot"
+                                        />
+                                        {photoshootCredits < 20 && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    navigate('/pricing');
+                                                }}
+                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                                Purchase Plan to Get Credits
+                                            </button>
                                         )}
                                     </div>
                                 )}
@@ -980,38 +964,22 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                     )}
                                     {photoshootCredits !== null && (
                                         <div className="space-y-2">
-                                            {photoshootCredits > 0 ? (
-                                                <CreditsSummaryBox 
-                                                    credits={photoshootCredits} 
-                                                    creditType="photoshoot"
-                                                />
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="bg-neutral-700/50 rounded-lg p-2">
-                                                                <SparklesIcon className="w-4 h-4 text-red-400" />
-                                                            </div>
-                                                            <span className="text-white text-sm font-medium">
-                                                                Credits Summary
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-red-400 text-sm font-medium">
-                                                            0 Available
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            navigate('/pricing');
-                                                        }}
-                                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
-                                                    >
-                                                        Purchase plan for more generation
-                                                    </button>
-                                                </div>
+                                            <CreditsSummaryBox 
+                                                credits={photoshootCredits} 
+                                                creditType="photoshoot"
+                                            />
+                                            {photoshootCredits < 20 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        navigate('/pricing');
+                                                    }}
+                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
+                                                >
+                                                    Purchase plan for more generation
+                                                </button>
                                             )}
                                         </div>
                                     )}
@@ -1045,7 +1013,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 ) : (
                                     <button 
                                         onClick={() => handleGeneration(manualProductName)} 
-                                        disabled={!manualProductName || (photoshootCredits !== null && photoshootCredits <= 0)}
+                                        disabled={!manualProductName || (photoshootCredits !== null && photoshootCredits < 20)}
                                         className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
                                     >
                                         Continue
@@ -1053,41 +1021,25 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 )}
                                 {photoshootCredits !== null && (
                                     <div className="mt-2 space-y-2">
-                                        {photoshootCredits > 0 ? (
-                                            <CreditsSummaryBox 
-                                                credits={photoshootCredits} 
-                                                creditType="photoshoot"
-                                            />
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <div className="bg-neutral-800/80 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="bg-neutral-700/50 rounded-lg p-2">
-                                                            <SparklesIcon className="w-4 h-4 text-red-400" />
-                                                        </div>
-                                                        <span className="text-white text-sm font-medium">
-                                                            Credits Summary
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-red-400 text-sm font-medium">
-                                                        0 Available
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        navigate('/pricing');
-                                                    }}
-                                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                    </svg>
-                                                    Purchase Plan to Get Credits
-                                                </button>
-                                            </div>
+                                        <CreditsSummaryBox 
+                                            credits={photoshootCredits} 
+                                            creditType="photoshoot"
+                                        />
+                                        {photoshootCredits < 20 && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    navigate('/pricing');
+                                                }}
+                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                                Purchase Plan to Get Credits
+                                            </button>
                                         )}
                                     </div>
                                 )}
