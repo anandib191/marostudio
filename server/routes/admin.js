@@ -1,15 +1,15 @@
-import express from 'express';
-import { body, validationResult } from 'express-validator';
-import { protect, admin } from '../middleware/auth.js';
-import User from '../models/User.js';
-import Stats from '../models/Stats.js';
-import PricePlanConfig, { DEFAULT_PLANS } from '../models/PricePlanConfig.js';
-import PricePlan from '../models/PricePlan.js';
-import OTP from '../models/OTP.js';
-import AppConfig from '../models/AppConfig.js';
-import { generateOTP } from '../utils/generateOTP.js';
-import { sendOTPEmail } from '../utils/sendEmail.js';
-import logger from '../utils/logger.js';
+import express from "express";
+import { body, validationResult } from "express-validator";
+import { protect, admin } from "../middleware/auth.js";
+import User from "../models/User.js";
+import Stats from "../models/Stats.js";
+import PricePlanConfig, { DEFAULT_PLANS } from "../models/PricePlanConfig.js";
+import PricePlan from "../models/PricePlan.js";
+import OTP from "../models/OTP.js";
+import AppConfig from "../models/AppConfig.js";
+import { generateOTP } from "../utils/generateOTP.js";
+import { sendOTPEmail } from "../utils/sendEmail.js";
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ const router = express.Router();
  * @desc    Get admin dashboard statistics
  * @access  Private/Admin
  */
-router.get('/stats', protect, admin, async (req, res) => {
+router.get("/stats", protect, admin, async (req, res) => {
   try {
     // Get total users
     const totalUsers = await User.countDocuments();
@@ -52,10 +52,10 @@ router.get('/stats', protect, admin, async (req, res) => {
       revenue: stats.revenue,
     });
   } catch (error) {
-    logger.error('Get stats error:', error);
+    logger.error("Get stats error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
     });
   }
 });
@@ -65,7 +65,7 @@ router.get('/stats', protect, admin, async (req, res) => {
  * @desc    Get all users (paginated, optionally filtered by role)
  * @access  Private/Admin
  */
-router.get('/users', protect, admin, async (req, res) => {
+router.get("/users", protect, admin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -74,7 +74,7 @@ router.get('/users', protect, admin, async (req, res) => {
 
     const query = role ? { role } : {};
     const users = await User.find(query)
-      .select('-__v -creditHistory')
+      .select("-__v -creditHistory")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -84,7 +84,7 @@ router.get('/users', protect, admin, async (req, res) => {
     // Get all plans to calculate used credits
     const plans = await PricePlan.find({});
     const planMap = {};
-    plans.forEach(plan => {
+    plans.forEach((plan) => {
       planMap[plan.name.toLowerCase()] = plan;
       planMap[plan.name] = plan;
     });
@@ -95,43 +95,66 @@ router.get('/users', protect, admin, async (req, res) => {
     const freeMarketingCredits = config.freeTierMarketingPosterCredits || 5;
 
     // Enrich users with plan info, used credits, and active status
-    const enrichedUsers = users.map(user => {
+    const enrichedUsers = users.map((user) => {
       const planName = user.subscriptionPlan;
-      const plan = planName ? (planMap[planName.toLowerCase()] || planMap[planName]) : null;
-      
+      const plan = planName
+        ? planMap[planName.toLowerCase()] || planMap[planName]
+        : null;
+
       // Calculate total credits based on CURRENT plan (after admin updates)
-      const totalPhotoshootCredits = plan ? (plan.photoshootCredits || 0) : freePhotoshootCredits;
-      const totalMarketingCredits = plan ? (plan.marketingPosterCredits || 0) : freeMarketingCredits;
-      
+      const totalPhotoshootCredits = plan
+        ? plan.photoshootCredits || 0
+        : freePhotoshootCredits;
+      const totalMarketingCredits = plan
+        ? plan.marketingPosterCredits || 0
+        : freeMarketingCredits;
+
       // Calculate used credits correctly:
       // If user has originalPlanCredits stored, use that (more accurate)
       // Otherwise, use current plan total (for users who purchased before this update)
-      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || totalPhotoshootCredits;
-      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || totalMarketingCredits;
-      
+      const originalTotalPhotoshoot =
+        user.originalPlanPhotoshootCredits || totalPhotoshootCredits;
+      const originalTotalMarketing =
+        user.originalPlanMarketingPosterCredits || totalMarketingCredits;
+
       // Calculate used credits: used = originalTotal - remaining
       // This shows actual usage even if admin updated plan credits
       // Note: Each generation costs 20 credits, so calculate generations used
       const CREDITS_PER_GENERATION = 20;
-      const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
-      const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
-      
+      const usedPhotoshootCredits = Math.max(
+        0,
+        originalTotalPhotoshoot - (user.photoshootCredits || 0),
+      );
+      const usedMarketingCredits = Math.max(
+        0,
+        originalTotalMarketing - (user.marketingPosterCredits || 0),
+      );
+
       // Calculate generations used (for display)
-      const photoshootGenerationsUsed = Math.floor(usedPhotoshootCredits / CREDITS_PER_GENERATION);
-      const marketingGenerationsUsed = Math.floor(usedMarketingCredits / CREDITS_PER_GENERATION);
-      
+      const photoshootGenerationsUsed = Math.floor(
+        usedPhotoshootCredits / CREDITS_PER_GENERATION,
+      );
+      const marketingGenerationsUsed = Math.floor(
+        usedMarketingCredits / CREDITS_PER_GENERATION,
+      );
+
       // Calculate remaining generations
-      const photoshootGenerationsRemaining = Math.floor((user.photoshootCredits || 0) / CREDITS_PER_GENERATION);
-      const marketingGenerationsRemaining = Math.floor((user.marketingPosterCredits || 0) / CREDITS_PER_GENERATION);
-      
+      const photoshootGenerationsRemaining = Math.floor(
+        (user.photoshootCredits || 0) / CREDITS_PER_GENERATION,
+      );
+      const marketingGenerationsRemaining = Math.floor(
+        (user.marketingPosterCredits || 0) / CREDITS_PER_GENERATION,
+      );
+
       // Check if subscription is active
-      const isActive = user.subscriptionPlan && user.subscriptionExpiresAt 
-        ? new Date(user.subscriptionExpiresAt) > new Date()
-        : false;
+      const isActive =
+        user.subscriptionPlan && user.subscriptionExpiresAt
+          ? new Date(user.subscriptionExpiresAt) > new Date()
+          : false;
 
       return {
         ...user.toObject(),
-        planName: planName || 'Free',
+        planName: planName || "Free",
         totalPhotoshootCredits,
         totalMarketingCredits,
         usedPhotoshootCredits,
@@ -155,10 +178,10 @@ router.get('/users', protect, admin, async (req, res) => {
       },
     });
   } catch (error) {
-    logger.error('Get users error:', error);
+    logger.error("Get users error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
     });
   }
 });
@@ -168,7 +191,7 @@ router.get('/users', protect, admin, async (req, res) => {
  * @desc    Delete a user (admin only)
  * @access  Private/Admin
  */
-router.delete('/users/:userId', protect, admin, async (req, res) => {
+router.delete("/users/:userId", protect, admin, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -177,15 +200,16 @@ router.delete('/users/:userId', protect, admin, async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
     // Prevent deleting admin users (they should use remove-admin endpoint)
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete admin users. Use remove-admin endpoint instead.',
+        message:
+          "Cannot delete admin users. Use remove-admin endpoint instead.",
       });
     }
 
@@ -194,13 +218,13 @@ router.delete('/users/:userId', protect, admin, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully',
+      message: "User deleted successfully",
     });
   } catch (error) {
-    logger.error('Delete user error:', error);
+    logger.error("Delete user error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
     });
   }
 });
@@ -209,7 +233,7 @@ router.delete('/users/:userId', protect, admin, async (req, res) => {
  * @route   GET /api/admin/price-plans
  * @desc    Get price plans (admin)
  */
-router.get('/price-plans', protect, admin, async (req, res) => {
+router.get("/price-plans", protect, admin, async (req, res) => {
   try {
     const plans = await PricePlan.find().sort({ createdAt: 1 });
     // If no plans exist, return default plans
@@ -218,8 +242,8 @@ router.get('/price-plans', protect, admin, async (req, res) => {
     }
     res.status(200).json({ success: true, plans });
   } catch (error) {
-    logger.error('Get price plans error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    logger.error("Get price plans error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -227,16 +251,23 @@ router.get('/price-plans', protect, admin, async (req, res) => {
  * @route   PUT /api/admin/price-plans
  * @desc    Update all price plans (admin) - replaces all plans
  */
-router.put('/price-plans', protect, admin, async (req, res) => {
+router.put("/price-plans", protect, admin, async (req, res) => {
   try {
     const { plans } = req.body;
     if (!Array.isArray(plans) || plans.length === 0) {
-      return res.status(400).json({ success: false, message: 'plans must be a non-empty array' });
+      return res
+        .status(400)
+        .json({ success: false, message: "plans must be a non-empty array" });
     }
     // Validate each plan
     for (const p of plans) {
       if (!p.name || p.price == null || p.yearlyPrice == null) {
-        return res.status(400).json({ success: false, message: 'Each plan must have name, price, yearlyPrice' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "Each plan must have name, price, yearlyPrice",
+          });
       }
     }
 
@@ -248,7 +279,7 @@ router.put('/price-plans', protect, admin, async (req, res) => {
       name: String(p.name),
       price: String(p.price),
       yearlyPrice: String(p.yearlyPrice),
-      description: String(p.description || ''),
+      description: String(p.description || ""),
       features: Array.isArray(p.features) ? p.features.map(String) : [],
       isPopular: Boolean(p.isPopular),
       photoshootCredits: Number(p.photoshootCredits) || 0,
@@ -272,8 +303,8 @@ router.put('/price-plans', protect, admin, async (req, res) => {
     const insertedPlans = await PricePlan.insertMany(finalPlans);
     res.status(200).json({ success: true, plans: insertedPlans });
   } catch (error) {
-    logger.error('Update price plans error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    logger.error("Update price plans error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -281,12 +312,26 @@ router.put('/price-plans', protect, admin, async (req, res) => {
  * @route   POST /api/admin/price-plans
  * @desc    Create a new price plan (admin)
  */
-router.post('/price-plans', protect, admin, async (req, res) => {
+router.post("/price-plans", protect, admin, async (req, res) => {
   try {
-    const { name, price, yearlyPrice, description, features, isPopular, photoshootCredits, marketingPosterCredits } = req.body;
-    
+    const {
+      name,
+      price,
+      yearlyPrice,
+      description,
+      features,
+      isPopular,
+      photoshootCredits,
+      marketingPosterCredits,
+    } = req.body;
+
     if (!name || price == null || yearlyPrice == null) {
-      return res.status(400).json({ success: false, message: 'name, price, and yearlyPrice are required' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "name, price, and yearlyPrice are required",
+        });
     }
 
     // If setting as popular, unset all others
@@ -298,8 +343,10 @@ router.post('/price-plans', protect, admin, async (req, res) => {
       name: String(name),
       price: String(price),
       yearlyPrice: String(yearlyPrice),
-      description: String(description || ''),
-      features: Array.isArray(features) ? features.map(String).filter(f => f.trim().length > 0) : [],
+      description: String(description || ""),
+      features: Array.isArray(features)
+        ? features.map(String).filter((f) => f.trim().length > 0)
+        : [],
       isPopular: Boolean(isPopular),
       photoshootCredits: Number(photoshootCredits) || 0,
     });
@@ -307,8 +354,8 @@ router.post('/price-plans', protect, admin, async (req, res) => {
     await newPlan.save();
     res.status(201).json({ success: true, plan: newPlan });
   } catch (error) {
-    console.error('Create price plan error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Create price plan error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -316,18 +363,35 @@ router.post('/price-plans', protect, admin, async (req, res) => {
  * @route   PUT /api/admin/price-plans/:id
  * @desc    Update a single price plan (admin)
  */
-router.put('/price-plans/:id', protect, admin, async (req, res) => {
+router.put("/price-plans/:id", protect, admin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, yearlyPrice, description, features, isPopular, photoshootCredits, marketingPosterCredits } = req.body;
+    const {
+      name,
+      price,
+      yearlyPrice,
+      description,
+      features,
+      isPopular,
+      photoshootCredits,
+      marketingPosterCredits,
+    } = req.body;
 
     if (!name || price == null || yearlyPrice == null) {
-      return res.status(400).json({ success: false, message: 'name, price, and yearlyPrice are required' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "name, price, and yearlyPrice are required",
+        });
     }
 
     // If setting as popular, unset all others
     if (isPopular) {
-      await PricePlan.updateMany({ _id: { $ne: id } }, { $set: { isPopular: false } });
+      await PricePlan.updateMany(
+        { _id: { $ne: id } },
+        { $set: { isPopular: false } },
+      );
     }
 
     const updatedPlan = await PricePlan.findByIdAndUpdate(
@@ -336,23 +400,27 @@ router.put('/price-plans/:id', protect, admin, async (req, res) => {
         name: String(name),
         price: String(price),
         yearlyPrice: String(yearlyPrice),
-        description: String(description || ''),
-        features: Array.isArray(features) ? features.map(String).filter(f => f.trim().length > 0) : [],
+        description: String(description || ""),
+        features: Array.isArray(features)
+          ? features.map(String).filter((f) => f.trim().length > 0)
+          : [],
         isPopular: Boolean(isPopular),
         photoshootCredits: Number(photoshootCredits) || 0,
         marketingPosterCredits: Number(marketingPosterCredits) || 0,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedPlan) {
-      return res.status(404).json({ success: false, message: 'Plan not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Plan not found" });
     }
 
     res.status(200).json({ success: true, plan: updatedPlan });
   } catch (error) {
-    logger.error('Update price plan error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    logger.error("Update price plan error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -360,19 +428,23 @@ router.put('/price-plans/:id', protect, admin, async (req, res) => {
  * @route   DELETE /api/admin/price-plans/:id
  * @desc    Delete a price plan (admin)
  */
-router.delete('/price-plans/:id', protect, admin, async (req, res) => {
+router.delete("/price-plans/:id", protect, admin, async (req, res) => {
   try {
     const { id } = req.params;
     const plan = await PricePlan.findByIdAndDelete(id);
 
     if (!plan) {
-      return res.status(404).json({ success: false, message: 'Plan not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Plan not found" });
     }
 
-    res.status(200).json({ success: true, message: 'Plan deleted successfully' });
+    res
+      .status(200)
+      .json({ success: true, message: "Plan deleted successfully" });
   } catch (error) {
-    console.error('Delete price plan error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Delete price plan error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -381,11 +453,11 @@ router.delete('/price-plans/:id', protect, admin, async (req, res) => {
  * @desc    Preview credit changes before syncing (admin only)
  * @access  Private/Admin
  */
-router.get('/sync-credits/preview', protect, admin, async (req, res) => {
+router.get("/sync-credits/preview", protect, admin, async (req, res) => {
   try {
     const plans = await PricePlan.find({});
     const planCreditsMap = {};
-    plans.forEach(plan => {
+    plans.forEach((plan) => {
       planCreditsMap[plan.name.toLowerCase()] = {
         photoshootCredits: plan.photoshootCredits || 0,
         marketingPosterCredits: plan.marketingPosterCredits || 0,
@@ -397,8 +469,10 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
     });
 
     const users = await User.find({
-      subscriptionPlan: { $ne: null, $exists: true }
-    }).select('email subscriptionPlan subscriptionBillingPeriod photoshootCredits marketingPosterCredits originalPlanPhotoshootCredits originalPlanMarketingPosterCredits');
+      subscriptionPlan: { $ne: null, $exists: true },
+    }).select(
+      "email subscriptionPlan subscriptionBillingPeriod photoshootCredits marketingPosterCredits originalPlanPhotoshootCredits originalPlanMarketingPosterCredits",
+    );
 
     const preview = [];
     let totalAffected = 0;
@@ -408,36 +482,56 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
     for (const user of users) {
       const planName = user.subscriptionPlan;
       const planKey = planName?.toLowerCase();
-      const newPlanCredits = planCreditsMap[planKey] || planCreditsMap[planName];
-      
+      const newPlanCredits =
+        planCreditsMap[planKey] || planCreditsMap[planName];
+
       if (!newPlanCredits) continue;
 
       // Determine billing period (yearly or monthly)
-      const billingPeriod = user.subscriptionBillingPeriod || 'monthly'; // Default to monthly for backward compatibility
-      
+      const billingPeriod = user.subscriptionBillingPeriod || "monthly"; // Default to monthly for backward compatibility
+
       // Calculate NEW total credits based on billing period
       const newMonthlyPhotoshootCredits = newPlanCredits.photoshootCredits || 0;
-      const newMonthlyMarketingCredits = newPlanCredits.marketingPosterCredits || 0;
-      
-      const newTotalPhotoshootCredits = billingPeriod === 'yearly' 
-        ? newMonthlyPhotoshootCredits * 12 
-        : newMonthlyPhotoshootCredits;
-      const newTotalMarketingCredits = billingPeriod === 'yearly' 
-        ? newMonthlyMarketingCredits * 12 
-        : newMonthlyMarketingCredits;
+      const newMonthlyMarketingCredits =
+        newPlanCredits.marketingPosterCredits || 0;
 
-      const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newTotalPhotoshootCredits;
-      const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newTotalMarketingCredits;
-      
-      const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
-      const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
-      
-      const newPhotoshootCredits = Math.max(0, newTotalPhotoshootCredits - usedPhotoshootCredits);
-      const newMarketingCredits = Math.max(0, newTotalMarketingCredits - usedMarketingCredits);
-      
-      const photoshootChange = newPhotoshootCredits - (user.photoshootCredits || 0);
-      const marketingChange = newMarketingCredits - (user.marketingPosterCredits || 0);
-      
+      const newTotalPhotoshootCredits =
+        billingPeriod === "yearly"
+          ? newMonthlyPhotoshootCredits * 12
+          : newMonthlyPhotoshootCredits;
+      const newTotalMarketingCredits =
+        billingPeriod === "yearly"
+          ? newMonthlyMarketingCredits * 12
+          : newMonthlyMarketingCredits;
+
+      const originalTotalPhotoshoot =
+        user.originalPlanPhotoshootCredits || newTotalPhotoshootCredits;
+      const originalTotalMarketing =
+        user.originalPlanMarketingPosterCredits || newTotalMarketingCredits;
+
+      const usedPhotoshootCredits = Math.max(
+        0,
+        originalTotalPhotoshoot - (user.photoshootCredits || 0),
+      );
+      const usedMarketingCredits = Math.max(
+        0,
+        originalTotalMarketing - (user.marketingPosterCredits || 0),
+      );
+
+      const newPhotoshootCredits = Math.max(
+        0,
+        newTotalPhotoshootCredits - usedPhotoshootCredits,
+      );
+      const newMarketingCredits = Math.max(
+        0,
+        newTotalMarketingCredits - usedMarketingCredits,
+      );
+
+      const photoshootChange =
+        newPhotoshootCredits - (user.photoshootCredits || 0);
+      const marketingChange =
+        newMarketingCredits - (user.marketingPosterCredits || 0);
+
       if (photoshootChange !== 0 || marketingChange !== 0) {
         preview.push({
           email: user.email,
@@ -476,8 +570,10 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
       },
     });
   } catch (error) {
-    logger.error('Preview sync credits error:', error);
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    logger.error("Preview sync credits error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 });
 
@@ -486,15 +582,15 @@ router.get('/sync-credits/preview', protect, admin, async (req, res) => {
  * @desc    Sync user credits based on their subscription plans (admin only)
  * @access  Private/Admin
  */
-router.post('/sync-credits', protect, admin, async (req, res) => {
+router.post("/sync-credits", protect, admin, async (req, res) => {
   try {
     // Get all plans
     const plans = await PricePlan.find({});
-    
+
     // Create a map of plan names (case-insensitive) to credits
     const planCreditsMap = {};
     const planObjectMap = {}; // Store full plan objects for used credits calculation
-    plans.forEach(plan => {
+    plans.forEach((plan) => {
       planCreditsMap[plan.name.toLowerCase()] = {
         photoshootCredits: plan.photoshootCredits || 0,
         marketingPosterCredits: plan.marketingPosterCredits || 0,
@@ -510,7 +606,7 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
     // Get ALL users with subscription plans (including expired ones)
     // This ensures users who purchased at old prices get updated credits
     const users = await User.find({
-      subscriptionPlan: { $ne: null, $exists: true }
+      subscriptionPlan: { $ne: null, $exists: true },
     });
 
     let updated = 0;
@@ -521,7 +617,7 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
       try {
         const planName = user.subscriptionPlan;
         const planKey = planName?.toLowerCase();
-        
+
         if (!planCreditsMap[planKey] && !planCreditsMap[planName]) {
           errors.push(`Plan "${planName}" not found for user ${user.email}`);
           skipped++;
@@ -529,39 +625,59 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
         }
 
         // Get the NEW plan credits (after admin update)
-        const newPlanCredits = planCreditsMap[planKey] || planCreditsMap[planName];
-        
+        const newPlanCredits =
+          planCreditsMap[planKey] || planCreditsMap[planName];
+
         // Calculate USED credits based on ORIGINAL plan credits (when user purchased)
         // This is the correct way to calculate used credits even after admin updates plan
-        const originalTotalPhotoshoot = user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits;
-        const originalTotalMarketing = user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits;
-        
+        const originalTotalPhotoshoot =
+          user.originalPlanPhotoshootCredits ||
+          newPlanCredits.photoshootCredits;
+        const originalTotalMarketing =
+          user.originalPlanMarketingPosterCredits ||
+          newPlanCredits.marketingPosterCredits;
+
         // Calculate USED credits: used = originalTotal - remaining
         // This correctly calculates how many credits user has actually consumed
-        const usedPhotoshootCredits = Math.max(0, originalTotalPhotoshoot - (user.photoshootCredits || 0));
-        const usedMarketingCredits = Math.max(0, originalTotalMarketing - (user.marketingPosterCredits || 0));
-        
+        const usedPhotoshootCredits = Math.max(
+          0,
+          originalTotalPhotoshoot - (user.photoshootCredits || 0),
+        );
+        const usedMarketingCredits = Math.max(
+          0,
+          originalTotalMarketing - (user.marketingPosterCredits || 0),
+        );
+
         // Calculate NEW remaining credits: newRemaining = newTotal - usedCredits
         // This preserves the used amount when admin updates plan credits
-        const newPhotoshootCredits = Math.max(0, newPlanCredits.photoshootCredits - usedPhotoshootCredits);
-        const newMarketingCredits = Math.max(0, newPlanCredits.marketingPosterCredits - usedMarketingCredits);
-        
+        const newPhotoshootCredits = Math.max(
+          0,
+          newPlanCredits.photoshootCredits - usedPhotoshootCredits,
+        );
+        const newMarketingCredits = Math.max(
+          0,
+          newPlanCredits.marketingPosterCredits - usedMarketingCredits,
+        );
+
         const oldPhotoshootCredits = user.photoshootCredits;
         const oldMarketingCredits = user.marketingPosterCredits;
-        
+
         // Update user credits with new remaining (preserving used amount)
         user.photoshootCredits = newPhotoshootCredits;
         user.marketingPosterCredits = newMarketingCredits;
-        
+
         // Log credit change history for transparency
-        if (oldPhotoshootCredits !== newPhotoshootCredits || oldMarketingCredits !== newMarketingCredits) {
+        if (
+          oldPhotoshootCredits !== newPhotoshootCredits ||
+          oldMarketingCredits !== newMarketingCredits
+        ) {
           if (!user.creditHistory) {
             user.creditHistory = [];
           }
-          
+
           user.creditHistory.push({
             date: new Date(),
-            action: 'admin_sync',
+            action: "admin_sync",
             planName: planName,
             photoshootCredits: {
               previous: oldPhotoshootCredits,
@@ -573,34 +689,55 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
               new: newMarketingCredits,
               change: newMarketingCredits - oldMarketingCredits,
             },
-            reason: `Plan "${planName}" credits updated by admin (${billingPeriod}). Settlement: Used credits preserved (${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing). New total: ${newTotalPhotoshootCredits} photoshoot (${billingPeriod === 'yearly' ? `${newMonthlyPhotoshootCredits}/month × 12` : `${newMonthlyPhotoshootCredits}/month`}), ${newTotalMarketingCredits} marketing (${billingPeriod === 'yearly' ? `${newMonthlyMarketingCredits}/month × 12` : `${newMonthlyMarketingCredits}/month`}).`,
+            reason: `Plan "${planName}" credits updated by admin (${billingPeriod}). Settlement: Used credits preserved (${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing). New total: ${newTotalPhotoshootCredits} photoshoot (${billingPeriod === "yearly" ? `${newMonthlyPhotoshootCredits}/month × 12` : `${newMonthlyPhotoshootCredits}/month`}), ${newTotalMarketingCredits} marketing (${billingPeriod === "yearly" ? `${newMonthlyMarketingCredits}/month × 12` : `${newMonthlyMarketingCredits}/month`}).`,
             adminEmail: req.user.email,
           });
-          
+
           // Keep only last 50 history entries to prevent unbounded growth
           if (user.creditHistory.length > 50) {
             user.creditHistory = user.creditHistory.slice(-50);
           }
         }
-        
+
         // Update original plan credits to new TOTAL credits (for future syncs)
         // Store the total credits user should have based on billing period
         user.originalPlanPhotoshootCredits = newTotalPhotoshootCredits;
         user.originalPlanMarketingPosterCredits = newTotalMarketingCredits;
-        
+
         await user.save();
-        
+
         // Check if credits actually changed
-        if (oldPhotoshootCredits !== user.photoshootCredits || 
-            oldMarketingCredits !== user.marketingPosterCredits) {
+        if (
+          oldPhotoshootCredits !== user.photoshootCredits ||
+          oldMarketingCredits !== user.marketingPosterCredits
+        ) {
           updated++;
           logger.info(`Credits synced for ${user.email}:`, {
             plan: planName,
-            old: { photoshoot: oldPhotoshootCredits, marketing: oldMarketingCredits },
-            new: { photoshoot: user.photoshootCredits, marketing: user.marketingPosterCredits },
-            used: { photoshoot: usedPhotoshootCredits, marketing: usedMarketingCredits },
-            newTotal: { photoshoot: newPlanCredits.photoshootCredits, marketing: newPlanCredits.marketingPosterCredits },
-            originalTotal: { photoshoot: user.originalPlanPhotoshootCredits || newPlanCredits.photoshootCredits, marketing: user.originalPlanMarketingPosterCredits || newPlanCredits.marketingPosterCredits }
+            old: {
+              photoshoot: oldPhotoshootCredits,
+              marketing: oldMarketingCredits,
+            },
+            new: {
+              photoshoot: user.photoshootCredits,
+              marketing: user.marketingPosterCredits,
+            },
+            used: {
+              photoshoot: usedPhotoshootCredits,
+              marketing: usedMarketingCredits,
+            },
+            newTotal: {
+              photoshoot: newPlanCredits.photoshootCredits,
+              marketing: newPlanCredits.marketingPosterCredits,
+            },
+            originalTotal: {
+              photoshoot:
+                user.originalPlanPhotoshootCredits ||
+                newPlanCredits.photoshootCredits,
+              marketing:
+                user.originalPlanMarketingPosterCredits ||
+                newPlanCredits.marketingPosterCredits,
+            },
           });
         } else {
           skipped++;
@@ -618,7 +755,7 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
 
     const expiredUsers = await User.find({
       subscriptionPlan: { $ne: null, $exists: true },
-      subscriptionExpiresAt: { $lte: new Date() }
+      subscriptionExpiresAt: { $lte: new Date() },
     });
 
     let expiredReset = 0;
@@ -633,19 +770,21 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Credits synced successfully',
+      message: "Credits synced successfully",
       stats: {
         updated,
         skipped,
         expiredReset,
         errors: errors.length,
-        totalProcessed: users.length
+        totalProcessed: users.length,
       },
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    logger.error('Sync credits error:', error);
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    logger.error("Sync credits error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 });
 
@@ -654,7 +793,7 @@ router.post('/sync-credits', protect, admin, async (req, res) => {
  * @desc    Get free tier credits configuration (admin only)
  * @access  Private/Admin
  */
-router.get('/free-tier-credits', protect, admin, async (req, res) => {
+router.get("/free-tier-credits", protect, admin, async (req, res) => {
   try {
     const config = await AppConfig.getConfig();
     res.status(200).json({
@@ -663,8 +802,8 @@ router.get('/free-tier-credits', protect, admin, async (req, res) => {
       freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
     });
   } catch (error) {
-    console.error('Get free tier credits error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Get free tier credits error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -673,148 +812,191 @@ router.get('/free-tier-credits', protect, admin, async (req, res) => {
  * @desc    Update free tier credits configuration (admin only)
  * @access  Private/Admin
  */
-router.put('/free-tier-credits', protect, admin, [
-  body('freeTierPhotoshootCredits').optional().isInt({ min: 0 }).withMessage('Photoshoot credits must be a non-negative integer'),
-  body('freeTierMarketingPosterCredits').optional().isInt({ min: 0 }).withMessage('Marketing poster credits must be a non-negative integer'),
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: errors.array(),
-      });
-    }
+router.put(
+  "/free-tier-credits",
+  protect,
+  admin,
+  [
+    body("freeTierPhotoshootCredits")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("Photoshoot credits must be a non-negative integer"),
+    body("freeTierMarketingPosterCredits")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("Marketing poster credits must be a non-negative integer"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation error",
+          errors: errors.array(),
+        });
+      }
 
-    const { freeTierPhotoshootCredits, freeTierMarketingPosterCredits } = req.body;
-    const config = await AppConfig.getConfig();
+      const { freeTierPhotoshootCredits, freeTierMarketingPosterCredits } =
+        req.body;
+      const config = await AppConfig.getConfig();
 
-    // Store old values to check if they changed
-    const oldPhotoshootCredits = config.freeTierPhotoshootCredits;
-    const oldMarketingCredits = config.freeTierMarketingPosterCredits;
+      // Store old values to check if they changed
+      const oldPhotoshootCredits = config.freeTierPhotoshootCredits;
+      const oldMarketingCredits = config.freeTierMarketingPosterCredits;
 
-    if (freeTierPhotoshootCredits !== undefined) {
-      config.freeTierPhotoshootCredits = parseInt(freeTierPhotoshootCredits);
-    }
-    if (freeTierMarketingPosterCredits !== undefined) {
-      config.freeTierMarketingPosterCredits = parseInt(freeTierMarketingPosterCredits);
-    }
+      if (freeTierPhotoshootCredits !== undefined) {
+        config.freeTierPhotoshootCredits = parseInt(freeTierPhotoshootCredits);
+      }
+      if (freeTierMarketingPosterCredits !== undefined) {
+        config.freeTierMarketingPosterCredits = parseInt(
+          freeTierMarketingPosterCredits,
+        );
+      }
 
-    await config.save();
+      await config.save();
 
-    // Update all existing free users (users without subscription plan) with new free tier credits
-    // Only update if credits actually changed
-    const creditsChanged = 
-      (freeTierPhotoshootCredits !== undefined && parseInt(freeTierPhotoshootCredits) !== oldPhotoshootCredits) ||
-      (freeTierMarketingPosterCredits !== undefined && parseInt(freeTierMarketingPosterCredits) !== oldMarketingCredits);
+      // Update all existing free users (users without subscription plan) with new free tier credits
+      // Only update if credits actually changed
+      const creditsChanged =
+        (freeTierPhotoshootCredits !== undefined &&
+          parseInt(freeTierPhotoshootCredits) !== oldPhotoshootCredits) ||
+        (freeTierMarketingPosterCredits !== undefined &&
+          parseInt(freeTierMarketingPosterCredits) !== oldMarketingCredits);
 
-    let updatedUsers = 0;
-    if (creditsChanged) {
-      // Find all free users (users without subscription plan)
-      const freeUsers = await User.find({
-        $or: [
-          { subscriptionPlan: null },
-          { subscriptionPlan: { $exists: false } }
-        ]
-      });
+      let updatedUsers = 0;
+      if (creditsChanged) {
+        // Find all free users (users without subscription plan)
+        const freeUsers = await User.find({
+          $or: [
+            { subscriptionPlan: null },
+            { subscriptionPlan: { $exists: false } },
+          ],
+        });
 
-      const newPhotoshootCredits = freeTierPhotoshootCredits !== undefined 
-        ? parseInt(freeTierPhotoshootCredits) 
-        : config.freeTierPhotoshootCredits;
-      const newMarketingCredits = freeTierMarketingPosterCredits !== undefined 
-        ? parseInt(freeTierMarketingPosterCredits) 
-        : config.freeTierMarketingPosterCredits;
+        const newPhotoshootCredits =
+          freeTierPhotoshootCredits !== undefined
+            ? parseInt(freeTierPhotoshootCredits)
+            : config.freeTierPhotoshootCredits;
+        const newMarketingCredits =
+          freeTierMarketingPosterCredits !== undefined
+            ? parseInt(freeTierMarketingPosterCredits)
+            : config.freeTierMarketingPosterCredits;
 
-      for (const user of freeUsers) {
-        // Calculate used credits to preserve usage
-        const usedPhotoshootCredits = Math.max(0, oldPhotoshootCredits - (user.photoshootCredits || 0));
-        const usedMarketingCredits = Math.max(0, oldMarketingCredits - (user.marketingPosterCredits || 0));
+        for (const user of freeUsers) {
+          // Calculate used credits to preserve usage
+          const usedPhotoshootCredits = Math.max(
+            0,
+            oldPhotoshootCredits - (user.photoshootCredits || 0),
+          );
+          const usedMarketingCredits = Math.max(
+            0,
+            oldMarketingCredits - (user.marketingPosterCredits || 0),
+          );
 
-        // Calculate new remaining credits: newTotal - usedCredits
-        const newRemainingPhotoshoot = Math.max(0, newPhotoshootCredits - usedPhotoshootCredits);
-        const newRemainingMarketing = Math.max(0, newMarketingCredits - usedMarketingCredits);
+          // Calculate new remaining credits: newTotal - usedCredits
+          const newRemainingPhotoshoot = Math.max(
+            0,
+            newPhotoshootCredits - usedPhotoshootCredits,
+          );
+          const newRemainingMarketing = Math.max(
+            0,
+            newMarketingCredits - usedMarketingCredits,
+          );
 
-        // Only update if credits actually changed
-        if (user.photoshootCredits !== newRemainingPhotoshoot || user.marketingPosterCredits !== newRemainingMarketing) {
-          const oldPhotoshoot = user.photoshootCredits;
-          const oldMarketing = user.marketingPosterCredits;
+          // Only update if credits actually changed
+          if (
+            user.photoshootCredits !== newRemainingPhotoshoot ||
+            user.marketingPosterCredits !== newRemainingMarketing
+          ) {
+            const oldPhotoshoot = user.photoshootCredits;
+            const oldMarketing = user.marketingPosterCredits;
 
-          user.photoshootCredits = newRemainingPhotoshoot;
-          user.marketingPosterCredits = newRemainingMarketing;
+            user.photoshootCredits = newRemainingPhotoshoot;
+            user.marketingPosterCredits = newRemainingMarketing;
 
-          // Log credit change in history
-          if (!user.creditHistory) {
-            user.creditHistory = [];
+            // Log credit change in history
+            if (!user.creditHistory) {
+              user.creditHistory = [];
+            }
+            user.creditHistory.push({
+              date: new Date(),
+              action: "admin_sync",
+              planName: "Free",
+              photoshootCredits: {
+                previous: oldPhotoshoot,
+                new: newRemainingPhotoshoot,
+                change: newRemainingPhotoshoot - oldPhotoshoot,
+              },
+              marketingPosterCredits: {
+                previous: oldMarketing,
+                new: newRemainingMarketing,
+                change: newRemainingMarketing - oldMarketing,
+              },
+              reason: `Free tier credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
+              adminEmail: req.user.email,
+            });
+
+            // Keep only last 50 history entries
+            if (user.creditHistory.length > 50) {
+              user.creditHistory = user.creditHistory.slice(-50);
+            }
+
+            await user.save();
+            updatedUsers++;
+            logger.info(`Free tier credits updated for ${user.email}:`, {
+              old: { photoshoot: oldPhotoshoot, marketing: oldMarketing },
+              new: {
+                photoshoot: newRemainingPhotoshoot,
+                marketing: newRemainingMarketing,
+              },
+              used: {
+                photoshoot: usedPhotoshootCredits,
+                marketing: usedMarketingCredits,
+              },
+              newTotal: {
+                photoshoot: newPhotoshootCredits,
+                marketing: newMarketingCredits,
+              },
+            });
           }
-          user.creditHistory.push({
-            date: new Date(),
-            action: 'admin_sync',
-            planName: 'Free',
-            photoshootCredits: {
-              previous: oldPhotoshoot,
-              new: newRemainingPhotoshoot,
-              change: newRemainingPhotoshoot - oldPhotoshoot,
-            },
-            marketingPosterCredits: {
-              previous: oldMarketing,
-              new: newRemainingMarketing,
-              change: newRemainingMarketing - oldMarketing,
-            },
-            reason: `Free tier credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
-            adminEmail: req.user.email,
-          });
-
-          // Keep only last 50 history entries
-          if (user.creditHistory.length > 50) {
-            user.creditHistory = user.creditHistory.slice(-50);
-          }
-
-          await user.save();
-          updatedUsers++;
-          logger.info(`Free tier credits updated for ${user.email}:`, {
-            old: { photoshoot: oldPhotoshoot, marketing: oldMarketing },
-            new: { photoshoot: newRemainingPhotoshoot, marketing: newRemainingMarketing },
-            used: { photoshoot: usedPhotoshootCredits, marketing: usedMarketingCredits },
-            newTotal: { photoshoot: newPhotoshootCredits, marketing: newMarketingCredits }
-          });
         }
       }
-    }
 
-    res.status(200).json({
-      success: true,
-      message: `Free tier credits updated successfully${updatedUsers > 0 ? `. Updated ${updatedUsers} free users.` : ''}`,
-      freeTierPhotoshootCredits: config.freeTierPhotoshootCredits,
-      freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
-      updatedUsers: updatedUsers,
-    });
-  } catch (error) {
-    logger.error('Update free tier credits error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
+      res.status(200).json({
+        success: true,
+        message: `Free tier credits updated successfully${updatedUsers > 0 ? `. Updated ${updatedUsers} free users.` : ""}`,
+        freeTierPhotoshootCredits: config.freeTierPhotoshootCredits,
+        freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
+        updatedUsers: updatedUsers,
+      });
+    } catch (error) {
+      logger.error("Update free tier credits error:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+);
 
 /**
  * @route   GET /api/admin/statistics
  * @desc    Get statistics configuration (admin only)
  * @access  Private/Admin
  */
-router.get('/statistics', protect, admin, async (req, res) => {
+router.get("/statistics", protect, admin, async (req, res) => {
   try {
     const config = await AppConfig.getConfig();
     res.status(200).json({
       success: true,
       statistics: config.statistics || {
-        categories: '4+',
-        activeUsers: '10k+',
-        imageGenerated: '50k+',
-        activeSubscription: '1k+',
+        categories: "4+",
+        activeUsers: "10k+",
+        imageGenerated: "50k+",
+        activeSubscription: "1k+",
       },
     });
   } catch (error) {
-    logger.error('Get statistics error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    logger.error("Get statistics error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -823,71 +1005,27 @@ router.get('/statistics', protect, admin, async (req, res) => {
  * @desc    Update statistics configuration (admin only)
  * @access  Private/Admin
  */
-router.put('/statistics', protect, admin, [
-  body('categories').optional().isString().withMessage('Categories must be a string'),
-  body('activeUsers').optional().isString().withMessage('Active Users must be a string'),
-  body('imageGenerated').optional().isString().withMessage('Image Generated must be a string'),
-  body('activeSubscription').optional().isString().withMessage('Active Subscription must be a string'),
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: errors.array(),
-      });
-    }
-
-    const { categories, activeUsers, imageGenerated, activeSubscription } = req.body;
-    const config = await AppConfig.getConfig();
-
-    if (!config.statistics) {
-      config.statistics = {
-        categories: '4+',
-        activeUsers: '10k+',
-        imageGenerated: '50k+',
-        activeSubscription: '1k+',
-      };
-    }
-
-    if (categories !== undefined) {
-      config.statistics.categories = categories;
-    }
-    if (activeUsers !== undefined) {
-      config.statistics.activeUsers = activeUsers;
-    }
-    if (imageGenerated !== undefined) {
-      config.statistics.imageGenerated = imageGenerated;
-    }
-    if (activeSubscription !== undefined) {
-      config.statistics.activeSubscription = activeSubscription;
-    }
-
-    await config.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Statistics updated successfully',
-      statistics: config.statistics,
-    });
-  } catch (error) {
-    logger.error('Update statistics error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-/**
- * @route   POST /api/admin/send-admin-otp
- * @desc    Send OTP to email for adding new admin (admin only)
- * @access  Private/Admin
- */
-router.post(
-  '/send-admin-otp',
+router.put(
+  "/statistics",
   protect,
   admin,
   [
-    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+    body("categories")
+      .optional()
+      .isString()
+      .withMessage("Categories must be a string"),
+    body("activeUsers")
+      .optional()
+      .isString()
+      .withMessage("Active Users must be a string"),
+    body("imageGenerated")
+      .optional()
+      .isString()
+      .withMessage("Image Generated must be a string"),
+    body("activeSubscription")
+      .optional()
+      .isString()
+      .withMessage("Active Subscription must be a string"),
   ],
   async (req, res) => {
     try {
@@ -895,7 +1033,73 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation error',
+          message: "Validation error",
+          errors: errors.array(),
+        });
+      }
+
+      const { categories, activeUsers, imageGenerated, activeSubscription } =
+        req.body;
+      const config = await AppConfig.getConfig();
+
+      if (!config.statistics) {
+        config.statistics = {
+          categories: "4+",
+          activeUsers: "10k+",
+          imageGenerated: "50k+",
+          activeSubscription: "1k+",
+        };
+      }
+
+      if (categories !== undefined) {
+        config.statistics.categories = categories;
+      }
+      if (activeUsers !== undefined) {
+        config.statistics.activeUsers = activeUsers;
+      }
+      if (imageGenerated !== undefined) {
+        config.statistics.imageGenerated = imageGenerated;
+      }
+      if (activeSubscription !== undefined) {
+        config.statistics.activeSubscription = activeSubscription;
+      }
+
+      await config.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Statistics updated successfully",
+        statistics: config.statistics,
+      });
+    } catch (error) {
+      logger.error("Update statistics error:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+);
+
+/**
+ * @route   POST /api/admin/send-admin-otp
+ * @desc    Send OTP to email for adding new admin (admin only)
+ * @access  Private/Admin
+ */
+router.post(
+  "/send-admin-otp",
+  protect,
+  admin,
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation error",
           errors: errors.array(),
         });
       }
@@ -924,24 +1128,24 @@ router.post(
         await sendOTPEmail(normalizedEmail, otp);
         res.status(200).json({
           success: true,
-          message: 'OTP sent successfully to email',
+          message: "OTP sent successfully to email",
         });
       } catch (emailError) {
-        console.error('Email error:', emailError);
+        console.error("Email error:", emailError);
         await OTP.deleteOne({ email: normalizedEmail });
         return res.status(500).json({
           success: false,
-          message: 'Failed to send email. Please try again.',
+          message: "Failed to send email. Please try again.",
         });
       }
     } catch (error) {
-      logger.error('Send admin OTP error:', error);
+      logger.error("Send admin OTP error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
       });
     }
-  }
+  },
 );
 
 /**
@@ -950,12 +1154,17 @@ router.post(
  * @access  Private/Admin
  */
 router.post(
-  '/verify-admin-otp',
+  "/verify-admin-otp",
   protect,
   admin,
   [
-    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
-    body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email"),
+    body("otp")
+      .isLength({ min: 6, max: 6 })
+      .withMessage("OTP must be 6 digits"),
   ],
   async (req, res) => {
     try {
@@ -963,7 +1172,7 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation error',
+          message: "Validation error",
           errors: errors.array(),
         });
       }
@@ -977,7 +1186,7 @@ router.post(
       if (!otpDoc) {
         return res.status(400).json({
           success: false,
-          message: 'OTP not found. Please request a new OTP.',
+          message: "OTP not found. Please request a new OTP.",
         });
       }
 
@@ -986,7 +1195,7 @@ router.post(
         await OTP.deleteOne({ email: normalizedEmail });
         return res.status(400).json({
           success: false,
-          message: 'OTP expired. Please request a new OTP.',
+          message: "OTP expired. Please request a new OTP.",
         });
       }
 
@@ -994,7 +1203,7 @@ router.post(
       if (otpDoc.otp !== otp) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid OTP.',
+          message: "Invalid OTP.",
         });
       }
 
@@ -1004,13 +1213,13 @@ router.post(
       if (!user) {
         user = new User({
           email: normalizedEmail,
-          role: 'admin',
+          role: "admin",
           isVerified: true,
         });
         await user.save();
       } else {
         // Update user to admin
-        user.role = 'admin';
+        user.role = "admin";
         user.isVerified = true;
         await user.save();
       }
@@ -1020,7 +1229,7 @@ router.post(
 
       res.status(200).json({
         success: true,
-        message: 'Admin created/updated successfully',
+        message: "Admin created/updated successfully",
         user: {
           email: user.email,
           role: user.role,
@@ -1028,13 +1237,13 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Verify admin OTP error:', error);
+      console.error("Verify admin OTP error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
       });
     }
-  }
+  },
 );
 
 /**
@@ -1042,7 +1251,7 @@ router.post(
  * @desc    Remove admin role from user (convert to regular user)
  * @access  Private/Admin
  */
-router.delete('/remove-admin/:userId', protect, admin, async (req, res) => {
+router.delete("/remove-admin/:userId", protect, admin, async (req, res) => {
   try {
     const { userId } = req.params;
     const currentUserEmail = req.user.email.toLowerCase();
@@ -1053,7 +1262,7 @@ router.delete('/remove-admin/:userId', protect, admin, async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -1061,35 +1270,35 @@ router.delete('/remove-admin/:userId', protect, admin, async (req, res) => {
     if (user.email.toLowerCase() === currentUserEmail) {
       return res.status(400).json({
         success: false,
-        message: 'You cannot remove your own admin privileges',
+        message: "You cannot remove your own admin privileges",
       });
     }
 
     // Only remove if they are currently an admin
-    if (user.role !== 'admin') {
+    if (user.role !== "admin") {
       return res.status(400).json({
         success: false,
-        message: 'User is not an admin',
+        message: "User is not an admin",
       });
     }
 
     // Convert to regular user
-    user.role = 'user';
+    user.role = "user";
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Admin privileges removed successfully',
+      message: "Admin privileges removed successfully",
       user: {
         email: user.email,
         role: user.role,
       },
     });
   } catch (error) {
-    logger.error('Remove admin error:', error);
+    logger.error("Remove admin error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
     });
   }
 });
@@ -1099,17 +1308,18 @@ router.delete('/remove-admin/:userId', protect, admin, async (req, res) => {
  * @desc    Get credit deduction configuration (admin only)
  * @access  Private/Admin
  */
-router.get('/credit-deductions', protect, admin, async (req, res) => {
+router.get("/credit-deductions", protect, admin, async (req, res) => {
   try {
     const config = await AppConfig.getConfig();
     res.status(200).json({
       success: true,
-      creditsPerPhotoshootGeneration: config.creditsPerPhotoshootGeneration || 20,
+      creditsPerPhotoshootGeneration:
+        config.creditsPerPhotoshootGeneration || 20,
       creditsPerMarketingGeneration: config.creditsPerMarketingGeneration || 5,
     });
   } catch (error) {
-    logger.error('Get credit deductions error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    logger.error("Get credit deductions error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -1118,42 +1328,59 @@ router.get('/credit-deductions', protect, admin, async (req, res) => {
  * @desc    Update credit deduction configuration (admin only)
  * @access  Private/Admin
  */
-router.put('/credit-deductions', protect, admin, [
-  body('creditsPerPhotoshootGeneration').optional().isInt({ min: 1 }).withMessage('Photoshoot credits must be at least 1'),
-  body('creditsPerMarketingGeneration').optional().isInt({ min: 1 }).withMessage('Marketing credits must be at least 1'),
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: errors.array(),
+router.put(
+  "/credit-deductions",
+  protect,
+  admin,
+  [
+    body("creditsPerPhotoshootGeneration")
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage("Photoshoot credits must be at least 1"),
+    body("creditsPerMarketingGeneration")
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage("Marketing credits must be at least 1"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation error",
+          errors: errors.array(),
+        });
+      }
+
+      const { creditsPerPhotoshootGeneration, creditsPerMarketingGeneration } =
+        req.body;
+      const config = await AppConfig.getConfig();
+
+      if (creditsPerPhotoshootGeneration !== undefined) {
+        config.creditsPerPhotoshootGeneration = parseInt(
+          creditsPerPhotoshootGeneration,
+        );
+      }
+      if (creditsPerMarketingGeneration !== undefined) {
+        config.creditsPerMarketingGeneration = parseInt(
+          creditsPerMarketingGeneration,
+        );
+      }
+
+      await config.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Credit deduction configuration updated successfully",
+        creditsPerPhotoshootGeneration: config.creditsPerPhotoshootGeneration,
+        creditsPerMarketingGeneration: config.creditsPerMarketingGeneration,
       });
+    } catch (error) {
+      logger.error("Update credit deductions error:", error);
+      res.status(500).json({ success: false, message: "Server error" });
     }
-
-    const { creditsPerPhotoshootGeneration, creditsPerMarketingGeneration } = req.body;
-    const config = await AppConfig.getConfig();
-
-    if (creditsPerPhotoshootGeneration !== undefined) {
-      config.creditsPerPhotoshootGeneration = parseInt(creditsPerPhotoshootGeneration);
-    }
-    if (creditsPerMarketingGeneration !== undefined) {
-      config.creditsPerMarketingGeneration = parseInt(creditsPerMarketingGeneration);
-    }
-
-    await config.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Credit deduction configuration updated successfully',
-      creditsPerPhotoshootGeneration: config.creditsPerPhotoshootGeneration,
-      creditsPerMarketingGeneration: config.creditsPerMarketingGeneration,
-    });
-  } catch (error) {
-    logger.error('Update credit deductions error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
+  },
+);
 
 export default router;
