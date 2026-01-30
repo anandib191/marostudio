@@ -9,7 +9,7 @@ export const AIStudioDownloadSection: React.FC = () => {
           <div className="download-spacing animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="download-title mb-6">
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white mb-3 leading-tight tracking-tight">
-                The AI Studio Image Generator at a glance now
+                The MARO Studio Image Generator at a glance now
               </h2>
               <p className="text-base md:text-lg text-neutral-400 leading-relaxed">
                 AI isn't here to replace human creativity but it can amplify it
@@ -17,7 +17,7 @@ export const AIStudioDownloadSection: React.FC = () => {
             </div>
             <div className="download-subbox">
               <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent leading-tight">
-                AI Studio App
+                MARO Studio App
               </h3>
               <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
                 Start Your Product Shoot
@@ -34,7 +34,7 @@ export const AIStudioDownloadSection: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm md:text-base text-neutral-400 mb-4 leading-relaxed">
-                    Create stunning product photos in seconds with AI. Download the AI Studio App now!
+                    Create stunning product photos in seconds with AI. Download the MARO Studio App now!
                   </p>
                   <div className="playstore transition-transform hover:scale-105">
                     <a 
@@ -60,7 +60,7 @@ export const AIStudioDownloadSection: React.FC = () => {
           <div className="mobile-image flex justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <img 
               src="/assets/images/ai-studio-mobile.png" 
-              alt="AI Studio Mobile App" 
+              alt="MARO Studio Mobile App" 
               className="max-w-full h-auto filter drop-shadow-[0_16px_48px_rgba(0,0,0,0.4)] transition-transform hover:-translate-y-1"
               onError={(e) => {
                 // Fallback placeholder if image doesn't exist

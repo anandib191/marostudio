@@ -30,8 +30,8 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
       ctx.textAlign = 'right';
       ctx.textBaseline = 'top';
 
-      const prefixText = 'NextGen ';
-      const suffixText = 'Photo';
+      const prefixText = 'MARO ';
+      const suffixText = 'Studio';
       const x = canvas.width - padding;
       const y = padding;
 
@@ -42,7 +42,7 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
       ctx.fillStyle = '#6366f1'; 
       ctx.fillText(suffixText, x, y);
 
-      // Draw "NextGen" in White to the left
+      // Draw "MARO Studio" in White to the left
       ctx.fillStyle = '#FFFFFF';
       ctx.fillText(prefixText, x - suffixMetrics.width, y);
 
@@ -51,7 +51,7 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
       link.href = canvas.toDataURL('image/png');
       const isCover = index === 0;
       const title = isCover ? 'hero-shot' : `frame-${index}`;
-      link.download = `${title}-nextgen.png`;
+      link.download = `${title}-marostudio.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

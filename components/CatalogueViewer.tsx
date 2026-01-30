@@ -17,8 +17,8 @@ const Page: React.FC<{ children: React.ReactNode, className?: string }> = ({ chi
 
 const BrandSignature: React.FC<{ isDark?: boolean }> = ({ isDark = false }) => (
     <div className="flex items-center gap-1.5 text-center">
-        <span className={`text-lg font-sans font-bold tracking-tighter ${isDark ? 'text-white' : 'text-neutral-900'}`}>NextGen</span>
-        <span className="text-lg font-serif-display italic font-medium text-indigo-600">photo</span>
+        <span className={`text-lg font-sans font-bold tracking-tighter ${isDark ? 'text-white' : 'text-neutral-900'}`}>MARO</span>
+        <span className="text-lg font-serif-display italic font-medium text-indigo-600">Studio</span>
     </div>
 );
 
@@ -78,7 +78,7 @@ export const CatalogueViewer: React.FC<CatalogueViewerProps> = ({
             </div>
             <div className="absolute bottom-12 text-center w-full px-10">
                 <div className="h-px w-12 bg-white/20 mx-auto mb-6"></div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-medium">Neural engine output <br/>NextGen Photo Studio</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-medium">Neural engine output <br/>MARO Studio Studio</p>
             </div>
         </Page>
       </div>

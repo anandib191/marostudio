@@ -1,7 +1,7 @@
 {
-  "name": "nextgenphoto-backend",
+  "name": "MARO Studio-backend",
   "version": "1.0.0",
-  "description": "Backend API for NextGenPhoto with Email + OTP Authentication",
+  "description": "Backend API for MARO Studio with Email + OTP Authentication",
   "main": "server.js",
   "type": "module",
   "scripts": {

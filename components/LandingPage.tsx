@@ -27,7 +27,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onBookDemo })
       {/* Features Section - Professional Photoshoots & Visuals */}
       <FeaturesSection />
 
-      {/* Why AI Studio Section */}
+      {/* Why MARO Studio Section */}
       <WhyAIStudioSection />
 
       {/* Generate Content Section */}

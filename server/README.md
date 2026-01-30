@@ -1,6 +1,6 @@
-# NextGenPhoto Backend - MERN Stack
+# MARO Studio Backend - MERN Stack
 
-This is the backend server for NextGenPhoto application using Node.js, Express, and MongoDB.
+This is the backend server for MARO Studio application using Node.js, Express, and MongoDB.
 
 ## Features
 
@@ -34,7 +34,7 @@ PORT=8000
 NODE_ENV=development
 
 # MongoDB Connection String from MongoDB Atlas
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nextgenphoto?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/MARO Studio?retryWrites=true&w=majority
 
 # JWT Secret (generate a random string)
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production

@@ -43,7 +43,7 @@ const Footer = React.forwardRef<HTMLElement>((props, ref) => {
                         </Link>
                     </div>
                     <div className="flex justify-center items-center text-[10px] uppercase tracking-[0.2em] text-neutral-600 font-bold">
-                        <p>&copy; {new Date().getFullYear()} NextGen Photo Studio. All rights reserved By Growlouder Productions</p>
+                        <p>&copy; {new Date().getFullYear()} MARO Studio. All rights reserved By Growlouder Productions</p>
                     </div>
                 </div>
             </div>

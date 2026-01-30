@@ -23,7 +23,7 @@ export const sendOTPEmail = async (email, otp) => {
     const transporter = createTransporter();
 
     const mailOptions = {
-      from: `"NextGenPhoto" <${process.env.SMTP_FROM}>`,
+      from: `"MARO Studio" <${process.env.SMTP_FROM}>`,
       to: email,
       subject: 'Your OTP Code',
       html: `
@@ -66,12 +66,12 @@ export const sendOTPEmail = async (email, otp) => {
           <body>
             <div class="container">
               <h2>Your OTP Code</h2>
-              <p>Your One-Time Password (OTP) for NextGenPhoto is:</p>
+              <p>Your One-Time Password (OTP) for MARO Studio is:</p>
               <div class="otp-code">${otp}</div>
               <p>This code will expire in <strong>10 minutes</strong>.</p>
               <p>If you didn't request this code, please ignore this email.</p>
               <div class="footer">
-                <p>© NextGenPhoto - All rights reserved</p>
+                <p>© MARO Studio - All rights reserved</p>
               </div>
             </div>
           </body>

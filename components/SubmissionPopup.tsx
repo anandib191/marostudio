@@ -45,7 +45,7 @@ export const SubmissionPopup: React.FC<SubmissionPopupProps> = ({ isOpen, onClos
                 We encountered a technical error. Please try again or reach out directly via email.
             </p>
             <p className={`mt-4 text-sm font-bold uppercase tracking-widest ${highlightColor}`}>
-                hello@nextgenphoto.ai
+                hello@MARO Studio.ai
             </p>
         </>
     );

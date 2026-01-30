@@ -20,7 +20,7 @@ export const ContactPage: React.FC = () => {
         const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '919876543210';
         
         // Format message with prefix
-        const messageText = `Query from Nextgen photo\n\nName: ${fullName}\nEmail: ${email}\nCompany: ${companyName}\nPhone: ${fullPhoneNumber}\n\nMessage: ${message}`;
+        const messageText = `Query from MARO Studio\n\nName: ${fullName}\nEmail: ${email}\nCompany: ${companyName}\nPhone: ${fullPhoneNumber}\n\nMessage: ${message}`;
         
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`;

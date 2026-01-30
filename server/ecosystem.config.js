@@ -8,7 +8,7 @@
 
 module.exports = {
   apps: [{
-    name: 'nextgenphoto-api',
+    name: 'MARO Studio-api',
     script: './server.js',
     instances: 1, // For single instance, use 'max' for cluster mode
     exec_mode: 'fork',

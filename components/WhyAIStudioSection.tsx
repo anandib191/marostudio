@@ -14,12 +14,12 @@ export const WhyAIStudioSection: React.FC = () => {
     {
       icon: '/assets/icons/studio-fill.svg',
       title: 'No Studio Required',
-      description: 'The Smartest Way to Create Brand-Worthy Product Photo\'s',
+      description: 'The Smartest Way to Create Brand-Worthy Product Photos',
     },
     {
       icon: '/assets/icons/Lightning.svg',
       title: 'Lightning Fast',
-      description: 'Get professional images in just 10 seconds.',
+      description: 'Get professional images in seconds.',
     },
     {
       icon: '/assets/icons/Effective.svg',
@@ -42,7 +42,7 @@ export const WhyAIStudioSection: React.FC = () => {
       <div className="container-lg3 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="why-ai-studio-text text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white mb-4 leading-tight tracking-tight">
-            Why <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">AI Studio</span>?
+            Why <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">MARO Studio</span>?
           </h2>
           <p className="text-base md:text-lg text-neutral-400 leading-relaxed">
             The Smartest Way to Create Brand-Worthy Product Photo's

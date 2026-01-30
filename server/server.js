@@ -178,7 +178,7 @@ app.use('/api/statistics', statisticsRoutes);
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'NextGenPhoto API Server',
+    message: 'MARO Studio API Server',
     version: '1.0.0',
     endpoints: {
       health: '/health',

@@ -87,7 +87,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         key: keyId,
         amount: order.amount,
         currency: order.currency,
-        name: 'NextGen Photo',
+        name: 'MARO Studio',
         description: `${planName} Plan - ${billingPeriod === 'monthly' ? 'Monthly' : 'Yearly'} Subscription`,
         order_id: order.id,
         handler: async function (response: any) {

@@ -13,7 +13,7 @@ export const FeaturesSection: React.FC = () => {
       dotColor: 'bg-blue-500',
       title: 'Fashion',
       subtitle: 'Fashion Photography',
-      description: 'Transform your fashion and jewelry designs into runway-quality images with AI Studio. Generate detailed, on-model photoshoots and unlimited variations for campaigns, A/B tests, and social media without the cost of traditional shoots.',
+      description: 'Transform your fashion and jewelry designs into runway-quality images with MARO Studio. Generate detailed, on-model photoshoots and unlimited variations for campaigns without the cost of traditional shoots.',
     },
     {
       dotColor: 'bg-orange-500',
@@ -25,7 +25,7 @@ export const FeaturesSection: React.FC = () => {
       dotColor: 'bg-blue-400',
       title: 'Product',
       subtitle: 'Product Photography',
-      description: 'Create clean, conversion-ready product images for any platform. From white-background Amazon shots to lifestyle visuals, our AI product photo generator delivers professional results, no studio needed. Generate endless variations for A/B testing and seasonal updates.',
+      description: 'Create clean, conversion-ready product images for any platform. From white-background Amazon shots to lifestyle visuals, our AI product photo generator delivers professional results, no studio needed. Generate endless variations for seasonal updates.',
     },
     {
       dotColor: 'bg-red-500',
@@ -39,7 +39,7 @@ export const FeaturesSection: React.FC = () => {
     <section className="features-section w-full py-8 md:py-12 bg-black relative">
       <div className="container-lg w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="features-text text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white mb-4 leading-tight tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[38px] font-bold text-white mb-4 leading-tight tracking-tight">
             Create <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">Professional Photoshoots & Visuals</span> Without a Studio
           </h2>
           <p className="text-base md:text-lg text-neutral-400 leading-relaxed">

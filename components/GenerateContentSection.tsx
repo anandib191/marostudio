@@ -143,8 +143,8 @@ export const GenerateContentSection: React.FC = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Generate on <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">brand content</span>
+          <h2 className="text-4xl md:text-4xl font-bold text-white mb-4">
+          Turn Products into <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">Scroll-Stoppers</span>
           </h2>
           <p className="text-lg text-neutral-400">
             Create studio quality visuals with advanced AI that transforms your ideas into stunning photographs.

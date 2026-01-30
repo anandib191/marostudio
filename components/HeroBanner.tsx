@@ -48,7 +48,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onStart }) => {
               Without Studio
             </h1>
             <h2 className="text-base sm:text-lg md:text-xl font-normal leading-relaxed text-neutral-400 mb-8 max-w-full">
-              Create stunning visuals with next-gen AI product photography powered by AI Studio, no studio, no noise, just creation.
+              Create stunning visuals with MARO Studio AI product photography and Marketing Poster generation powered by Growlouder Productions. no studio, no noise, just creation.
             </h2>
             
             {/* Taglines */}

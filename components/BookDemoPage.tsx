@@ -117,7 +117,7 @@ export const BookDemoPage: React.FC = () => {
                         <h1 className="mt-6 font-serif-display text-5xl sm:text-6xl md:text-7xl font-bold text-white tracking-tight leading-tight">
                             See{' '}
                             <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
-                                NextGen Photo
+                                MARO Studio
                             </span>{' '}
                             in{' '}
                             <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">

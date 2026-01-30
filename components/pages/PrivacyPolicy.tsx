@@ -25,7 +25,7 @@ export const PrivacyPolicy: React.FC = () => {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
             <p className="text-neutral-300 leading-relaxed">
-              Welcome to NextGen Photo Studio ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience on our website and in using our products and services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our AI-powered photography services.
+              Welcome to MARO Studio Studio ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience on our website and in using our products and services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our AI-powered photography services.
             </p>
           </section>
 
