@@ -5,19 +5,28 @@ interface CreditsSummaryBoxProps {
   credits: number | null;
   creditType?: 'photoshoot' | 'marketing';
   className?: string;
+  creditsPerGeneration?: number; // Optional: can be passed dynamically
 }
 
-const CREDITS_PER_GENERATION = 20; // Each generation costs 20 credits
+// Default values - these will be used if not provided
+const DEFAULT_CREDITS_PER_GENERATION = {
+  photoshoot: 20,
+  marketing: 5,
+};
 
 export const CreditsSummaryBox: React.FC<CreditsSummaryBoxProps> = ({ 
   credits, 
   creditType = 'photoshoot',
-  className = '' 
+  className = '',
+  creditsPerGeneration
 }) => {
   if (credits === null) {
     return null;
   }
 
+  // Use provided value or fall back to defaults
+  const CREDITS_PER_GENERATION = creditsPerGeneration || DEFAULT_CREDITS_PER_GENERATION[creditType];
+  
   const canGenerate = credits >= CREDITS_PER_GENERATION;
   const generationsRemaining = Math.floor(credits / CREDITS_PER_GENERATION);
 

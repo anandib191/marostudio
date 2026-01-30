@@ -1,6 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
 import User from '../models/User.js';
+import AppConfig from '../models/AppConfig.js';
 
 const router = express.Router();
 
@@ -80,7 +81,13 @@ router.get('/history', protect, async (req, res) => {
 router.post('/check', protect, async (req, res) => {
   try {
     const { type } = req.body; // 'photoshoot' or 'marketing'
-    const CREDITS_PER_GENERATION = 20; // Each generation costs 20 credits
+    
+    // Get configurable credits per generation
+    const config = await AppConfig.getConfig();
+    const CREDITS_PER_GENERATION = type === 'marketing' 
+      ? config.creditsPerMarketingGeneration 
+      : config.creditsPerPhotoshootGeneration;
+    
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -117,12 +124,18 @@ router.post('/check', protect, async (req, res) => {
  * @route   POST /api/credits/deduct
  * @desc    Deduct credits after generation (photoshoot or marketing poster)
  * @access  Private
- * @note    Each generation costs 20 credits
+ * @note    Each generation costs configurable credits (default: 20 photoshoot, 5 marketing)
  */
 router.post('/deduct', protect, async (req, res) => {
   try {
     const { type } = req.body; // 'photoshoot' or 'marketing'
-    const CREDITS_PER_GENERATION = 20; // Each generation costs 20 credits
+    
+    // Get configurable credits per generation
+    const config = await AppConfig.getConfig();
+    const CREDITS_PER_GENERATION = type === 'marketing' 
+      ? config.creditsPerMarketingGeneration 
+      : config.creditsPerPhotoshootGeneration;
+    
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

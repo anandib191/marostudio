@@ -88,6 +88,14 @@ export const Dashboard: React.FC = () => {
   const [loadingFreeTier, setLoadingFreeTier] = useState(false);
   const [savingFreeTier, setSavingFreeTier] = useState(false);
 
+  // Credit deduction configuration state
+  const [creditDeductions, setCreditDeductions] = useState({
+    creditsPerPhotoshootGeneration: 20,
+    creditsPerMarketingGeneration: 5,
+  });
+  const [loadingCreditDeductions, setLoadingCreditDeductions] = useState(false);
+  const [savingCreditDeductions, setSavingCreditDeductions] = useState(false);
+
   // Statistics state
   const [statistics, setStatistics] = useState({
     categories: '4+',
@@ -145,6 +153,7 @@ export const Dashboard: React.FC = () => {
     } else if (section === 'credits') {
       loadPlans(token); // Load plans to show credits
       loadFreeTierCredits(token); // Load free tier credits
+      loadCreditDeductions(token); // Load credit deduction configuration
     } else if (section === 'statistics') {
       loadStatistics(token);
     }
@@ -199,6 +208,28 @@ export const Dashboard: React.FC = () => {
       toast.error('Failed to load free tier credits', { position: "top-right", autoClose: 3000 });
     } finally {
       setLoadingFreeTier(false);
+    }
+  };
+
+  const loadCreditDeductions = async (token: string) => {
+    setLoadingCreditDeductions(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/credit-deductions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCreditDeductions({
+          creditsPerPhotoshootGeneration: data.creditsPerPhotoshootGeneration || 20,
+          creditsPerMarketingGeneration: data.creditsPerMarketingGeneration || 5,
+        });
+      } else {
+        toast.error(data.message || 'Failed to load credit deduction settings', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load credit deduction settings', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingCreditDeductions(false);
     }
   };
 
@@ -1576,6 +1607,93 @@ export const Dashboard: React.FC = () => {
                         className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                       >
                         {savingFreeTier ? 'Saving...' : 'Save Free Tier Credits'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Credit Deduction Per Generation Section */}
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-rose-500/30 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">Credit Deduction per Generation</h3>
+                        <p className="text-xs text-neutral-400 mt-1">Configure how many credits are deducted for each generation</p>
+                      </div>
+                      <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-full">
+                        Per Generation
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Photoshoot Credits (per generation)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={creditDeductions.creditsPerPhotoshootGeneration}
+                          onChange={(e) => setCreditDeductions(prev => ({
+                            ...prev,
+                            creditsPerPhotoshootGeneration: parseInt(e.target.value) || 1
+                          }))}
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                          Marketing Poster Credits (per generation)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={creditDeductions.creditsPerMarketingGeneration}
+                          onChange={(e) => setCreditDeductions(prev => ({
+                            ...prev,
+                            creditsPerMarketingGeneration: parseInt(e.target.value) || 1
+                          }))}
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end pt-4 border-t border-white/10">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('admin_token');
+                          if (!token) {
+                            toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                            return;
+                          }
+                          
+                          setSavingCreditDeductions(true);
+                          try {
+                            const res = await fetch(`${API_URL}/api/admin/credit-deductions`, {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({
+                                creditsPerPhotoshootGeneration: creditDeductions.creditsPerPhotoshootGeneration,
+                                creditsPerMarketingGeneration: creditDeductions.creditsPerMarketingGeneration,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                              toast.success('Credit deduction settings updated successfully!', { position: "top-right", autoClose: 3000 });
+                            } else {
+                              toast.error(data.message || 'Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
+                            }
+                          } catch (e) {
+                            toast.error('Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
+                          } finally {
+                            setSavingCreditDeductions(false);
+                          }
+                        }}
+                        disabled={savingCreditDeductions}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {savingCreditDeductions ? 'Saving...' : 'Save Credit Deductions'}
                       </button>
                     </div>
                   </div>

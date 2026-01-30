@@ -728,7 +728,6 @@ router.put('/free-tier-credits', protect, admin, [
 
       for (const user of freeUsers) {
         // Calculate used credits to preserve usage
-        const CREDITS_PER_GENERATION = 20;
         const usedPhotoshootCredits = Math.max(0, oldPhotoshootCredits - (user.photoshootCredits || 0));
         const usedMarketingCredits = Math.max(0, oldMarketingCredits - (user.marketingPosterCredits || 0));
 
@@ -1092,6 +1091,68 @@ router.delete('/remove-admin/:userId', protect, admin, async (req, res) => {
       success: false,
       message: 'Server error',
     });
+  }
+});
+
+/**
+ * @route   GET /api/admin/credit-deductions
+ * @desc    Get credit deduction configuration (admin only)
+ * @access  Private/Admin
+ */
+router.get('/credit-deductions', protect, admin, async (req, res) => {
+  try {
+    const config = await AppConfig.getConfig();
+    res.status(200).json({
+      success: true,
+      creditsPerPhotoshootGeneration: config.creditsPerPhotoshootGeneration || 20,
+      creditsPerMarketingGeneration: config.creditsPerMarketingGeneration || 5,
+    });
+  } catch (error) {
+    logger.error('Get credit deductions error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * @route   PUT /api/admin/credit-deductions
+ * @desc    Update credit deduction configuration (admin only)
+ * @access  Private/Admin
+ */
+router.put('/credit-deductions', protect, admin, [
+  body('creditsPerPhotoshootGeneration').optional().isInt({ min: 1 }).withMessage('Photoshoot credits must be at least 1'),
+  body('creditsPerMarketingGeneration').optional().isInt({ min: 1 }).withMessage('Marketing credits must be at least 1'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array(),
+      });
+    }
+
+    const { creditsPerPhotoshootGeneration, creditsPerMarketingGeneration } = req.body;
+    const config = await AppConfig.getConfig();
+
+    if (creditsPerPhotoshootGeneration !== undefined) {
+      config.creditsPerPhotoshootGeneration = parseInt(creditsPerPhotoshootGeneration);
+    }
+    if (creditsPerMarketingGeneration !== undefined) {
+      config.creditsPerMarketingGeneration = parseInt(creditsPerMarketingGeneration);
+    }
+
+    await config.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Credit deduction configuration updated successfully',
+      creditsPerPhotoshootGeneration: config.creditsPerPhotoshootGeneration,
+      creditsPerMarketingGeneration: config.creditsPerMarketingGeneration,
+    });
+  } catch (error) {
+    logger.error('Update credit deductions error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

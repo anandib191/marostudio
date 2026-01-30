@@ -11,6 +11,16 @@ const appConfigSchema = new mongoose.Schema({
     default: 5,
     min: 0,
   },
+  creditsPerPhotoshootGeneration: {
+    type: Number,
+    default: 20,
+    min: 1,
+  },
+  creditsPerMarketingGeneration: {
+    type: Number,
+    default: 5,
+    min: 1,
+  },
   statistics: {
     categories: {
       type: String,
@@ -40,6 +50,8 @@ appConfigSchema.statics.getConfig = async function() {
     config = new this({
       freeTierPhotoshootCredits: 3,
       freeTierMarketingPosterCredits: 5,
+      creditsPerPhotoshootGeneration: 20,
+      creditsPerMarketingGeneration: 5,
       statistics: {
         categories: '4+',
         activeUsers: '10k+',
@@ -58,6 +70,15 @@ appConfigSchema.statics.getConfig = async function() {
     };
     await config.save();
   }
+  
+  // Ensure credit generation fields exist (migrate old configs)
+  if (config.creditsPerPhotoshootGeneration === undefined) {
+    config.creditsPerPhotoshootGeneration = 20;
+  }
+  if (config.creditsPerMarketingGeneration === undefined) {
+    config.creditsPerMarketingGeneration = 5;
+  }
+  
   return config;
 };
 
