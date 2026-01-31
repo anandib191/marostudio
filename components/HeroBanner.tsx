@@ -83,7 +83,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onStart }) => {
             <div className="hero-button-alignment flex gap-4 justify-start lg:justify-start justify-center flex-wrap animate-slide-up" style={{ animationDelay: '0.4s' }}>
               <button
                 onClick={handleCreateImage}
-                className="button-ui inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-rose-500 border-none rounded-lg text-white font-semibold text-base cursor-pointer transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl hover:shadow-indigo-900/30"
+                className="button-ui inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-rose-500 border-none rounded-lg text-white font-semibold text-base cursor-pointer transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl hover:shadow-indigo-900/30"
               >
                 <span>Create Your First Image</span>
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,7 +92,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onStart }) => {
               </button>
               <button
                 onClick={handleWatchDemo}
-                className="button-demo inline-flex items-center gap-2.5 px-8 py-4 bg-transparent border-[1.5px] border-indigo-500/30 rounded-lg text-white font-semibold text-base cursor-pointer transition-all hover:border-indigo-500/50 hover:bg-indigo-500/10 shadow-sm hover:shadow-md"
+                className="button-demo inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-transparent border-[1.5px] border-indigo-500/30 rounded-lg text-white font-semibold text-base cursor-pointer transition-all hover:border-indigo-500/50 hover:bg-indigo-500/10 shadow-sm hover:shadow-md"
               >
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4.5 11.4813V8.36103C4.5 4.47468 7.2466 2.8865 10.6098 4.82968L13.319 6.39917L16.0283 7.96865C19.3914 9.91183 19.3914 13.0882 16.0283 15.0313L13.319 16.6008L10.6098 18.1703C7.2466 20.1135 4.5 18.5253 4.5 14.639V11.4813Z" stroke="currentColor" strokeWidth="1.6" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
@@ -151,14 +151,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onStart }) => {
           }
           .hero-button-alignment {
             flex-direction: column;
-            align-items: stretch;
+            align-items: center;
             gap: 0.75rem;
+            justify-content: center;
           }
           .button-ui,
           .button-demo {
             width: 100%;
             max-width: 320px;
-            margin: 0 auto;
           }
         }
       `}</style>

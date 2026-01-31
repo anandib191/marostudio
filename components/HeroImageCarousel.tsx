@@ -126,7 +126,7 @@ export const HeroImageCarousel: React.FC = () => {
       {/* Desktop Layout - Side by Side */}
       <div className="carousel-wrapper-desktop hidden md:flex items-center justify-center gap-8 w-full max-w-[1200px] relative">
         {/* Left Card - BEFORE IMAGE */}
-        <div className="carousel-card-left relative rounded-2xl overflow-hidden w-[40%] h-[500px] transform z-[2] shadow-xl">
+        <div className="carousel-card-left relative rounded-2xl overflow-hidden w-[48%] h-[500px] transform z-[2] shadow-xl">
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <img
               key={`before-${currentMainIndex}`}
@@ -151,7 +151,7 @@ export const HeroImageCarousel: React.FC = () => {
         </div>
 
         {/* Right Card - AFTER IMAGE */}
-        <div className="carousel-card-center relative rounded-2xl overflow-hidden cursor-pointer w-[60%] h-[550px] opacity-100 transform z-[3] shadow-2xl hover:scale-[1.02] transition-transform">
+        <div className="carousel-card-center relative rounded-2xl overflow-hidden cursor-pointer w-[52%] h-[550px] opacity-100 transform z-[3] shadow-2xl hover:scale-[1.02] transition-transform">
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <picture>
               <source srcSet={getWebPImagePath(currentMainIndex, currentVariationIndex)} type="image/webp" />
@@ -197,9 +197,9 @@ export const HeroImageCarousel: React.FC = () => {
       </div>
 
       {/* Mobile Layout - Vertical Stack with Full Image */}
-      <div className="carousel-wrapper-mobile flex md:hidden flex-col items-center justify-center gap-3 w-full px-4">
+      <div className="carousel-wrapper-mobile flex md:hidden flex-col items-center justify-center gap-4 w-full px-4">
         {/* BEFORE Image - Larger Size */}
-        <div className="before-preview-mobile relative rounded-xl overflow-hidden w-full max-w-[280px] h-[240px] sm:max-w-[320px] sm:h-[280px] shadow-xl">
+        <div className="before-preview-mobile relative rounded-xl overflow-hidden w-full max-w-[350px] h-[380px] sm:max-w-[360px] sm:h-[420px] shadow-xl">
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <img
               key={`before-mobile-${currentMainIndex}`}
@@ -224,7 +224,7 @@ export const HeroImageCarousel: React.FC = () => {
         </div>
 
         {/* Full Image - AFTER (Current Variation) */}
-        <div className="carousel-card-mobile relative rounded-2xl overflow-hidden w-full max-w-[500px] aspect-[3/4] shadow-2xl">
+        <div className="carousel-card-mobile relative rounded-2xl overflow-hidden w-full max-w-[600px] h-[680px] shadow-2xl">
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <picture>
               <source srcSet={getWebPImagePath(currentMainIndex, currentVariationIndex)} type="image/webp" />
@@ -309,17 +309,21 @@ export const HeroImageCarousel: React.FC = () => {
         @media (max-width: 480px) {
           .carousel-card-mobile {
             max-width: 100%;
-            aspect-ratio: 3/4;
+            height: 640px;
           }
           .before-preview-mobile {
-            max-width: 280px;
-            height: 200px;
+            max-width: 340px;
+            height: 320px;
           }
         }
         @media (min-width: 481px) and (max-width: 767px) {
+          .carousel-card-mobile {
+            max-width: 580px;
+            height: 660px;
+          }
           .before-preview-mobile {
-            max-width: 320px;
-            height: 240px;
+            max-width: 360px;
+            height: 360px;
           }
         }
       `}</style>

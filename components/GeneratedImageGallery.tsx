@@ -4,10 +4,32 @@ import { DownloadIcon } from './icons/DownloadIcon';
 
 interface GeneratedImageGalleryProps {
   images: string[];
+  hideWatermark?: boolean; // optional prop: if true, do not add watermark on download
 }
 
-export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ images }) => {
-  
+export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ images, hideWatermark }) => {
+  const [shouldHideWatermark, setShouldHideWatermark] = React.useState<boolean>(Boolean(hideWatermark));
+
+  // If parent didn't provide flag, infer from user's subscription via /api/credits
+  React.useEffect(() => {
+    if (typeof hideWatermark === 'boolean') return; // parent provided explicit choice
+    const infer = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const API_URL = (import.meta.env.VITE_API_URL as string) || '';
+        const res = await fetch(`${API_URL || ''}/api/credits?t=${Date.now()}`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok && data && data.subscriptionPlan) {
+          setShouldHideWatermark(true);
+        }
+      } catch (e) {
+        // silent
+      }
+    };
+    infer();
+  }, [hideWatermark]);
+
   const handleDownload = (image: string, index: number) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -23,28 +45,31 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
       // Draw the original image
       ctx.drawImage(img, 0, 0);
 
-      // Prepare watermark text
-      const padding = img.width * 0.04; 
-      const fontSize = Math.max(20, Math.round(img.width / 30));
-      ctx.font = `bold ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'top';
+      // Only draw watermark when the user is NOT on a paid plan
+      if (!shouldHideWatermark) {
+        // Prepare watermark text
+        const padding = img.width * 0.04; 
+        const fontSize = Math.max(20, Math.round(img.width / 30));
+        ctx.font = `bold ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
 
-      const prefixText = 'MARO ';
-      const suffixText = 'Studio';
-      const x = canvas.width - padding;
-      const y = padding;
+        const prefixText = 'MARO ';
+        const suffixText = 'Studio';
+        const x = canvas.width - padding;
+        const y = padding;
 
-      // Measure text widths
-      const suffixMetrics = ctx.measureText(suffixText);
-      
-      // Draw "Photo" in Indigo
-      ctx.fillStyle = '#6366f1'; 
-      ctx.fillText(suffixText, x, y);
+        // Measure text widths
+        const suffixMetrics = ctx.measureText(suffixText);
+        
+        // Draw "Photo" in Indigo
+        ctx.fillStyle = '#6366f1'; 
+        ctx.fillText(suffixText, x, y);
 
-      // Draw "MARO Studio" in White to the left
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(prefixText, x - suffixMetrics.width, y);
+        // Draw "MARO Studio" in White to the left
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(prefixText, x - suffixMetrics.width, y);
+      }
 
       // Trigger download
       const link = document.createElement('a');
@@ -85,7 +110,7 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
               <img
                 src={image}
                 alt={altText}
-                className="w-full h-auto object-cover aspect-[3/4] transition-transform duration-700 ease-in-out group-hover:scale-105"
+                className="w-full h-auto object-contain transition-transform duration-700 ease-in-out group-hover:scale-105"
                 loading="lazy"
               />
               

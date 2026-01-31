@@ -177,7 +177,7 @@ export const GenerateContentSection: React.FC = () => {
 
       {/* Carousel */}
       <div 
-        className={`max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-300 ${
+        className={`max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-300 flex justify-center ${
           isTransitioning ? 'opacity-0' : 'opacity-100'
         }`}
         onMouseEnter={() => setIsHovered(true)}
@@ -185,7 +185,7 @@ export const GenerateContentSection: React.FC = () => {
       >
         <Swiper
           ref={swiperRef}
-          spaceBetween={24}
+          spaceBetween={32}
           slidesPerView={1}
           speed={600}
           loop={false}
@@ -194,7 +194,7 @@ export const GenerateContentSection: React.FC = () => {
           breakpoints={{
             320: {
               slidesPerView: 1,
-              spaceBetween: 16,
+              spaceBetween: 20,
             },
             640: {
               slidesPerView: 1,
@@ -202,15 +202,15 @@ export const GenerateContentSection: React.FC = () => {
             },
             768: {
               slidesPerView: 1,
-              spaceBetween: 20,
+              spaceBetween: 24,
             },
             1024: {
               slidesPerView: 3,
-              spaceBetween: 20,
+              spaceBetween: 32,
             },
             1280: {
               slidesPerView: 3,
-              spaceBetween: 24,
+              spaceBetween: 40,
             },
           }}
           className="mySwiper"
@@ -314,24 +314,37 @@ export const GenerateContentSection: React.FC = () => {
         .image-container {
           position: relative;
           width: 100%;
-          aspect-ratio: 3/4;
+          height: 100%;
           overflow: hidden;
           background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
         }
 
         /* Responsive image sizing for 3 images on large screens */
         @media (min-width: 1024px) {
-          .image-container {
-            aspect-ratio: 4/5;
-            max-height: 450px;
+          .image-card {
+            aspect-ratio: 3/4;
+            height: 480px;
           }
           
-          .image-card {
-            max-width: 100%;
+          .image-container {
+            height: 100%;
           }
           
           .mySwiper {
             padding: 24px 0;
+          }
+        }
+        
+        @media (max-width: 1023px) {
+          .image-card {
+            aspect-ratio: 3/4;
+            height: 380px;
+            margin: 0 auto;
+          }
+          
+          .mySwiper {
+            display: flex;
+            justify-content: center;
           }
         }
 

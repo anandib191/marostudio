@@ -257,6 +257,10 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold">
           {navLinks.map(link => {
+            // Hide pricing for unauthenticated users
+            if (link.path === '/pricing' && !isAuthenticated) {
+              return null;
+            }
             if (link.isScroll) {
               return (
                 <button

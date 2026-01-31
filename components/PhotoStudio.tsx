@@ -552,7 +552,9 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; }> = ({ onExit, onContentGenerated }) => {
     const navigate = useNavigate();
     const [photoshootCredits, setPhotoshootCredits] = useState<number | null>(null);
+    const [isPaidUser, setIsPaidUser] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
@@ -570,6 +572,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             const data = await res.json();
             if (res.ok && data.success) {
                 setPhotoshootCredits(data.photoshootCredits);
+                setIsPaidUser(Boolean(data.subscriptionPlan));
             }
         } catch (err) {
             console.error('Failed to fetch credits:', err);
@@ -867,15 +870,39 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         setDownloadingType('pdf');
         try {
             const pages = catalogueRef.current.querySelectorAll<HTMLElement>('.catalogue-page');
-            const firstPageCanvas = await html2canvas(pages[0], { scale: 3, useCORS: true });
+            if (!pages || pages.length === 0) {
+                console.error('No catalogue pages found');
+                setError('No lookbook pages found to export.');
+                setDownloadingType(null);
+                return;
+            }
+            
             const pdf = new jsPDF({
-                orientation: 'portrait', unit: 'px', format: [firstPageCanvas.width, firstPageCanvas.height], hotfixes: ['px_scaling'],
+                orientation: 'portrait', unit: 'mm', format: 'a4', hotfixes: ['px_scaling'],
             });
-            pdf.addImage(firstPageCanvas.toDataURL('image/png'), 'PNG', 0, 0, firstPageCanvas.width, firstPageCanvas.height, undefined, 'FAST');
-            for (let i = 1; i < pages.length; i++) {
-                const pageCanvas = await html2canvas(pages[i], { scale: 3, useCORS: true });
-                pdf.addPage([pageCanvas.width, pageCanvas.height], 'portrait');
-                pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageCanvas.width, pageCanvas.height, undefined, 'FAST');
+            
+            for (let i = 0; i < pages.length; i++) {
+                try {
+                    const pageCanvas = await html2canvas(pages[i], { 
+                        scale: 2, 
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        imageTimeout: 0,
+                    });
+                    
+                    if (i > 0) {
+                        pdf.addPage('a4', 'portrait');
+                    }
+                    
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgData = pageCanvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+                } catch (pageError) {
+                    console.error(`Failed to capture page ${i}:`, pageError);
+                }
             }
             
             // Get PDF as blob
@@ -885,13 +912,24 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             // Cache the PDF lookbook
             const cachePrompt = `${promptCategory} lookbook - ${selectedStyle || 'Standard'} style`;
             const lookbookName = creatorName || 'campaign';
-            await addLookbookToCache(pdfDataUrl, 'photo', cachePrompt, lookbookName);
-            console.log('✅ Lookbook PDF cached');
+            try {
+                await addLookbookToCache(pdfDataUrl, 'photo', cachePrompt, lookbookName);
+                console.log('✅ Lookbook PDF cached');
+            } catch (cacheErr) {
+                console.warn('Lookbook cache failed, continuing with download:', cacheErr);
+            }
             
             // Download the PDF
-            pdf.save(`${lookbookName}.pdf`);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(pdfBlob);
+            link.download = `${lookbookName}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
         } catch (e) {
-            setError("PDF Export failed.");
+            console.error('PDF Export error:', e);
+            setError("PDF Export failed. Please try again.");
         } finally {
             setDownloadingType(null);
         }
@@ -945,7 +983,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 <div className="flex flex-col gap-4">
                                     {!isAuthenticated ? (
                                         <button 
-                                            onClick={() => setShowAuthModal(true)}
+                                            onClick={() => navigate('/signin')}
                                             className="text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1149,7 +1187,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
 
                         <div className="animate-fade-in">
                         {viewMode === 'gallery' ? (
-                            <GeneratedImageGallery images={[coverImage!, ...modelImages]} />
+                            <GeneratedImageGallery images={[coverImage!, ...modelImages]} hideWatermark={isPaidUser} />
                         ) : (
                             <CatalogueViewer
                                 coverImage={coverImage!}
@@ -1157,6 +1195,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 catalogueRef={catalogueRef}
                                 productName={productName}
                                 creatorName={creatorName}
+                                hideBrand={isPaidUser}
                             />
                         )}
                         </div>

@@ -25,14 +25,14 @@ export const TermsOfService: React.FC = () => {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
             <p className="text-neutral-300 leading-relaxed">
-              By accessing and using MARO Studio Studio ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+              By accessing and using MARO Studio ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">2. Description of Service</h2>
             <p className="text-neutral-300 leading-relaxed">
-              MARO Studio Studio provides AI-powered photography generation services, including but not limited to professional photoshoot generation, marketing poster creation, and related visual content generation tools. The Service uses artificial intelligence to generate images based on user-provided inputs and preferences.
+              MARO Studio provides AI-powered photography generation services, including but not limited to professional photoshoot generation, marketing poster creation, and related visual content generation tools. The Service uses artificial intelligence to generate images based on user-provided inputs and preferences.
             </p>
           </section>
 
@@ -157,7 +157,7 @@ export const TermsOfService: React.FC = () => {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">8. Indemnification</h2>
             <p className="text-neutral-300 leading-relaxed">
-              You agree to indemnify, defend, and hold harmless MARO Studio Studio, Growlouder Productions, and their officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising out of or relating to your use of the Service, violation of these Terms, or infringement of any intellectual property or other right of any person or entity.
+              You agree to indemnify, defend, and hold harmless MARO Studio, Growlouder Productions, and their officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising out of or relating to your use of the Service, violation of these Terms, or infringement of any intellectual property or other right of any person or entity.
             </p>
           </section>
 

@@ -241,33 +241,23 @@ export const HowItWorksSection: React.FC = () => {
           </h2>
         </div>
         <div className="how-it-works-grid grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="steps-container flex flex-col gap-0 relative">
-            {/* Process Bar */}
-            <div className="process-bar absolute left-0 top-0 bottom-0 w-1 z-10 pointer-events-none">
-              <div className="process-line absolute left-0.5 top-0 w-0.5 h-full bg-transparent rounded-sm">
-                <div
-                  className={`process-fill absolute left-0.5 top-0 w-0.5 bg-gradient-to-b from-indigo-500 to-rose-500 rounded-sm transition-all duration-1000 ${
-                    activeStep === 0 ? 'h-[33.33%]' : activeStep === 1 ? 'h-[66.66%]' : 'h-full'
-                  }`}
-                  style={{ boxShadow: '0 0 8px rgba(99, 102, 241, 0.5)' }}
-                ></div>
-              </div>
+          <div className="steps-container flex flex-col gap-0 relative pl-8">
+            {/* Vertical Process Line on the LEFT - Connecting dots from center */}
+            <div className="process-bar absolute left-0 top-0 bottom-0 w-1 h-full bg-gradient-to-b from-neutral-700 to-neutral-800 rounded-full z-0 pointer-events-none">
+              <div
+                className="process-fill absolute left-0 top-0 w-1 bg-gradient-to-b from-indigo-500 to-rose-500 rounded-full transition-all duration-1000"
+                style={{ 
+                  boxShadow: '0 0 12px rgba(99, 102, 241, 0.6)',
+                  height: activeStep === 0 ? '33.33%' : activeStep === 1 ? '66.66%' : '100%'
+                }}
+              ></div>
             </div>
 
             {steps.map((step, index) => (
               <div
                 key={index}
-                className="how-it-works-item relative pl-12 pb-8"
+                className="how-it-works-item relative pl-0 pb-8"
               >
-                {/* Process Node */}
-                <div
-                  className={`process-node absolute left-0 top-0 w-4 h-4 rounded-full border-2 transform -translate-y-1/2 transition-all z-20 ${
-                    index === activeStep
-                      ? 'bg-gradient-to-r from-indigo-500 to-rose-500 border-indigo-500 scale-125'
-                      : 'bg-transparent border-white/20'
-                  }`}
-                  style={{ left: 'calc(2px - 8px - 1.5rem)' }}
-                ></div>
                 <div className="border-text">
                   <div className="spacing">
                     <div className="icon-counter flex items-center gap-4 mb-3">

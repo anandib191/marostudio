@@ -7,6 +7,7 @@ interface CatalogueViewerProps {
   catalogueRef: React.RefObject<HTMLDivElement>;
   productName?: string;
   creatorName: string;
+  hideBrand?: boolean; // if true, do not render brand signature (paid users)
 }
 
 const Page: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className }) => (
@@ -29,14 +30,35 @@ export const CatalogueViewer: React.FC<CatalogueViewerProps> = ({
   catalogueRef,
   productName,
   creatorName,
+  hideBrand,
 }) => {
+  const [shouldHideBrand, setShouldHideBrand] = React.useState<boolean>(Boolean(hideBrand));
+
+  React.useEffect(() => {
+    if (typeof hideBrand === 'boolean') return;
+    const infer = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const API_URL = (import.meta.env.VITE_API_URL as string) || '';
+        const res = await fetch(`${API_URL || ''}/api/credits?t=${Date.now()}`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok && data && data.subscriptionPlan) {
+          setShouldHideBrand(true);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    infer();
+  }, [hideBrand]);
   return (
     <div className="flex flex-col items-center gap-8">
       <div ref={catalogueRef} className="max-w-xl w-full mx-auto space-y-12 p-6 bg-neutral-900/40 backdrop-blur-3xl rounded-[32px] border border-white/5">
         {/* Cover Page */}
         <Page className="justify-between items-center text-center p-14 bg-[#fdfdfd]">
             <div className="w-full text-left">
-              <BrandSignature />
+              {!shouldHideBrand && <BrandSignature />}
             </div>
             
             <div className="flex flex-col items-center">
@@ -47,7 +69,7 @@ export const CatalogueViewer: React.FC<CatalogueViewerProps> = ({
             </div>
 
             <div className="p-1.5 bg-white border border-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-xs transform -rotate-1">
-                <img src={coverImage} alt="AI Generated Product Cover" className="w-full h-auto object-cover" />
+                <img src={coverImage} alt="AI Generated Product Cover" className="w-full h-auto object-contain" />
             </div>
 
              <div className="text-center">
@@ -65,21 +87,25 @@ export const CatalogueViewer: React.FC<CatalogueViewerProps> = ({
                     <p className="text-[10px] font-bold uppercase tracking-[0.4em] mb-1 opacity-80">Plate No.</p>
                     <h2 className="font-serif-display text-7xl font-bold tracking-tighter leading-none">0{index + 1}</h2>
                 </div>
-                <div className="absolute top-10 right-10">
-                  <BrandSignature isDark={true} />
-                </div>
+                {!shouldHideBrand && (
+                  <div className="absolute top-10 right-10">
+                    <BrandSignature isDark={true} />
+                  </div>
+                )}
             </Page>
         ))}
 
         {/* Back Cover */}
         <Page className="justify-center items-center text-center p-14 bg-[#0a0a0a]">
-            <div className="scale-150 transform">
-                <BrandSignature isDark={true} />
-            </div>
-            <div className="absolute bottom-12 text-center w-full px-10">
+            {!shouldHideBrand && (
+              <div className="scale-150 transform">
+                  <BrandSignature isDark={true} />
+              </div>
+            )}
+            {/* <div className="absolute bottom-12 text-center w-full px-10">
                 <div className="h-px w-12 bg-white/20 mx-auto mb-6"></div>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-medium">Neural engine output <br/>MARO Studio Studio</p>
-            </div>
+            </div> */}
         </Page>
       </div>
     </div>
