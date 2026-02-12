@@ -14,7 +14,7 @@ export default {
       colors: {
         // Custom gold color palette - replacing gold/rose theme
         gold: {
-          DEFAULT: '#e6b71e',
+          DEFAULT: "#e6b71e",
           50: "#fefbf3",
           100: "#fdf6e6",
           200: "#fce9c5",
