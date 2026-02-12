@@ -223,6 +223,7 @@ router.post(
           name: signupData.name || "",
           phoneNumber: signupData.phoneNumber || "",
           email: normalizedEmail,
+          provider: "email", // User signed up with email/OTP
           role,
           isVerified: true,
           // Unified credit system
@@ -353,47 +354,45 @@ router.post(
         const freeTotalCredits = config.freeTierTotalCredits || 100;
 
         if (!user) {
-          // New user - create account
+          // New user - create account with Google
           user = new User({
             name: name || "",
             email: normalizedEmail,
+            googleId, // Store Google ID
+            provider: "google", // User signed up with Google
             role,
-            isVerified: true,
+            isVerified: true, // Google users are auto-verified
             // Unified credit system
             totalCredits: freeTotalCredits,
             usedPhotoshootCredits: 0,
             usedMarketingCredits: 0,
-            googleId, // Store Google ID for future reference
           });
           await user.save();
+          logger.info(`✅ New user created via Google: ${normalizedEmail}`);
         } else {
-          // Existing user - update info
+          // User already exists - link Google account if not already linked
+
+          if (!user.googleId) {
+            // Link Google to existing email/OTP account
+            user.googleId = googleId;
+            user.provider = "both"; // User now supports both email OTP and Google
+            user.isVerified = true; // Verify the account
+            logger.info(`🔗 Linked Google account to existing user: ${normalizedEmail}`);
+          }
+
+          // Update name if not set
           if (!user.name && name) {
             user.name = name;
           }
-          if (!user.googleId) {
-            user.googleId = googleId;
-          }
+
+          // Update role if user is admin
           if (isAdmin && user.role !== "admin") {
             user.role = "admin";
           }
-          user.isVerified = true;
+
+          // Update last login
           user.lastLogin = new Date();
-          // Only set free credits if user has no subscription plan AND credits are undefined/null
-          if (!user.subscriptionPlan) {
-            if (
-              user.photoshootCredits === undefined ||
-              user.photoshootCredits === null
-            ) {
-              user.photoshootCredits = freePhotoshootCredits;
-            }
-            if (
-              user.marketingPosterCredits === undefined ||
-              user.marketingPosterCredits === null
-            ) {
-              user.marketingPosterCredits = freeMarketingCredits;
-            }
-          }
+
           await user.save();
         }
 

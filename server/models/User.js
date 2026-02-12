@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       sparse: true, // Allows multiple null values
     },
+    provider: {
+      type: String,
+      enum: ["email", "google", "both"],
+      default: "email",
+    },
     role: {
       type: String,
       enum: ["user", "admin"],
