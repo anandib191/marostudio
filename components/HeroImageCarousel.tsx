@@ -172,26 +172,22 @@ export const HeroImageCarousel: React.FC = () => {
               />
             </picture>
           </div>
-          {/* AFTER Badge - Left Corner Inside Image */}
-          <div className="absolute top-5 left-5 bg-gradient-to-r from-indigo-500 to-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold z-10 shadow-lg">
+          {/* AFTER Badge - golden gradient */}
+          <div className="after-badge absolute top-5 left-5 px-4 py-2 rounded-lg text-sm font-bold z-10 shadow-lg shadow-gold-900/30">
             AFTER
           </div>
-          {/* Variation indicator */}
+          {/* Variation indicator - white dots inactive, active = golden pill */}
           <div className="variation-indicator absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {[0, 1, 2].map((idx) => (
               <span
                 key={idx}
                 className={`variation-dot w-2 h-2 rounded-full transition-all ${
                   idx === currentVariationIndex 
-                    ? 'bg-white w-6 rounded-sm shadow-[0_0_10px_rgba(255,255,255,0.5)]' 
-                    : 'bg-white/40'
+                    ? 'bg-gold-400 w-6 rounded-sm' 
+                    : 'bg-white'
                 }`}
               />
             ))}
-          </div>
-          {/* Variation number display */}
-          <div className="variation-badge absolute top-5 right-5 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold z-10 backdrop-blur-md">
-            {currentVariationIndex + 1}/3
           </div>
         </div>
       </div>
@@ -245,26 +241,22 @@ export const HeroImageCarousel: React.FC = () => {
               />
             </picture>
           </div>
-          {/* AFTER Badge - Left Corner Inside Image */}
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-indigo-500 to-rose-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold z-10 shadow-lg">
+          {/* AFTER Badge - golden gradient */}
+          <div className="after-badge absolute top-3 left-3 px-3 py-1.5 rounded-lg text-sm font-bold z-10 shadow-lg shadow-gold-900/30">
             AFTER
           </div>
-          {/* Variation indicator */}
+          {/* Variation indicator - white dots inactive, active = golden pill */}
           <div className="variation-indicator absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {[0, 1, 2].map((idx) => (
               <span
                 key={idx}
                 className={`variation-dot w-2 h-2 rounded-full transition-all ${
                   idx === currentVariationIndex 
-                    ? 'bg-white w-6 rounded-sm shadow-[0_0_10px_rgba(255,255,255,0.5)]' 
-                    : 'bg-white/40'
+                    ? 'bg-gold-400 w-6 rounded-sm' 
+                    : 'bg-white'
                 }`}
               />
             ))}
-          </div>
-          {/* Variation number display */}
-          <div className="variation-badge absolute top-3 right-3 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs font-semibold z-10 backdrop-blur-md">
-            {currentVariationIndex + 1}/3
           </div>
         </div>
       </div>

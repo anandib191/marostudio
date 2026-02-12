@@ -32,7 +32,7 @@ export const AIModelsGrid: React.FC = () => {
                     <div
                         key={index}
                         className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-full overflow-hidden shadow-lg border-2 transition-all duration-500 animate-fade-in ${
-                            index === staticIndex ? 'border-rose-500 scale-110' : 'border-neutral-700'
+                            index === staticIndex ? 'border-gold-500 scale-110' : 'border-neutral-700'
                         }`}
                         style={{ animationDelay: `${index * 50}ms` }}
                     >

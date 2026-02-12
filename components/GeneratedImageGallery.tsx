@@ -62,8 +62,8 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
         // Measure text widths
         const suffixMetrics = ctx.measureText(suffixText);
         
-        // Draw "Photo" in Indigo
-        ctx.fillStyle = '#6366f1'; 
+        // Draw "Photo" in Gold
+        ctx.fillStyle = '#e6b71e'; 
         ctx.fillText(suffixText, x, y);
 
         // Draw "MARO Studio" in White to the left
@@ -117,7 +117,7 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
               <button 
                   onClick={(e) => { e.stopPropagation(); handleDownload(image, index); }}
                   aria-label={`Download ${title}`}
-                  className="absolute top-4 right-4 z-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-indigo-600 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl border border-white/10"
+                  className="absolute top-4 right-4 z-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-gold-600 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl border border-white/10"
               >
                   <DownloadIcon />
               </button>

@@ -42,7 +42,7 @@ export const WhyAIStudioSection: React.FC = () => {
       <div className="container-lg3 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="why-ai-studio-text text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white mb-4 leading-tight tracking-tight">
-            Why <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">MARO Studio</span>?
+            Why <span className="why-maro-gradient-text bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent drop-shadow-lg">MARO Studio</span>?
           </h2>
           <p className="text-base md:text-lg text-neutral-400 leading-relaxed">
             The Smartest Way to Create Brand-Worthy Product Photo's
@@ -53,7 +53,7 @@ export const WhyAIStudioSection: React.FC = () => {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="icon-grid flex gap-4 p-6 bg-neutral-900 rounded-xl border border-white/10 transition-all hover:border-indigo-500/30 hover:translate-x-1 hover:shadow-lg"
+                className="icon-grid why-maro-benefit-box flex gap-4 p-6 bg-neutral-900 rounded-xl transition-all hover:translate-x-1 hover:shadow-lg"
               >
                 <img
                   src={benefit.icon}
@@ -76,7 +76,7 @@ export const WhyAIStudioSection: React.FC = () => {
             <div className="button-top-alignment mt-4 flex justify-center col-span-1 sm:col-span-2">
               <button
                 onClick={handleCreateImage}
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-500 to-rose-500 border-none rounded-lg text-white font-semibold text-base cursor-pointer transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl hover:shadow-indigo-900/30"
+                className="button-ui inline-flex items-center gap-2.5 px-7 py-3.5 rounded-lg font-semibold text-lg cursor-pointer transition-all"
               >
                 <span>Create Your First Image</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

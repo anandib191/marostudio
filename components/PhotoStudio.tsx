@@ -41,12 +41,12 @@ import { BoyCrestIcon } from './icons/BoyCrestIcon';
 import { GirlCrestIcon } from './icons/GirlCrestIcon';
 import { FurnitureIcon } from './icons/FurnitureIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
-import { CreditsSummaryBox } from './CreditsSummaryBox';
+import { UnifiedCreditsSummaryBox } from './UnifiedCreditsSummaryBox';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { AspectRatio16x9Icon } from './icons/AspectRatio16x9Icon';
 import { AspectRatio9x16Icon } from './icons/AspectRatio9x16Icon';
 import { UserIcon } from './icons/UserIcon';
-import { addLookbookToCache, addToCache, getCachedItems } from '../utils/cacheManager';
+import { addToCache, getCachedItems } from '../utils/cacheManager';
 
 
 type ViewMode = 'gallery' | 'catalogue';
@@ -274,7 +274,7 @@ const CategorySelection: React.FC<{
                 {options.map(([key, node]) => (
                     <GlassButton key={key} onClick={() => handleSelect(key)} className="group w-full aspect-square md:aspect-auto">
                         <div className="px-6 py-10 md:py-16 flex flex-col w-full items-center justify-center gap-6">
-                            <node.icon className="w-10 h-10 md:w-16 md:h-16 text-indigo-400/80 group-hover:text-indigo-400 transition-all duration-500 group-hover:scale-110" />
+                            <node.icon className="w-10 h-10 md:w-16 md:h-16 text-gold-500/80 group-hover:text-gold-400 transition-all duration-500 group-hover:scale-110" />
                             <h2 className="font-sans font-bold text-xs md:text-sm text-white uppercase tracking-[0.3em]">{node.name}</h2>
                         </div>
                     </GlassButton>
@@ -308,7 +308,10 @@ interface DetailsStepProps {
     onBackgroundChange: (bg: BackgroundType) => void;
     customBackground: string;
     onCustomBackgroundChange: (val: string) => void;
-    photoshootCredits?: number | null;
+    remainingCredits?: number | null;
+    totalCredits?: number | null;
+    usedPhotoshootCredits?: number;
+    usedMarketingCredits?: number;
     navigate: ReturnType<typeof useNavigate>;
     isAuthenticated: boolean;
 }
@@ -337,7 +340,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     onBackgroundChange,
     customBackground,
     onCustomBackgroundChange,
-    photoshootCredits,
+    remainingCredits,
+    totalCredits,
+    usedPhotoshootCredits,
+    usedMarketingCredits,
     navigate,
     isAuthenticated
 }) => {
@@ -383,7 +389,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                 value={creatorName}
                                 onChange={(e) => onCreatorNameChange(e.target.value)}
                                 placeholder="Brand / Label Name"
-                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-neutral-700"
+                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
                             />
                         </div>
                         <div>
@@ -406,7 +412,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                     value={productName}
                                     onChange={(e) => onProductNameChange(e.target.value)}
                                     placeholder="Product Name"
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
                                 />
                             )}
                         </div>
@@ -435,11 +441,11 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             <button
                                 onClick={() => onConsistentCharacterChange(!consistentCharacter)}
                                 className={`w-full flex items-center justify-between px-6 py-4 rounded-xl border transition-all duration-300 ${
-                                    consistentCharacter ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' : 'bg-neutral-900/50 border-white/5 text-neutral-500'
+                                    consistentCharacter ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-neutral-900/50 border-white/5 text-neutral-500'
                                 }`}
                             >
                                 <span className="text-[10px] font-bold uppercase tracking-widest">Locked Persona</span>
-                                <div className={`w-10 h-5 rounded-full relative ${consistentCharacter ? 'bg-indigo-600' : 'bg-neutral-700'}`}>
+                                <div className={`w-10 h-5 rounded-full relative ${consistentCharacter ? 'bg-gold-600' : 'bg-neutral-700'}`}>
                                     <div className={`absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform ${consistentCharacter ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </div>
                             </button>
@@ -487,7 +493,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                     key={style.id}
                                     onClick={() => onStyleChange(style.id)}
                                     className={`py-3 px-4 rounded-lg text-[9px] uppercase tracking-widest font-bold border transition-all ${
-                                        selectedStyle === style.id ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-900/20' : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
+                                        selectedStyle === style.id ? 'bg-gold-600 text-white border-gold-500 shadow-lg shadow-gold-900/20' : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
                                     }`}
                                 >
                                     {style.name}
@@ -500,7 +506,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                         {!isAuthenticated ? (
                             <button
                                 onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
-                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-6 px-12 rounded-xl shadow-2xl shadow-orange-950/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-6 px-12 rounded-xl shadow-2xl shadow-orange-950/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -511,18 +517,19 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             <>
                                 <button
                                     onClick={onGenerate}
-                                    disabled={!creatorName || isLoading || (photoshootCredits !== null && photoshootCredits < 20)}
-                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-indigo-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
+                                    disabled={!creatorName || isLoading || (remainingCredits !== null && remainingCredits < 20)}
+                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-gold-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
                                 >
                                     {isLoading ? 'Processing Neural Sequence...' : 'Generate Photoshoot'}
                                 </button>
-                                {photoshootCredits !== null && (
+                                {totalCredits !== null && (
                                     <div className="mt-3 space-y-2">
-                                        <CreditsSummaryBox 
-                                            credits={photoshootCredits} 
-                                            creditType="photoshoot"
+                                        <UnifiedCreditsSummaryBox 
+                                            totalCredits={totalCredits}
+                                            usedPhotoshootCredits={usedPhotoshootCredits}
+                                            usedMarketingCredits={usedMarketingCredits}
                                         />
-                                        {photoshootCredits < 20 && (
+                                        {remainingCredits < 20 && (
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -530,7 +537,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                     e.stopPropagation();
                                                     navigate('/pricing');
                                                 }}
-                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-gold-600 to-gold-600 hover:from-gold-500 hover:to-gold-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -551,7 +558,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
 export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; }> = ({ onExit, onContentGenerated }) => {
     const navigate = useNavigate();
-    const [photoshootCredits, setPhotoshootCredits] = useState<number | null>(null);
+    const [totalCredits, setTotalCredits] = useState<number | null>(null);
+    const [usedPhotoshootCredits, setUsedPhotoshootCredits] = useState<number>(0);
+    const [usedMarketingCredits, setUsedMarketingCredits] = useState<number>(0);
+    const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
     const [isPaidUser, setIsPaidUser] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -559,19 +569,22 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
         if (!token) {
-            setPhotoshootCredits(null);
+            setTotalCredits(null);
+            setRemainingCredits(null);
             return;
         }
 
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
+            const res = await fetch(`${API_URL}/api/credits`, {
                 headers: { Authorization: `Bearer ${token}` },
-                cache: 'no-store',
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                setPhotoshootCredits(data.photoshootCredits);
+                setTotalCredits(data.totalCredits);
+                setUsedPhotoshootCredits(data.usedPhotoshootCredits);
+                setUsedMarketingCredits(data.usedMarketingCredits);
+                setRemainingCredits(data.remainingCredits);
                 setIsPaidUser(Boolean(data.subscriptionPlan));
             }
         } catch (err) {
@@ -841,7 +854,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         const deductData = await deductRes.json();
                         if (deductData.success) {
                             // Update from server response
-                            setPhotoshootCredits(deductData.photoshootCredits);
+                            setTotalCredits(deductData.totalCredits);
+                            setUsedPhotoshootCredits(deductData.usedPhotoshootCredits);
+                            setUsedMarketingCredits(deductData.usedMarketingCredits);
+                            setRemainingCredits(deductData.remainingCredits);
                         } else {
                             // Fallback: fetch from server
                             await fetchCredits();
@@ -881,16 +897,106 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 orientation: 'portrait', unit: 'mm', format: 'a4', hotfixes: ['px_scaling'],
             });
             
+            // Helper function to convert oklch colors to rgb
+            const oklchToRgb = (oklchStr: string): string => {
+                // Simple oklch to hex conversion for common colors
+                const oklchMap: { [key: string]: string } = {
+                    'oklch(0.4 0.05 264.9)': '#e6b71e', // gold-500
+                    'oklch(0.486 0.153 265.76)': '#ae820d', // gold-700
+                    'oklch(0.544 0.135 265.76)': '#e6b71e', // gold-500 lighter
+                };
+                
+                // Check if it's a known oklch color
+                for (const [oklch, rgb] of Object.entries(oklchMap)) {
+                    if (oklchStr.includes(oklch.split('(')[1].split(')')[0])) {
+                        return rgb;
+                    }
+                }
+                
+                // Fallback: extract oklch values and approximate
+                const match = oklchStr.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/);
+                if (match) {
+                    return '#e6b71e'; // Default to gold
+                }
+                return oklchStr;
+            };
+            
             for (let i = 0; i < pages.length; i++) {
                 try {
-                    const pageCanvas = await html2canvas(pages[i], { 
+                    // Clone the page while keeping styles
+                    const pageElement = pages[i] as HTMLElement;
+                    const clonedPage = pageElement.cloneNode(true) as HTMLElement;
+                    
+                    // Convert oklch colors in style tags to rgb
+                    const styleTags = clonedPage.querySelectorAll('style');
+                    styleTags.forEach(styleTag => {
+                        if (styleTag.textContent) {
+                            // Replace all oklch() functions with hex equivalents
+                            styleTag.textContent = styleTag.textContent.replace(
+                                /oklch\([^)]+\)/g,
+                                match => {
+                                    // Map common oklch values to hex
+                                    if (match.includes('264.9')) return '#e6b71e'; // gold
+                                    if (match.includes('265')) return '#4f46e5'; // gold-600
+                                    return '#000000'; // fallback to black
+                                }
+                            );
+                        }
+                    });
+                    
+                    // Also handle inline styles with oklch
+                    const allElements = clonedPage.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        const styleAttr = el.getAttribute('style');
+                        if (styleAttr && styleAttr.includes('oklch')) {
+                            const newStyle = styleAttr.replace(
+                                /oklch\([^)]+\)/g,
+                                match => {
+                                    if (match.includes('264.9')) return '#e6b71e';
+                                    if (match.includes('265')) return '#4f46e5';
+                                    return '#000000';
+                                }
+                            );
+                            el.setAttribute('style', newStyle);
+                        }
+                    });
+                    
+                    // Create temporary container for html2canvas
+                    const tempContainer = document.createElement('div');
+                    tempContainer.style.position = 'fixed';
+                    tempContainer.style.left = '-9999px';
+                    tempContainer.style.top = '-9999px';
+                    tempContainer.style.width = '210mm';
+                    tempContainer.style.height = '297mm';
+                    tempContainer.appendChild(clonedPage);
+                    document.body.appendChild(tempContainer);
+                    
+                    const pageCanvas = await html2canvas(clonedPage, { 
                         scale: 2, 
                         useCORS: true,
                         allowTaint: true,
                         backgroundColor: '#ffffff',
                         logging: false,
                         imageTimeout: 0,
+                        // Intercept and fix oklch before parsing
+                        onclone: (doc) => {
+                            const styles = doc.querySelectorAll('style');
+                            styles.forEach(style => {
+                                if (style.textContent) {
+                                    style.textContent = style.textContent.replace(
+                                        /oklch\([^)]+\)/g,
+                                        match => {
+                                            if (match.includes('264.9')) return '#e6b71e';
+                                            if (match.includes('265')) return '#4f46e5';
+                                            return '#000000';
+                                        }
+                                    );
+                                }
+                            });
+                        }
                     });
+                    
+                    document.body.removeChild(tempContainer);
                     
                     if (i > 0) {
                         pdf.addPage('a4', 'portrait');
@@ -907,22 +1013,11 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             
             // Get PDF as blob
             const pdfBlob = pdf.output('blob');
-            const pdfDataUrl = pdf.output('dataurlstring');
-            
-            // Cache the PDF lookbook
-            const cachePrompt = `${promptCategory} lookbook - ${selectedStyle || 'Standard'} style`;
-            const lookbookName = creatorName || 'campaign';
-            try {
-                await addLookbookToCache(pdfDataUrl, 'photo', cachePrompt, lookbookName);
-                console.log('✅ Lookbook PDF cached');
-            } catch (cacheErr) {
-                console.warn('Lookbook cache failed, continuing with download:', cacheErr);
-            }
             
             // Download the PDF
             const link = document.createElement('a');
             link.href = URL.createObjectURL(pdfBlob);
-            link.download = `${lookbookName}.pdf`;
+            link.download = `${creatorName || 'campaign'}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -978,13 +1073,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             </div>
                         ) : identificationStatus === 'confirming' ? (
                              <div className="text-center">
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-indigo-400 mb-2">Match found</p>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-gold-400 mb-2">Match found</p>
                                 <p className="text-4xl font-bold font-serif-display text-white mb-10 capitalize">"{identifiedProductName}"</p>
                                 <div className="flex flex-col gap-4">
                                     {!isAuthenticated ? (
                                         <button 
                                             onClick={() => navigate('/signin')}
-                                            className="text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
+                                            className="text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -994,19 +1089,20 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                     ) : (
                                         <button 
                                             onClick={() => handleGeneration(identifiedProductName)} 
-                                            disabled={photoshootCredits !== null && photoshootCredits <= 0}
-                                            className="text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full transition-all"
+                                            disabled={remainingCredits !== null && remainingCredits <= 0}
+                                            className="text-[10px] uppercase tracking-widest text-white bg-gold-600 hover:bg-gold-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full transition-all"
                                         >
                                             Confirm
                                         </button>
                                     )}
-                                    {photoshootCredits !== null && (
+                                    {remainingCredits !== null && (
                                         <div className="space-y-2">
-                                            <CreditsSummaryBox 
-                                                credits={photoshootCredits} 
-                                                creditType="photoshoot"
-                                            />
-                                            {photoshootCredits < 20 && (
+                                            <UnifiedCreditsSummaryBox 
+                                            totalCredits={totalCredits}
+                                            usedPhotoshootCredits={usedPhotoshootCredits}
+                                            usedMarketingCredits={usedMarketingCredits}
+                                        />
+                                            {remainingCredits < 20 && (
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
@@ -1014,7 +1110,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                                         e.stopPropagation();
                                                         navigate('/pricing');
                                                     }}
-                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-indigo-900/20"
+                                                    className="w-full text-[10px] uppercase tracking-widest text-white bg-gold-600 hover:bg-gold-500 font-bold py-3 px-6 rounded-full transition-all transform hover:-translate-y-0.5 shadow-lg shadow-gold-900/20"
                                                 >
                                                     Purchase plan for more generation
                                                 </button>
@@ -1041,7 +1137,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 {!isAuthenticated ? (
                                     <button 
                                         onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
-                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
+                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1051,19 +1147,19 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 ) : (
                                     <button 
                                         onClick={() => handleGeneration(manualProductName)} 
-                                        disabled={!manualProductName || (photoshootCredits !== null && photoshootCredits < 20)}
-                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
+                                        disabled={!manualProductName || (remainingCredits !== null && remainingCredits < 20)}
+                                        className="w-full text-[10px] uppercase tracking-widest text-white bg-gold-600 hover:bg-gold-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
                                     >
                                         Continue
                                     </button>
                                 )}
-                                {photoshootCredits !== null && (
+                                {remainingCredits !== null && (
                                     <div className="mt-2 space-y-2">
-                                        <CreditsSummaryBox 
-                                            credits={photoshootCredits} 
+                                        <UnifiedCreditsSummaryBox 
+                                            credits={remainingCredits} 
                                             creditType="photoshoot"
                                         />
-                                        {photoshootCredits < 20 && (
+                                        {remainingCredits < 20 && (
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -1071,7 +1167,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                                     e.stopPropagation();
                                                     navigate('/pricing');
                                                 }}
-                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-indigo-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-gold-600 to-gold-600 hover:from-gold-500 hover:to-gold-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1126,7 +1222,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         onGenerate={() => handleGeneration()}
                         onImageUpload={handleImageUpload}
                         isLoading={isLoading}
-                        photoshootCredits={photoshootCredits}
+                        remainingCredits={remainingCredits}
+                        totalCredits={totalCredits}
+                        usedPhotoshootCredits={usedPhotoshootCredits}
+                        usedMarketingCredits={usedMarketingCredits}
                         navigate={navigate}
                         otherOrnamentType={otherOrnamentType}
                         onOtherOrnamentTypeChange={setOtherOrnamentType}
@@ -1164,6 +1263,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 </button>
                             </div>
 
+
                             <div className="flex flex-wrap justify-center items-center gap-4">
                                 <button 
                                     onClick={handleDownloadZip} 
@@ -1177,7 +1277,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 <button 
                                     onClick={handleDownloadPdf} 
                                     disabled={!!downloadingType} 
-                                    className="text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-3 px-10 rounded-full transition-all flex items-center gap-3"
+                                    className="text-[10px] uppercase tracking-widest text-white bg-gold-700 hover:bg-gold-600 font-bold py-3 px-10 rounded-full transition-all flex items-center gap-3"
                                 >
                                     {downloadingType === 'pdf' ? <Loader size="sm" /> : <DownloadIcon />}
                                     Lookbook PDF

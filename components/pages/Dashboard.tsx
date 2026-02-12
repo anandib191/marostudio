@@ -16,8 +16,7 @@ export interface PricePlan {
   description: string;
   features: string[];
   isPopular: boolean;
-  photoshootCredits?: number;
-  marketingPosterCredits?: number;
+  totalCredits?: number; // Unified credit system
 }
 
 interface User {
@@ -31,13 +30,12 @@ interface User {
   subscriptionBillingPeriod?: 'monthly' | 'yearly' | null;
   subscriptionPurchasedAt?: string | null;
   subscriptionExpiresAt?: string | null;
-  photoshootCredits?: number;
-  marketingPosterCredits?: number;
-  planName?: string;
-  totalPhotoshootCredits?: number;
-  totalMarketingCredits?: number;
+  // Unified credit system
+  totalCredits?: number;
   usedPhotoshootCredits?: number;
   usedMarketingCredits?: number;
+  planName?: string;
+  remainingCredits?: number;
   photoshootGenerationsUsed?: number;
   marketingGenerationsUsed?: number;
   photoshootGenerationsRemaining?: number;
@@ -82,8 +80,7 @@ export const Dashboard: React.FC = () => {
 
   // Free tier credits state
   const [freeTierCredits, setFreeTierCredits] = useState({
-    photoshootCredits: 3,
-    marketingPosterCredits: 5,
+    totalCredits: 100, // Default free tier credits (will be loaded from API)
   });
   const [loadingFreeTier, setLoadingFreeTier] = useState(false);
   const [savingFreeTier, setSavingFreeTier] = useState(false);
@@ -128,6 +125,7 @@ export const Dashboard: React.FC = () => {
     description: '',
     features: [],
     isPopular: false,
+    totalCredits: 0,
     photoshootCredits: 0,
     marketingPosterCredits: 0,
   });
@@ -173,7 +171,9 @@ export const Dashboard: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
+      console.log('Plans data received:', data); // Debug log
       if (res.ok && data.success && Array.isArray(data.plans)) {
+        console.log('Setting plans:', data.plans); // Debug log
         setPlans(data.plans); // Directly replace old data with new data
       } else {
         toast.error(data.message || 'Failed to load plans', { position: "top-right", autoClose: 3000 });
@@ -198,8 +198,7 @@ export const Dashboard: React.FC = () => {
       const data = await res.json();
       if (res.ok && data.success) {
         setFreeTierCredits({
-          photoshootCredits: data.freeTierPhotoshootCredits || 3,
-          marketingPosterCredits: data.freeTierMarketingPosterCredits || 5,
+          totalCredits: data.freeTierTotalCredits || 100,
         });
       } else {
         toast.error(data.message || 'Failed to load free tier credits', { position: "top-right", autoClose: 3000 });
@@ -379,20 +378,11 @@ export const Dashboard: React.FC = () => {
       
       // Filter out blank features from all plans before saving
       // Also ensure only one plan is popular
-      // Auto-update features array to include credits if credit fields are set
+      // Clean features array without auto-adding credit features
       const cleanedPlans = plansToProcess.map(plan => {
         const filteredFeatures = (plan.features || []).filter((f: string) => f && f.trim().length > 0);
         
-        // If photoshootCredits and marketingPosterCredits are set, ensure features array includes them
-        const creditFeatures: string[] = [];
-        if (plan.photoshootCredits !== undefined && plan.photoshootCredits !== null) {
-          creditFeatures.push(`${plan.photoshootCredits.toLocaleString()} Photoshoot generation`);
-        }
-        if (plan.marketingPosterCredits !== undefined && plan.marketingPosterCredits !== null) {
-          creditFeatures.push(`${plan.marketingPosterCredits.toLocaleString()} Marketing poster generation`);
-        }
-        
-        // Remove old credit features and add new ones
+        // Only remove old credit features, don't add new ones automatically
         const nonCreditFeatures = filteredFeatures.filter(f => 
           !f.toLowerCase().includes('photoshoot generation') && 
           !f.toLowerCase().includes('marketing poster generation')
@@ -400,7 +390,7 @@ export const Dashboard: React.FC = () => {
         
         return {
           ...plan,
-          features: [...creditFeatures, ...nonCreditFeatures]
+          features: nonCreditFeatures
         };
       });
       
@@ -418,12 +408,15 @@ export const Dashboard: React.FC = () => {
         return plan;
       });
 
+      console.log('Sending to backend:', { plans: finalPlans });
+      
       const res = await fetch(`${API_URL}/api/admin/price-plans`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ plans: finalPlans }),
       });
       const data = await res.json();
+      console.log('Backend response:', data);
       if (res.ok && data.success) {
         setPlans(data.plans || finalPlans);
         toast.success('Price plans updated successfully', { position: "top-right", autoClose: 3000 });
@@ -619,34 +612,10 @@ export const Dashboard: React.FC = () => {
         if (i === index) {
           const updatedPlan = { ...p, [field]: value };
           
-          // If credits are updated, automatically sync features array
-          if (field === 'photoshootCredits' || field === 'marketingPosterCredits') {
-            const creditFeatures: string[] = [];
-            const photoshootCredits = field === 'photoshootCredits' ? (value as number) : updatedPlan.photoshootCredits;
-            const marketingCredits = field === 'marketingPosterCredits' ? (value as number) : updatedPlan.marketingPosterCredits;
-            
-            if (photoshootCredits !== undefined && photoshootCredits !== null) {
-              creditFeatures.push(`${photoshootCredits.toLocaleString()} Photoshoot generation`);
-            }
-            if (marketingCredits !== undefined && marketingCredits !== null) {
-              creditFeatures.push(`${marketingCredits.toLocaleString()} Marketing poster generation`);
-            }
-            
-            // Remove old credit features and add new ones
-            const nonCreditFeatures = (updatedPlan.features || []).filter(f => 
-              !f.toLowerCase().includes('photoshoot generation') && 
-              !f.toLowerCase().includes('marketing poster generation')
-            );
-            
-            updatedPlan.features = [...creditFeatures, ...nonCreditFeatures];
-          }
+          // Don't automatically sync features when credits are updated
+          // Features should be managed independently
           
-          // If setting isPopular to true, unset all others
-          if (field === 'isPopular' && value === true) {
-            return updatedPlan;
-          } else {
-            return updatedPlan;
-          }
+          return updatedPlan;
         } else {
           // If another plan is being set as popular, unset this one
           if (field === 'isPopular' && value === true) {
@@ -917,7 +886,7 @@ export const Dashboard: React.FC = () => {
             setSidebarOpen(false);
           }}
           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'price-plans' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            section === 'price-plans' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
           }`}
         >
           Price Plans
@@ -928,7 +897,7 @@ export const Dashboard: React.FC = () => {
             setSidebarOpen(false);
           }}
           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'users' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            section === 'users' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
           }`}
         >
           Users
@@ -939,7 +908,7 @@ export const Dashboard: React.FC = () => {
             setSidebarOpen(false);
           }}
           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'admins' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            section === 'admins' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
           }`}
         >
           Admins
@@ -950,7 +919,7 @@ export const Dashboard: React.FC = () => {
             setSidebarOpen(false);
           }}
           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'credits' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            section === 'credits' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
           }`}
         >
           Credits
@@ -961,7 +930,7 @@ export const Dashboard: React.FC = () => {
             setSidebarOpen(false);
           }}
           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'statistics' ? 'bg-indigo-600/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            section === 'statistics' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
           }`}
         >
           Statistics
@@ -1022,13 +991,13 @@ export const Dashboard: React.FC = () => {
                 <h2 className="text-2xl font-bold font-serif-display">Price Plans</h2>
                 <div className="flex gap-3">
                   {refreshingPlans && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gold-500/10 border border-gold-500/30 rounded-lg">
                       <div className="sparkle-loader">
                         <div className="sparkle"></div>
                         <div className="sparkle"></div>
                         <div className="sparkle"></div>
                       </div>
-                      <span className="text-xs text-indigo-400 font-medium">Refreshing...</span>
+                      <span className="text-xs text-gold-400 font-medium">Refreshing...</span>
                     </div>
                   )}
                   <button
@@ -1042,7 +1011,7 @@ export const Dashboard: React.FC = () => {
 
               {loadingPlans ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
@@ -1051,7 +1020,7 @@ export const Dashboard: React.FC = () => {
                       key={i}
                       className={`relative rounded-2xl p-4 sm:p-6 md:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out ${
                         plan.isPopular 
-                          ? 'bg-neutral-900 border-2 border-rose-500 shadow-2xl shadow-rose-900/40 z-10' 
+                          ? 'bg-neutral-900 border-2 border-gold-500 shadow-2xl shadow-gold-900/40 z-10' 
                           : 'bg-neutral-950/50 border border-neutral-800'
                       }`}
                     >
@@ -1059,7 +1028,7 @@ export const Dashboard: React.FC = () => {
                       <div className="absolute top-4 right-4 flex gap-2 z-10">
                         <button
                           onClick={() => handleEditPlan(i)}
-                          className="p-2 bg-black/60 hover:bg-indigo-600/80 rounded-lg text-indigo-400 hover:text-white transition-colors"
+                          className="p-2 bg-black/60 hover:bg-gold-600/80 rounded-lg text-gold-400 hover:text-white transition-colors"
                           title="Edit Plan"
                           aria-label="Edit Plan"
                         >
@@ -1072,7 +1041,7 @@ export const Dashboard: React.FC = () => {
                           disabled={savingPlans}
                           className={`p-2 bg-black/60 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                             plan.isPopular
-                              ? 'bg-rose-500/80 hover:bg-rose-600/80 text-white'
+                              ? 'bg-gold-500/80 hover:bg-gold-600/80 text-white'
                               : 'hover:bg-yellow-600/80 text-yellow-400 hover:text-white'
                           }`}
                           title={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
@@ -1099,7 +1068,7 @@ export const Dashboard: React.FC = () => {
                       {plan.isPopular && (
                         <div 
                           key={`badge-${plan._id || i}-${plan.isPopular}`}
-                          className="absolute top-0 right-6 -translate-y-1/2 bg-rose-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider"
+                          className="absolute top-0 right-6 -translate-y-1/2 bg-gold-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider"
                         >
                           <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
                           Most Popular
@@ -1120,7 +1089,7 @@ export const Dashboard: React.FC = () => {
                         <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
                           {(plan.features || []).map((feature, idx) => (
                             <li key={idx} className="flex gap-x-3">
-                              <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                              <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
                               <span>{feature}</span>
                             </li>
                           ))}
@@ -1144,7 +1113,7 @@ export const Dashboard: React.FC = () => {
               {/* User Statistics Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {/* Total Users Card */}
-                <div className="bg-gradient-to-br from-indigo-900/30 to-indigo-800/20 border border-indigo-500/30 rounded-xl p-6">
+                <div className="bg-gradient-to-br from-gold-900/30 to-gold-800/20 border border-gold-500/30 rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Total Users</p>
@@ -1154,8 +1123,8 @@ export const Dashboard: React.FC = () => {
                         <h3 className="text-2xl sm:text-3xl font-bold text-white">{usersTotal.toLocaleString()}</h3>
                       )}
                     </div>
-                    <div className="bg-indigo-500/20 p-3 rounded-lg">
-                      <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-gold-500/20 p-3 rounded-lg">
+                      <svg className="w-6 h-6 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
@@ -1185,7 +1154,7 @@ export const Dashboard: React.FC = () => {
 
               {loadingUsers ? (
                 <div className="flex items-center justify-center py-12 sm:py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-indigo-500 border-t-transparent" />
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-gold-500 border-t-transparent" />
                 </div>
               ) : (
                 <>
@@ -1219,7 +1188,7 @@ export const Dashboard: React.FC = () => {
                                       : user?.planName === 'Gold'
                                       ? 'bg-yellow-500/20 text-yellow-300'
                                       : user?.planName === 'Platinum'
-                                      ? 'bg-purple-500/20 text-purple-300'
+                                      ? 'bg-gold-500/20 text-gold-300'
                                       : 'bg-blue-500/20 text-blue-300'
                                   }`}>
                                     {user?.planName || 'Free'}
@@ -1365,7 +1334,7 @@ export const Dashboard: React.FC = () => {
                         value={addAdminEmail}
                         onChange={(e) => setAddAdminEmail(e.target.value)}
                         required
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         placeholder="admin@example.com"
                       />
                     </div>
@@ -1375,7 +1344,7 @@ export const Dashboard: React.FC = () => {
                     <button
                       type="submit"
                       disabled={addAdminLoading}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       {addAdminLoading ? 'Sending...' : 'Send OTP'}
                     </button>
@@ -1399,7 +1368,7 @@ export const Dashboard: React.FC = () => {
                         onChange={(e) => setAddAdminOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         required
                         maxLength={6}
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-center text-xl sm:text-2xl tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-center text-xl sm:text-2xl tracking-widest focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         placeholder="000000"
                       />
                     </div>
@@ -1410,7 +1379,7 @@ export const Dashboard: React.FC = () => {
                       <button
                         type="submit"
                         disabled={addAdminLoading || addAdminOTP.length !== 6}
-                        className="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="flex-1 sm:flex-none px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                       >
                         {addAdminLoading ? 'Verifying...' : 'Verify & Add Admin'}
                       </button>
@@ -1433,7 +1402,7 @@ export const Dashboard: React.FC = () => {
               {/* Admins List */}
               {loadingAdmins ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
                 </div>
               ) : (
                 <>
@@ -1456,7 +1425,7 @@ export const Dashboard: React.FC = () => {
                                 <div className="max-w-[200px] sm:max-w-none truncate" title={admin.email}>{admin.email}</div>
                               </td>
                               <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
-                                <span className="inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium bg-indigo-500/20 text-indigo-300">
+                                <span className="inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium bg-gold-500/20 text-gold-300">
                                   Admin
                                 </span>
                               </td>
@@ -1520,52 +1489,40 @@ export const Dashboard: React.FC = () => {
 
               {loadingPlans ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
                 </div>
               ) : (
                 <div className="space-y-6">
                   {/* Free Tier Credits Section */}
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-indigo-500/30 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-semibold text-white">Free Tier Credits</h3>
                         <p className="text-xs text-neutral-400 mt-1">Credits for users without a subscription plan</p>
                       </div>
-                      <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
                         Default Plan
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div className="grid grid-cols-1 gap-6 mb-4">
                       <div>
                         <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Photoshoot Credits
+                          Total Credits (Unified System)
                         </label>
                         <input
                           type="number"
                           min="0"
-                          value={freeTierCredits.photoshootCredits}
+                          value={freeTierCredits.totalCredits}
                           onChange={(e) => setFreeTierCredits(prev => ({
                             ...prev,
-                            photoshootCredits: parseInt(e.target.value) || 0
+                            totalCredits: parseInt(e.target.value) || 0
                           }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Marketing Poster Credits
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={freeTierCredits.marketingPosterCredits}
-                          onChange={(e) => setFreeTierCredits(prev => ({
-                            ...prev,
-                            marketingPosterCredits: parseInt(e.target.value) || 0
-                          }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
+                        <p className="text-xs text-neutral-500 mt-2">
+                          Users can use these credits for both photoshoot (20 credits each) and marketing poster (5 credits each) generation
+                        </p>
                       </div>
                     </div>
                     
@@ -1587,8 +1544,7 @@ export const Dashboard: React.FC = () => {
                                 Authorization: `Bearer ${token}`,
                               },
                               body: JSON.stringify({
-                                freeTierPhotoshootCredits: freeTierCredits.photoshootCredits,
-                                freeTierMarketingPosterCredits: freeTierCredits.marketingPosterCredits,
+                                freeTierTotalCredits: freeTierCredits.totalCredits,
                               }),
                             });
                             const data = await res.json();
@@ -1604,7 +1560,7 @@ export const Dashboard: React.FC = () => {
                           }
                         }}
                         disabled={savingFreeTier}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                       >
                         {savingFreeTier ? 'Saving...' : 'Save Free Tier Credits'}
                       </button>
@@ -1612,13 +1568,13 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Credit Deduction Per Generation Section */}
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-rose-500/30 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-semibold text-white">Credit Deduction per Generation</h3>
                         <p className="text-xs text-neutral-400 mt-1">Configure how many credits are deducted for each generation</p>
                       </div>
-                      <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
                         Per Generation
                       </span>
                     </div>
@@ -1636,7 +1592,7 @@ export const Dashboard: React.FC = () => {
                             ...prev,
                             creditsPerPhotoshootGeneration: parseInt(e.target.value) || 1
                           }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                       </div>
                       <div>
@@ -1651,7 +1607,7 @@ export const Dashboard: React.FC = () => {
                             ...prev,
                             creditsPerMarketingGeneration: parseInt(e.target.value) || 1
                           }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -1691,7 +1647,7 @@ export const Dashboard: React.FC = () => {
                           }
                         }}
                         disabled={savingCreditDeductions}
-                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                       >
                         {savingCreditDeductions ? 'Saving...' : 'Save Credit Deductions'}
                       </button>
@@ -1701,6 +1657,9 @@ export const Dashboard: React.FC = () => {
                   {/* Paid Plans Section */}
                   <div className="pt-4">
                     <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Paid Plans</h3>
+                    <div className="text-xs text-neutral-400 mb-2">
+                      Debug: Plans count = {plans.length}, First plan = {plans[0] ? JSON.stringify(plans[0]) : 'No plans'}
+                    </div>
                   </div>
                   {plans.map((plan, i) => (
                     <div
@@ -1710,36 +1669,27 @@ export const Dashboard: React.FC = () => {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
                         {plan.isPopular && (
-                          <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-full">
+                          <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
                             Most Popular
                           </span>
                         )}
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6">
                         <div>
                           <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                            Photoshoot Credits (per month)
+                            Total Credits (per month) - Unified System
                           </label>
                           <input
                             type="number"
                             min="0"
-                            value={plan.photoshootCredits || 0}
-                            onChange={(e) => updatePlan(i, 'photoshootCredits', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            value={plan.totalCredits || 0}
+                            onChange={(e) => updatePlan(i, 'totalCredits', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                            Marketing Poster Credits (per month)
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={plan.marketingPosterCredits || 0}
-                            onChange={(e) => updatePlan(i, 'marketingPosterCredits', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          />
+                          <p className="text-xs text-neutral-500 mt-2">
+                            Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1789,28 +1739,25 @@ export const Dashboard: React.FC = () => {
                     </button>
                     <button
                       onClick={async () => {
+                        alert('Save Plans button clicked!');
                         const token = localStorage.getItem('admin_token');
                         if (!token) return;
                         
                         setSavingPlans(true);
                         try {
-                          const updatedPlans = plans.map(plan => ({
-                            ...plan,
-                            photoshootCredits: plan.photoshootCredits || 0,
-                            marketingPosterCredits: plan.marketingPosterCredits || 0,
-                          }));
-                          
-                          await handleSavePlans(updatedPlans);
+                          // Save complete plan data, not just credits
+                          await handleSavePlans(plans);
+                          toast.success('Price plans saved successfully!', { position: "top-right", autoClose: 3000 });
                         } catch (e) {
-                          toast.error('Failed to save credits', { position: "top-right", autoClose: 3000 });
+                          toast.error('Failed to save price plans', { position: "top-right", autoClose: 3000 });
                         } finally {
                           setSavingPlans(false);
                         }
                       }}
                       disabled={savingPlans || syncingCredits}
-                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      className="px-6 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      {savingPlans ? 'Saving...' : 'Save Credits'}
+                      {savingPlans ? 'Saving...' : 'Save Plans'}
                     </button>
                   </div>
                 </div>
@@ -1827,11 +1774,11 @@ export const Dashboard: React.FC = () => {
 
               {loadingStatistics ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-indigo-500/30 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
@@ -1842,7 +1789,7 @@ export const Dashboard: React.FC = () => {
                           value={statistics.categories}
                           onChange={(e) => setStatistics(prev => ({ ...prev, categories: e.target.value }))}
                           placeholder="e.g., 4+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                         <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.categories} Categories"</p>
                       </div>
@@ -1855,7 +1802,7 @@ export const Dashboard: React.FC = () => {
                           value={statistics.activeUsers}
                           onChange={(e) => setStatistics(prev => ({ ...prev, activeUsers: e.target.value }))}
                           placeholder="e.g., 10k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                         <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeUsers} Active Users"</p>
                       </div>
@@ -1868,7 +1815,7 @@ export const Dashboard: React.FC = () => {
                           value={statistics.imageGenerated}
                           onChange={(e) => setStatistics(prev => ({ ...prev, imageGenerated: e.target.value }))}
                           placeholder="e.g., 50k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                         <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.imageGenerated} Image Generated"</p>
                       </div>
@@ -1881,7 +1828,7 @@ export const Dashboard: React.FC = () => {
                           value={statistics.activeSubscription}
                           onChange={(e) => setStatistics(prev => ({ ...prev, activeSubscription: e.target.value }))}
                           placeholder="e.g., 1k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                         <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeSubscription} Active Subscription"</p>
                       </div>
@@ -1891,7 +1838,7 @@ export const Dashboard: React.FC = () => {
                       <button
                         onClick={saveStatistics}
                         disabled={savingStatistics}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                       >
                         {savingStatistics ? 'Saving...' : 'Save Statistics'}
                       </button>
@@ -1903,25 +1850,25 @@ export const Dashboard: React.FC = () => {
                     <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
                           {statistics.categories}
                         </h3>
                         <p className="text-sm text-neutral-400">Categories</p>
                       </div>
                       <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
                           {statistics.activeUsers}
                         </h3>
                         <p className="text-sm text-neutral-400">Active Users</p>
                       </div>
                       <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
                           {statistics.imageGenerated}
                         </h3>
                         <p className="text-sm text-neutral-400">Image Generated</p>
                       </div>
                       <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
                           {statistics.activeSubscription}
                         </h3>
                         <p className="text-sm text-neutral-400">Active Subscription</p>
@@ -2013,7 +1960,7 @@ export const Dashboard: React.FC = () => {
                   <input
                     value={newPlan.name}
                     onChange={(e) => updateNewPlan('name', e.target.value)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -2021,7 +1968,7 @@ export const Dashboard: React.FC = () => {
                   <input
                     value={newPlan.price}
                     onChange={(e) => updateNewPlan('price', e.target.value)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -2029,28 +1976,21 @@ export const Dashboard: React.FC = () => {
                   <input
                     value={newPlan.yearlyPrice}
                     onChange={(e) => updateNewPlan('yearlyPrice', e.target.value)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Photoshoot Credits (per month)</label>
+                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Total Credits (per month) - Unified System</label>
                   <input
                     type="number"
                     min="0"
-                    value={newPlan.photoshootCredits || 0}
-                    onChange={(e) => updateNewPlan('photoshootCredits', parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    value={newPlan.totalCredits || 0}
+                    onChange={(e) => updateNewPlan('totalCredits', String(parseInt(e.target.value) || 0))}
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Marketing Poster Credits (per month)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newPlan.marketingPosterCredits || 0}
-                    onChange={(e) => updateNewPlan('marketingPosterCredits', parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
+                  <p className="text-xs text-neutral-500 mt-2">
+                    Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                  </p>
                 </div>
                 <div className="sm:col-span-2 flex items-center gap-2">
                   <input
@@ -2058,7 +1998,7 @@ export const Dashboard: React.FC = () => {
                     id="add-plan-popular"
                     checked={newPlan.isPopular}
                     onChange={(e) => updateNewPlan('isPopular', e.target.checked)}
-                    className="rounded border-white/20 bg-black/40 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-white/20 bg-black/40 text-gold-600 focus:ring-gold-500"
                   />
                   <label htmlFor="add-plan-popular" className="text-sm text-neutral-300">Most Popular</label>
                 </div>
@@ -2067,7 +2007,7 @@ export const Dashboard: React.FC = () => {
                   <input
                     value={newPlan.description}
                     onChange={(e) => updateNewPlan('description', e.target.value)}
-                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -2076,7 +2016,7 @@ export const Dashboard: React.FC = () => {
                   <label className="text-xs text-neutral-500 uppercase tracking-wider">Features</label>
                   <button
                     onClick={addNewPlanFeature}
-                    className="text-xs text-indigo-400 hover:text-indigo-300"
+                    className="text-xs text-gold-400 hover:text-gold-300"
                   >
                     + Add Feature
                   </button>
@@ -2087,7 +2027,7 @@ export const Dashboard: React.FC = () => {
                       <input
                         value={f}
                         onChange={(e) => updateNewPlanFeature(j, e.target.value)}
-                        className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                       />
                       <button
                         onClick={() => removeNewPlanFeature(j)}
@@ -2164,7 +2104,7 @@ export const Dashboard: React.FC = () => {
                     }
                   }}
                   disabled={savingPlans}
-                  className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   {savingPlans ? 'Saving...' : 'Save'}
                 </button>
@@ -2199,7 +2139,7 @@ export const Dashboard: React.FC = () => {
                     <input
                       value={plans[editingPlanIndex].name}
                       onChange={(e) => updatePlan(editingPlanIndex, 'name', e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -2207,7 +2147,7 @@ export const Dashboard: React.FC = () => {
                     <input
                       value={plans[editingPlanIndex].price}
                       onChange={(e) => updatePlan(editingPlanIndex, 'price', e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -2215,28 +2155,21 @@ export const Dashboard: React.FC = () => {
                     <input
                       value={plans[editingPlanIndex].yearlyPrice}
                       onChange={(e) => updatePlan(editingPlanIndex, 'yearlyPrice', e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Photoshoot Credits (per month)</label>
+                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Total Credits (per month) - Unified System</label>
                     <input
                       type="number"
                       min="0"
-                      value={plans[editingPlanIndex].photoshootCredits || 0}
-                      onChange={(e) => updatePlan(editingPlanIndex, 'photoshootCredits', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      value={plans[editingPlanIndex].totalCredits || 0}
+                      onChange={(e) => updatePlan(editingPlanIndex, 'totalCredits', parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Marketing Poster Credits (per month)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={plans[editingPlanIndex].marketingPosterCredits || 0}
-                      onChange={(e) => updatePlan(editingPlanIndex, 'marketingPosterCredits', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
+                    <p className="text-xs text-neutral-500 mt-2">
+                      Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                    </p>
                   </div>
                   <div className="sm:col-span-2 flex items-center gap-2">
                     <input
@@ -2244,7 +2177,7 @@ export const Dashboard: React.FC = () => {
                       id="edit-plan-popular"
                       checked={plans[editingPlanIndex].isPopular}
                       onChange={(e) => updatePlan(editingPlanIndex, 'isPopular', e.target.checked)}
-                      className="rounded border-white/20 bg-black/40 text-indigo-600 focus:ring-indigo-500"
+                      className="rounded border-white/20 bg-black/40 text-gold-600 focus:ring-gold-500"
                     />
                     <label htmlFor="edit-plan-popular" className="text-sm text-neutral-300">Most Popular</label>
                   </div>
@@ -2253,7 +2186,7 @@ export const Dashboard: React.FC = () => {
                     <input
                       value={plans[editingPlanIndex].description}
                       onChange={(e) => updatePlan(editingPlanIndex, 'description', e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -2262,7 +2195,7 @@ export const Dashboard: React.FC = () => {
                     <label className="text-xs text-neutral-500 uppercase tracking-wider">Features</label>
                     <button
                       onClick={() => addFeature(editingPlanIndex)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300"
+                      className="text-xs text-gold-400 hover:text-gold-300"
                     >
                       + Add Feature
                     </button>
@@ -2273,7 +2206,7 @@ export const Dashboard: React.FC = () => {
                         <input
                           value={f}
                           onChange={(e) => updateFeature(editingPlanIndex, j, e.target.value)}
-                          className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                         />
                         <button
                           onClick={() => removeFeature(editingPlanIndex, j)}
@@ -2362,7 +2295,7 @@ export const Dashboard: React.FC = () => {
                       }
                     }}
                     disabled={savingPlans}
-                    className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="flex-1 px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                   >
                     {savingPlans ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -2376,7 +2309,7 @@ export const Dashboard: React.FC = () => {
       {/* Sync Credits Preview Modal */}
       {showSyncPreview && syncPreview && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border-2 border-indigo-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border-2 border-gold-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ApertureIcon } from './icons/ApertureIcon';
 import { ProductsIcon } from './icons/ProductsIcon';
 import { CameraIcon } from './icons/CameraIcon';
@@ -11,14 +12,28 @@ interface SidebarProps {
     onClose: () => void;
 }
 
-const NavLink: React.FC<{ icon: React.ReactNode, label: string }> = ({ icon, label }) => (
-    <a href="#" className="flex items-center gap-4 px-4 py-3 rounded-lg text-neutral-200 hover:bg-neutral-800 transition-colors">
+interface NavLinkProps {
+    icon: React.ReactNode;
+    label: string;
+    onClick?: () => void;
+    href?: string;
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ icon, label, onClick, href = "#" }) => (
+    <a href={href} onClick={onClick} className="flex items-center gap-4 px-4 py-3 rounded-lg text-neutral-200 hover:bg-neutral-800 transition-colors">
         {icon}
         <span className="font-medium text-lg">{label}</span>
     </a>
 );
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+    const navigate = useNavigate();
+
+    const handleNavigate = (path: string) => {
+        navigate(path);
+        onClose();
+    };
+
     return (
         <>
             <div 
@@ -37,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         <CloseIcon className="w-6 h-6" />
                     </button>
                 </div>
-                <div className="p-6 bg-violet-900 border-b-2 border-violet-800">
+                <div className="p-6 bg-gold-700 border-b-2 border-gold-600">
                     <a href="#" className="flex items-center gap-4 text-white">
                         <ApertureIcon className="w-7 h-7" />
                         <span id="sidebar-title" className="font-semibold text-xl">Get Started</span>
@@ -48,6 +63,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     <NavLink icon={<CameraIcon className="w-6 h-6 text-neutral-300" />} label="Photoshoots" />
                     <NavLink icon={<ImageIcon className="w-6 h-6 text-neutral-300" />} label="Models" />
                     <NavLink icon={<GenerationsIcon className="w-6 h-6 text-neutral-300" />} label="Generations" />
+                    <NavLink 
+                        icon={<GenerationsIcon className="w-6 h-6 text-neutral-300" />} 
+                        label="History" 
+                        onClick={() => handleNavigate('/previously-generated')}
+                    />
                 </nav>
             </aside>
         </>

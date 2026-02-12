@@ -19,7 +19,7 @@ const Page: React.FC<{ children: React.ReactNode, className?: string }> = ({ chi
 const BrandSignature: React.FC<{ isDark?: boolean }> = ({ isDark = false }) => (
     <div className="flex items-center gap-1.5 text-center">
         <span className={`text-lg font-sans font-bold tracking-tighter ${isDark ? 'text-white' : 'text-neutral-900'}`}>MARO</span>
-        <span className="text-lg font-serif-display italic font-medium text-indigo-600">Studio</span>
+        <span className="text-lg font-serif-display italic font-medium text-gold-600">Studio</span>
     </div>
 );
 
@@ -54,7 +54,7 @@ export const CatalogueViewer: React.FC<CatalogueViewerProps> = ({
   }, [hideBrand]);
   return (
     <div className="flex flex-col items-center gap-8">
-      <div ref={catalogueRef} className="max-w-xl w-full mx-auto space-y-12 p-6 bg-neutral-900/40 backdrop-blur-3xl rounded-[32px] border border-white/5">
+      <div ref={catalogueRef} className="max-w-xl w-full mx-auto space-y-12 p-6 bg-neutral-900/50 backdrop-blur-3xl rounded-[32px] border border-gold-500/10">
         {/* Cover Page */}
         <Page className="justify-between items-center text-center p-14 bg-[#fdfdfd]">
             <div className="w-full text-left">

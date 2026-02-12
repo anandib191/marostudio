@@ -35,12 +35,12 @@ export const ContactPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden relative z-10">
+        <div className="contact-page w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden relative z-10">
             <div className="max-w-7xl w-full py-4 md:py-6 relative z-10">
                 <div className="text-center mb-12 animate-fade-in-up">
                     <h1 className="font-serif-display text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight">
                         Send Us Your{' '}
-                        <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 text-transparent bg-clip-text">
                             Query
                         </span>
                     </h1>
@@ -57,8 +57,8 @@ export const ContactPage: React.FC = () => {
                             The ultimate AI photography engine for modern brands. High-fidelity visuals without the studio logistics.
                         </p>
                         <div className="pt-4 flex flex-col gap-4">
-                            <a href="mailto:ceogrowlouder@gmail.com" className="flex items-center gap-4 text-neutral-300 hover:text-indigo-400 transition-colors group">
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10">
+                            <a href="mailto:ceogrowlouder@gmail.com" className="flex items-center gap-4 text-neutral-300 hover:text-gold-400 transition-colors group">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-gold-500/10">
                                     <EnvelopeIcon className="w-5 h-5" />
                                 </div>
                                 <span className="font-semibold tracking-wider text-sm">ceogrowlouder@gmail.com</span>
@@ -85,7 +85,7 @@ export const ContactPage: React.FC = () => {
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
                                 />
                                 <input
                                     type="email"
@@ -94,7 +94,7 @@ export const ContactPage: React.FC = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
                                 />
                             </div>
                             <input
@@ -104,7 +104,7 @@ export const ContactPage: React.FC = () => {
                                 value={companyName}
                                 onChange={(e) => setCompanyName(e.target.value)}
                                 required
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-700"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
                             />
                             <PhoneInput
                                 selectedCountry={selectedCountry}
@@ -121,11 +121,11 @@ export const ContactPage: React.FC = () => {
                                     onChange={(e) => setMessage(e.target.value)}
                                     rows={3}
                                     required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-700 resize-none"
+                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700 resize-none"
                                 />
                             <button
                                 type="submit"
-                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-5 rounded-xl shadow-xl shadow-indigo-950/20 transition-all transform hover:-translate-y-1 active:scale-[0.98]"
+                                className="btn-gradient-gold w-full text-[11px] uppercase tracking-[0.3em] py-5 rounded-xl active:scale-[0.98]"
                             >
                                 Send Inquiry
                             </button>

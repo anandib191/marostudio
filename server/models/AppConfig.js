@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const appConfigSchema = new mongoose.Schema(
   {
+    freeTierTotalCredits: {
+      type: Number,
+      default: 100,
+      min: 0,
+    },
     freeTierPhotoshootCredits: {
       type: Number,
       default: 3,

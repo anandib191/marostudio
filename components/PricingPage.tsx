@@ -21,8 +21,7 @@ type PlanItem = {
   description: string; 
   features: string[]; 
   isPopular: boolean;
-  photoshootCredits?: number;
-  marketingPosterCredits?: number;
+  totalCredits?: number; // Unified credit system
 };
 
 export const PricingPage: React.FC = () => {
@@ -33,8 +32,8 @@ export const PricingPage: React.FC = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PlanItem | null>(null);
     const [currentSubscriptionPlan, setCurrentSubscriptionPlan] = useState<string | null>(null);
-    const [photoshootCredits, setPhotoshootCredits] = useState<number | null>(null);
-    const [marketingPosterCredits, setMarketingPosterCredits] = useState<number | null>(null);
+    const [totalCredits, setTotalCredits] = useState<number | null>(null);
+    const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
 
     // Plan hierarchy: Silver < Gold < Platinum
     const planHierarchy: { [key: string]: number } = {
@@ -57,12 +56,9 @@ export const PricingPage: React.FC = () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                // Store credits to check if they're over
-                const photoshoot = data.photoshootCredits || 0;
-                const marketing = data.marketingPosterCredits || 0;
-                setPhotoshootCredits(photoshoot);
-                setMarketingPosterCredits(marketing);
-                
+                // Store unified credits
+                setTotalCredits(data.totalCredits || 0);
+                setRemainingCredits(data.remainingCredits || 0);
                 
                 // Check if subscription is still valid
                 if (data.subscriptionPlan && data.subscriptionExpiresAt) {
@@ -229,12 +225,12 @@ export const PricingPage: React.FC = () => {
                         onClick={handleToggle}
                         role="switch"
                         aria-checked={!isMonthly}
-                        className="relative mx-4 inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-black bg-neutral-800"
+                        className="relative mx-4 inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 focus:ring-offset-black bg-neutral-800"
                     >
                         <span className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${!isMonthly ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
                     <span className={`font-semibold transition-colors ${!isMonthly ? 'text-white' : 'text-neutral-500'}`}>
-                        Annual billing <span className="text-rose-400">(Save 20%)</span>
+                        Annual billing <span className="text-gold-400">(Save 10%)</span>
                     </span>
                 </div>
 
@@ -245,7 +241,7 @@ export const PricingPage: React.FC = () => {
                             <div className="sparkle-large"></div>
                             <div className="sparkle-large"></div>
                         </div>
-                        <p className="text-indigo-400 text-sm font-medium">Loading pricing plans...</p>
+                        <p className="text-gold-400 text-sm font-medium">Loading pricing plans...</p>
                     </div>
                 ) : plans.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-4">
@@ -262,17 +258,16 @@ export const PricingPage: React.FC = () => {
                         const currentPlanLevel = currentSubscriptionPlan ? (planHierarchy[currentSubscriptionPlan] || 0) : 0;
                         const planLevel = planHierarchy[plan.name] || 0;
                         
-                        // Check if user has no credits (either photoshoot OR marketing credits are 0)
-                        // If any credit type is 0, enable all plans so user can purchase
-                        const hasNoCredits = photoshootCredits !== null && marketingPosterCredits !== null 
-                            && (photoshootCredits === 0 || marketingPosterCredits === 0);
+                        // Check if user has no credits remaining
+                        // If remaining credits are 0, enable all plans so user can purchase
+                        const hasNoCredits = remainingCredits !== null && remainingCredits <= 0;
                         
                         // Logic:
-                        // 1. If credits are 0: Enable ALL plans (including current plan - user can repurchase)
+                        // 1. If remaining credits are 0: Enable ALL plans (including current plan - user can repurchase)
                         // 2. If user has credits > 0 and has a plan: Disable current plan and lower plans (only allow upgrades)
                         const isLowerPlan = currentPlanLevel > 0 && planLevel < currentPlanLevel;
                         
-                        // If credits are 0, enable ALL plans (no restrictions). 
+                        // If remaining credits are 0, enable ALL plans (no restrictions). 
                         // Otherwise, disable current plan and lower plans (upgrade only).
                         let isDisabled = false;
                         if (hasNoCredits) {
@@ -286,13 +281,13 @@ export const PricingPage: React.FC = () => {
                         return (
                         <div
                             key={`${plan.name}-${index}`}
-                            className={`relative rounded-2xl p-6 sm:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out ${
+                            className={`relative rounded-2xl p-6 sm:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out hover:shadow-xl ${
                                 plan.isPopular 
-                                    ? 'bg-neutral-900 border-2 border-rose-500 shadow-2xl shadow-rose-900/40 z-10' 
+                                    ? 'bg-neutral-900 border-2 border-gold-500 shadow-2xl shadow-gold-900/40 hover:shadow-gold-500/40 z-10 lg:-translate-y-2' 
                                     : isCurrentPlan
-                                    ? 'bg-neutral-950/50 border-2 border-indigo-500'
-                                    : 'bg-neutral-950/50 border border-neutral-800'
-                            } lg:transform-gpu ${plan.isPopular ? 'lg:scale-100 lg:-translate-y-4' : 'lg:scale-95'}`}
+                                    ? 'bg-neutral-950/50 border-2 border-gold-500 hover:shadow-lg hover:shadow-gold-500/30'
+                                    : 'bg-neutral-950/50 border border-neutral-800 hover:border-gold-500/50 hover:shadow-lg hover:shadow-gold-500/20'
+                            }`}
                         >
                             {/* Badges on Card Border - Desktop Only */}
                             {(plan.isPopular || isCurrentPlan) && (
@@ -300,12 +295,12 @@ export const PricingPage: React.FC = () => {
                                     {/* Desktop: On Border */}
                                     <div className="hidden lg:flex absolute -top-4 left-1/2 -translate-x-1/2 flex-row items-center gap-2 z-20">
                                         {isCurrentPlan && (
-                                            <div className="bg-indigo-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                            <div className="bg-gold-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
                                                 Your Current Plan
                                             </div>
                                         )}
                                         {plan.isPopular && (
-                                            <div className="bg-rose-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                            <div className="bg-gold-500 py-1.5 px-4 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
                                                 <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
                                                 Most Popular
                                             </div>
@@ -315,12 +310,12 @@ export const PricingPage: React.FC = () => {
                                     {/* Mobile/Tablet: Inside Card */}
                                     <div className="flex lg:hidden flex-row justify-center items-center gap-2 mb-2 flex-wrap">
                                         {isCurrentPlan && (
-                                            <div className="bg-indigo-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                            <div className="bg-gold-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
                                                 Your Current Plan
                                             </div>
                                         )}
                                         {plan.isPopular && (
-                                            <div className="bg-rose-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                            <div className="bg-gold-500 py-1.5 px-3 sm:px-4 rounded-full flex items-center text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap shadow-lg">
                                                 <StarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 fill-current" />
                                                 Most Popular
                                             </div>
@@ -340,21 +335,17 @@ export const PricingPage: React.FC = () => {
                                 <p className="mt-1 text-xs leading-5 text-neutral-500">{isMonthly ? 'billed monthly' : 'billed annually'}</p>
 
                                 <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
-                                    {/* Show credits from credit fields if available, otherwise use features */}
-                                    {plan.photoshootCredits !== undefined && plan.marketingPosterCredits !== undefined ? (
+                                    {/* Show unified credits if available, otherwise use features */}
+                                    {plan.totalCredits !== undefined ? (
                                         <>
                                             <li className="flex gap-x-3">
-                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
-                                                <span>{plan.photoshootCredits.toLocaleString()} Photoshoot generation</span>
-                                            </li>
-                                            <li className="flex gap-x-3">
-                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
-                                                <span>{plan.marketingPosterCredits.toLocaleString()} Marketing poster generation</span>
+                                                <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
+                                                <span>{plan.totalCredits.toLocaleString()} Unified credits (flexible usage)</span>
                                             </li>
                                             {/* Show other features if any */}
-                                            {(plan.features || []).filter(f => f && !f.toLowerCase().includes('photoshoot') && !f.toLowerCase().includes('marketing')).map((feature) => (
+                                            {(plan.features || []).filter(f => f && !f.toLowerCase().includes('unified credits')).map((feature) => (
                                                 <li key={feature} className="flex gap-x-3">
-                                                    <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                    <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
                                                     {feature}
                                                 </li>
                                             ))}
@@ -363,7 +354,7 @@ export const PricingPage: React.FC = () => {
                                         // Fallback to features array if credit fields not available
                                         (plan.features || []).map((feature) => (
                                             <li key={feature} className="flex gap-x-3">
-                                                <CheckIcon className="h-6 w-6 flex-none text-rose-500" />
+                                                <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
                                                 {feature}
                                             </li>
                                         ))
@@ -378,8 +369,8 @@ export const PricingPage: React.FC = () => {
                                             isDisabled 
                                                 ? 'opacity-50 cursor-not-allowed bg-neutral-700 text-neutral-400' 
                                                 : plan.isPopular 
-                                                    ? 'text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 btn-glow hover:scale-105' 
-                                                    : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:scale-105'
+                                                    ? 'btn-purchase-plan hover:scale-105' 
+                                                    : 'btn-purchase-plan hover:scale-105'
                                         }`}
                                     >
                                         {isCurrentPlan && !hasNoCredits ? 'Current Plan' : hasNoCredits ? 'Purchase Plan' : 'Choose Plan'}

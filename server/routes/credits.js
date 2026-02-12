@@ -14,7 +14,7 @@ router.get("/", protect, async (req, res) => {
   try {
     // Always fetch fresh data from database (no caching)
     const user = await User.findById(req.user._id).select(
-      "name photoshootCredits marketingPosterCredits subscriptionPlan subscriptionExpiresAt originalPlanPhotoshootCredits originalPlanMarketingPosterCredits",
+      "name totalCredits usedPhotoshootCredits usedMarketingCredits subscriptionPlan subscriptionExpiresAt originalPlanCredits creditHistory",
     );
     if (!user) {
       return res
@@ -29,34 +29,42 @@ router.get("/", protect, async (req, res) => {
       Expires: "0",
     });
 
-    // Calculate used credits for transparency
-    const totalPhotoshootCredits =
-      user.originalPlanPhotoshootCredits || user.photoshootCredits || 0;
-    const totalMarketingCredits =
-      user.originalPlanMarketingPosterCredits ||
-      user.marketingPosterCredits ||
-      0;
-    const usedPhotoshootCredits = Math.max(
+    // Calculate remaining credits and usage transparency
+    let totalCreditsAvailable = user.totalCredits;
+
+    // If user doesn't have totalCredits (old users), use free tier credits as default
+    if (!totalCreditsAvailable && totalCreditsAvailable !== 0) {
+      const config = await AppConfig.getConfig();
+      totalCreditsAvailable = config.freeTierTotalCredits || 100;
+
+      // Update user with unified credits if they don't have them
+      if (!user.totalCredits && user.totalCredits !== 0) {
+        user.totalCredits = totalCreditsAvailable;
+        user.usedPhotoshootCredits = user.usedPhotoshootCredits || 0;
+        user.usedMarketingCredits = user.usedMarketingCredits || 0;
+        await user.save();
+      }
+    }
+
+    const usedTotalCredits =
+      (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+    const remainingCredits = Math.max(
       0,
-      totalPhotoshootCredits - (user.photoshootCredits || 0),
-    );
-    const usedMarketingCredits = Math.max(
-      0,
-      totalMarketingCredits - (user.marketingPosterCredits || 0),
+      totalCreditsAvailable - usedTotalCredits,
     );
 
     res.status(200).json({
       success: true,
-      photoshootCredits: user.photoshootCredits || 0,
-      marketingPosterCredits: user.marketingPosterCredits || 0,
+      // Unified credit system
+      totalCredits: totalCreditsAvailable,
+      usedPhotoshootCredits: user.usedPhotoshootCredits || 0,
+      usedMarketingCredits: user.usedMarketingCredits || 0,
+      remainingCredits: remainingCredits,
       subscriptionPlan: user.subscriptionPlan,
       subscriptionExpiresAt: user.subscriptionExpiresAt,
       userName: user.name || null,
-      // Credit transparency data
-      totalPhotoshootCredits,
-      totalMarketingCredits,
-      usedPhotoshootCredits,
-      usedMarketingCredits,
+      email: user.email || null,
+      originalPlanCredits: user.originalPlanCredits,
     });
   } catch (error) {
     console.error("Get credits error:", error);
@@ -90,9 +98,9 @@ router.get("/history", protect, async (req, res) => {
 
 /**
  * @route   POST /api/credits/check
- * @desc    Check if user has enough credits for photoshoot generation
+ * @desc    Check if user has enough credits for generation (photoshoot or marketing)
  * @access  Private
- * @note    Each generation requires 20 credits
+ * @note    Uses unified credit system - photoshoot costs 20, marketing costs 5
  */
 router.post("/check", protect, async (req, res) => {
   try {
@@ -112,27 +120,37 @@ router.post("/check", protect, async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const credits =
-      type === "marketing"
-        ? user.marketingPosterCredits || 0
-        : user.photoshootCredits || 0;
+    // Use unified credit system
+    const totalCreditsAvailable = user.totalCredits || 0;
+    const usedTotalCredits =
+      (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+    const remainingCredits = Math.max(
+      0,
+      totalCreditsAvailable - usedTotalCredits,
+    );
 
-    if (credits < CREDITS_PER_GENERATION) {
+    if (remainingCredits < CREDITS_PER_GENERATION) {
       const creditType =
         type === "marketing" ? "marketing poster" : "photoshoot";
       return res.status(200).json({
         success: false,
         hasCredits: false,
-        credits: credits,
+        remainingCredits: remainingCredits,
+        totalCredits: totalCreditsAvailable,
+        usedPhotoshootCredits: user.usedPhotoshootCredits || 0,
+        usedMarketingCredits: user.usedMarketingCredits || 0,
         requiredCredits: CREDITS_PER_GENERATION,
-        message: `You need ${CREDITS_PER_GENERATION} ${creditType} credits per generation. You have ${credits} credits remaining. Please upgrade your plan.`,
+        message: `You need ${CREDITS_PER_GENERATION} credits for ${creditType} generation. You have ${remainingCredits} credits remaining. Please upgrade your plan.`,
       });
     }
 
     res.status(200).json({
       success: true,
       hasCredits: true,
-      credits: credits,
+      remainingCredits: remainingCredits,
+      totalCredits: totalCreditsAvailable,
+      usedPhotoshootCredits: user.usedPhotoshootCredits || 0,
+      usedMarketingCredits: user.usedMarketingCredits || 0,
       requiredCredits: CREDITS_PER_GENERATION,
     });
   } catch (error) {
@@ -145,7 +163,7 @@ router.post("/check", protect, async (req, res) => {
  * @route   POST /api/credits/deduct
  * @desc    Deduct credits after generation (photoshoot or marketing poster)
  * @access  Private
- * @note    Each generation costs configurable credits (default: 20 photoshoot, 5 marketing)
+ * @note    Uses unified credit system - photoshoot costs 20, marketing costs 5
  */
 router.post("/deduct", protect, async (req, res) => {
   try {
@@ -165,39 +183,94 @@ router.post("/deduct", protect, async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    if (type === "marketing") {
-      const currentCredits = user.marketingPosterCredits || 0;
-      if (currentCredits < CREDITS_PER_GENERATION) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient marketing poster credits. You need ${CREDITS_PER_GENERATION} credits per generation.`,
-        });
-      }
-      user.marketingPosterCredits = Math.max(
-        0,
-        currentCredits - CREDITS_PER_GENERATION,
-      );
-    } else {
-      const currentCredits = user.photoshootCredits || 0;
-      if (currentCredits < CREDITS_PER_GENERATION) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient photoshoot credits. You need ${CREDITS_PER_GENERATION} credits per generation.`,
-        });
-      }
-      user.photoshootCredits = Math.max(
-        0,
-        currentCredits - CREDITS_PER_GENERATION,
-      );
+    // Use unified credit system
+    const totalCreditsAvailable = user.totalCredits || 0;
+    const usedTotalCredits =
+      (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+    const remainingCredits = Math.max(
+      0,
+      totalCreditsAvailable - usedTotalCredits,
+    );
+
+    if (remainingCredits < CREDITS_PER_GENERATION) {
+      const creditType =
+        type === "marketing" ? "marketing poster" : "photoshoot";
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient credits. You need ${CREDITS_PER_GENERATION} credits for ${creditType} generation. You have ${remainingCredits} credits remaining.`,
+      });
     }
+
+    // Update unified credit usage
+    if (type === "marketing") {
+      user.usedMarketingCredits =
+        (user.usedMarketingCredits || 0) + CREDITS_PER_GENERATION;
+    } else {
+      user.usedPhotoshootCredits =
+        (user.usedPhotoshootCredits || 0) + CREDITS_PER_GENERATION;
+    }
+
+    // Add to credit history
+    const newTotalUsedCredits =
+      (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+    const newRemainingCredits = Math.max(
+      0,
+      totalCreditsAvailable - newTotalUsedCredits,
+    );
+
+    user.creditHistory = user.creditHistory || [];
+    user.creditHistory.push({
+      date: new Date(),
+      action: "usage",
+      planName: user.subscriptionPlan || "Free Tier",
+      totalCredits: {
+        previous: totalCreditsAvailable,
+        new: totalCreditsAvailable,
+        change: 0, // Total credits don't change on usage
+      },
+      usedPhotoshootCredits: {
+        previous:
+          user.usedPhotoshootCredits -
+          (type === "photoshoot" ? CREDITS_PER_GENERATION : 0),
+        new: user.usedPhotoshootCredits,
+        change: type === "photoshoot" ? CREDITS_PER_GENERATION : 0,
+      },
+      usedMarketingCredits: {
+        previous:
+          user.usedMarketingCredits -
+          (type === "marketing" ? CREDITS_PER_GENERATION : 0),
+        new: user.usedMarketingCredits,
+        change: type === "marketing" ? CREDITS_PER_GENERATION : 0,
+      },
+      reason: `${type === "marketing" ? "Marketing poster" : "Photoshoot"} generation - ${CREDITS_PER_GENERATION} credits deducted`,
+    });
 
     await user.save();
 
+    // Calculate new remaining credits
+    const finalUsedTotalCredits =
+      (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+    const finalRemainingCredits = Math.max(
+      0,
+      totalCreditsAvailable - finalUsedTotalCredits,
+    );
+
     res.status(200).json({
       success: true,
-      photoshootCredits: user.photoshootCredits,
-      marketingPosterCredits: user.marketingPosterCredits,
-      message: `${CREDITS_PER_GENERATION} credits deducted successfully`,
+      totalCredits: totalCreditsAvailable,
+      usedPhotoshootCredits: user.usedPhotoshootCredits || 0,
+      usedMarketingCredits: user.usedMarketingCredits || 0,
+      remainingCredits: finalRemainingCredits,
+      // Legacy compatibility
+      photoshootCredits: Math.max(
+        0,
+        (user.photoshootCredits || 0) - (user.usedPhotoshootCredits || 0),
+      ),
+      marketingPosterCredits: Math.max(
+        0,
+        (user.marketingPosterCredits || 0) - (user.usedMarketingCredits || 0),
+      ),
+      message: `${CREDITS_PER_GENERATION} credits deducted successfully for ${type === "marketing" ? "marketing poster" : "photoshoot"} generation`,
     });
   } catch (error) {
     console.error("Deduct credits error:", error);

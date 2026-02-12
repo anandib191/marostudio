@@ -11,6 +11,7 @@ const navLinks: Array<{ path: string; label: string; isScroll?: boolean }> = [
   { path: '#our-flow', label: 'Workflow', isScroll: true },
   { path: '/pricing', label: 'Pricing' },
   { path: '/contact', label: 'Have Query?' },
+  { path: '/previously-generated', label: 'History' },
 ];
 
 export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSection }) => {
@@ -122,7 +123,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
             />
             <div
                 ref={menuRef}
-                className="fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] max-w-sm bg-neutral-950/90 backdrop-blur-xl rounded-2xl border border-neutral-700/50 shadow-2xl p-8 animate-fade-in-down-right"
+                className="header-dropdown-menu fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] max-w-sm bg-neutral-950/95 backdrop-blur-xl rounded-2xl border border-gold-500/20 shadow-2xl p-8 animate-fade-in-down-right"
             >
             <nav className="flex flex-col items-center space-y-6">
                  {navLinks.map((link) => {
@@ -160,7 +161,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
                             }
                           }
                         }}
-                        className={`transition-colors text-lg ${isActive(link.path) ? 'font-semibold text-white' : 'text-neutral-300 hover:text-white'}`}
+                        className={`transition-colors text-lg ${isActive(link.path) ? 'font-semibold text-white' : 'text-white hover:text-gold-300'}`}
                       >
                         {link.label}
                       </button>
@@ -181,7 +182,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
                         }
                         onClose();
                       }}
-                      className={`transition-colors text-lg ${isActive(link.path) ? 'font-semibold text-white' : 'text-neutral-300 hover:text-white'}`}
+                      className={`transition-colors text-lg ${isActive(link.path) ? 'font-semibold text-white' : 'text-white hover:text-gold-300'}`}
                     >
                       {link.label}
                     </Link>
@@ -189,7 +190,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
                 })}
                 <button 
                   onClick={() => { (location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')); onClose(); }}
-                  className="mt-4 w-full text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 font-semibold py-3 px-4 rounded-full transition-all duration-300 transform hover:scale-105 btn-glow"
+                  className="mt-4 w-full text-white bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 font-semibold py-3 px-4 rounded-full transition-all duration-300 transform hover:scale-105 btn-glow"
                 >
                   Launch Studio
                 </button>

@@ -49,7 +49,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex-shrink-0 z-10 inline-flex items-center py-3 px-4 text-sm font-medium text-center text-neutral-300 bg-neutral-900 border border-neutral-700 rounded-l-lg hover:bg-neutral-800 focus:ring-2 focus:ring-rose-500 focus:outline-none h-full"
+            className="flex-shrink-0 z-10 inline-flex items-center py-3 px-4 text-sm font-medium text-center text-neutral-300 bg-neutral-900 border border-neutral-700 rounded-l-lg hover:bg-neutral-800 focus:ring-2 focus:ring-gold-500 focus:outline-none h-full"
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             aria-label={`Selected country code ${selectedCountry.code}`}
@@ -88,7 +88,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
                 value={phoneNumber}
                 onChange={(e) => onPhoneNumberChange(e.target.value)}
                 required
-                className="w-full bg-neutral-900 border border-l-0 border-neutral-700 rounded-r-lg py-3 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 pl-12"
+                className="w-full bg-neutral-900 border border-l-0 border-neutral-700 rounded-r-lg py-3 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500 pl-12"
                 pattern="[0-9\s]{7,15}"
                 title="Please enter a valid phone number."
             />

@@ -63,7 +63,7 @@ export const CatalogRefreshCard: React.FC = () => {
                             <p className="text-center text-sm font-semibold text-neutral-800 mb-2">Catalog Refresh</p>
                             <div className="w-full bg-neutral-300 rounded-full h-1.5 overflow-hidden">
                                 <div
-                                    className="bg-gradient-to-r from-orange-500 to-pink-500 h-1.5 rounded-full"
+                                    className="bg-gradient-to-r from-orange-500 to-gold-500 h-1.5 rounded-full"
                                     style={{ width: `${progress}%`, transition: 'width 3.8s linear' }}
                                 ></div>
                             </div>
@@ -72,8 +72,8 @@ export const CatalogRefreshCard: React.FC = () => {
                 </div>
             </div>
             <div className="flex items-center justify-center gap-2">
-                <button aria-label="Show original image" onClick={() => setActiveView('original')} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeView === 'original' ? 'bg-rose-500' : 'bg-neutral-600 hover:bg-neutral-400'}`} />
-                <button aria-label="Show refreshed image" onClick={() => setActiveView('refreshed')} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeView === 'refreshed' ? 'bg-rose-500' : 'bg-neutral-600 hover:bg-neutral-400'}`} />
+                <button aria-label="Show original image" onClick={() => setActiveView('original')} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeView === 'original' ? 'bg-gold-500' : 'bg-neutral-600 hover:bg-neutral-400'}`} />
+                <button aria-label="Show refreshed image" onClick={() => setActiveView('refreshed')} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeView === 'refreshed' ? 'bg-gold-500' : 'bg-neutral-600 hover:bg-neutral-400'}`} />
             </div>
         </div>
     );

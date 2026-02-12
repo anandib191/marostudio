@@ -1,0 +1,1019 @@
+@import "tailwindcss";
+
+/* Disable oklch color function for html2canvas compatibility */
+@supports (color: oklch(0 0 0)) {
+  :root {
+    /* Force RGB color mode instead of oklch */
+    color-scheme: light dark;
+  }
+}
+
+/* Override any oklch colors with hex/rgb equivalents */
+@layer base {
+  :where(body) {
+    color-interpolation: srgb;
+  }
+}
+
+/* Gold palette comprehensive fallbacks */
+:root {
+  --gold-50: #fefbf3;
+  --gold-100: #fdf6e6;
+  --gold-200: #fce9c5;
+  --gold-300: #fadea5;
+  --gold-400: #f8cd6b;
+  --gold-500: #e6b71e;
+  --gold-600: #d4a51c;
+  --gold-700: #ae820d;
+  --gold-800: #8d6809;
+  --gold-900: #6d5306;
+}
+
+/* Text color utilities */
+.text-gold {
+  color: #e6b71e !important;
+}
+.text-gold-100 {
+  color: #fdf6e6 !important;
+}
+.text-gold-200 {
+  color: #fce9c5 !important;
+}
+.text-gold-300 {
+  color: #fadea5 !important;
+}
+.text-gold-400 {
+  color: #f8cd6b !important;
+}
+.text-gold-500 {
+  color: #e6b71e !important;
+}
+.text-gold-600 {
+  color: #d4a51c !important;
+}
+.text-gold-700 {
+  color: #ae820d !important;
+}
+.text-gold-800 {
+  color: #8d6809 !important;
+}
+
+/* Text with opacity */
+.text-gold-300\/80 {
+  color: rgba(250, 222, 165, 0.8) !important;
+}
+.text-gold-400\/80 {
+  color: rgba(248, 205, 107, 0.8) !important;
+}
+.text-gold-500\/80 {
+  color: rgba(230, 183, 30, 0.8) !important;
+}
+
+/* Background utilities */
+.bg-gold {
+  background-color: #e6b71e !important;
+}
+.bg-gold-100 {
+  background-color: #fdf6e6 !important;
+}
+.bg-gold-200 {
+  background-color: #fce9c5 !important;
+}
+.bg-gold-300 {
+  background-color: #fadea5 !important;
+}
+.bg-gold-400 {
+  background-color: #f8cd6b !important;
+}
+.bg-gold-500 {
+  background-color: #e6b71e !important;
+}
+.bg-gold-600 {
+  background-color: #d4a51c !important;
+}
+.bg-gold-700 {
+  background-color: #ae820d !important;
+}
+
+/* Background with opacity */
+.bg-gold-500\/5 {
+  background-color: rgba(230, 183, 30, 0.05) !important;
+}
+.bg-gold-500\/10 {
+  background-color: rgba(230, 183, 30, 0.1) !important;
+}
+.bg-gold-500\/20 {
+  background-color: rgba(230, 183, 30, 0.2) !important;
+}
+.bg-gold-500\/30 {
+  background-color: rgba(230, 183, 30, 0.3) !important;
+}
+.bg-gold-500\/80 {
+  background-color: rgba(230, 183, 30, 0.8) !important;
+}
+.bg-gold-500\/85 {
+  background-color: rgba(230, 183, 30, 0.85) !important;
+}
+.bg-gold-500\/90 {
+  background-color: rgba(230, 183, 30, 0.9) !important;
+}
+.bg-gold-600\/20 {
+  background-color: rgba(212, 165, 28, 0.2) !important;
+}
+.bg-gold-600\/30 {
+  background-color: rgba(212, 165, 28, 0.3) !important;
+}
+
+/* Border utilities */
+.border-gold-500 {
+  border-color: #e6b71e !important;
+}
+.border-gold-500\/20 {
+  border-color: rgba(230, 183, 30, 0.2) !important;
+}
+.border-gold-500\/30 {
+  border-color: rgba(230, 183, 30, 0.3) !important;
+}
+.border-gold-500\/50 {
+  border-color: rgba(230, 183, 30, 0.5) !important;
+}
+
+/* Shadow utilities */
+.shadow-gold-500\/20 {
+  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.2) !important;
+}
+.shadow-gold-900\/40 {
+  box-shadow: 0 20px 50px rgba(109, 83, 6, 0.4) !important;
+}
+
+/* Hover states */
+.hover\:text-gold-400:hover {
+  color: #f8cd6b !important;
+}
+.hover\:text-gold-300:hover {
+  color: #fadea5 !important;
+}
+.hover\:text-gold-200:hover {
+  color: #fce9c5 !important;
+}
+.hover\:bg-gold-500:hover {
+  background-color: #e6b71e !important;
+}
+.hover\:bg-gold-500\/20:hover {
+  background-color: rgba(230, 183, 30, 0.2) !important;
+}
+.hover\:border-gold-500:hover {
+  border-color: #e6b71e !important;
+}
+.hover\:shadow-gold-500\/30:hover {
+  box-shadow: 0 20px 40px rgba(230, 183, 30, 0.3) !important;
+}
+.hover\:shadow-lg:hover {
+  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.25) !important;
+}
+
+/* Group hover states for cards */
+.group:hover .group-hover\:text-gold-400 {
+  color: #f8cd6b !important;
+}
+.group:hover .group-hover\:text-gold-300 {
+  color: #fadea5 !important;
+}
+.group:hover .group-hover\:shadow-gold-500\/30 {
+  box-shadow: 0 20px 40px rgba(230, 183, 30, 0.3) !important;
+}
+.group:hover .group-hover\:bg-gold-500\/10 {
+  background-color: rgba(230, 183, 30, 0.1) !important;
+}
+
+/* Create Your First Image button only - golden gradient fill + gradient border */
+.button-ui {
+  background:
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.2),
+        rgba(248, 205, 107, 0.2),
+        rgba(230, 183, 30, 0.2),
+        rgba(212, 165, 28, 0.2)
+      )
+      padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  color: #ffffff !important;
+  border: 2px solid transparent !important;
+}
+.button-ui:hover {
+  background:
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.6),
+        rgba(248, 205, 107, 0.6),
+        rgba(230, 183, 30, 0.6),
+        rgba(212, 165, 28, 0.6)
+      )
+      padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Watch Demo button - outline as before, hover like Create button */
+.button-demo {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(230, 183, 30, 0.4) !important;
+}
+.button-demo:hover {
+  background-color: rgba(230, 183, 30, 0.12) !important;
+  border-color: rgba(248, 205, 107, 0.5) !important;
+  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.35) !important;
+}
+
+/* AFTER badge on carousel - golden gradient (same as Create Your First Image) */
+.after-badge {
+  background:
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.9),
+        rgba(248, 205, 107, 0.92),
+        rgba(230, 183, 30, 0.92),
+        rgba(212, 165, 28, 0.9)
+      )
+      padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  color: #ffffff !important;
+  border: 1.5px solid transparent !important;
+}
+
+/* Button and interactive elements */
+button {
+  transition: all 0.3s ease !important;
+}
+a {
+  transition: all 0.3s ease !important;
+}
+
+/* Shadow boost for all gold elements */
+.text-gold-400 {
+  text-shadow: 0 2px 8px rgba(230, 183, 30, 0.3) !important;
+}
+.text-gold-300 {
+  text-shadow: 0 2px 8px rgba(250, 222, 165, 0.3) !important;
+}
+.text-gold-500 {
+  text-shadow: 0 2px 8px rgba(230, 183, 30, 0.3) !important;
+}
+
+/* Glow effect for gold text on dark background */
+.bg-black .text-gold,
+.bg-neutral-900 .text-gold,
+.bg-black\/60 .text-gold {
+  filter: brightness(1.1) drop-shadow(0 0 8px rgba(230, 183, 30, 0.4)) !important;
+}
+
+.bg-black .text-gold-400,
+.bg-neutral-900 .text-gold-400,
+.bg-black\/60 .text-gold-400 {
+  filter: brightness(1.1) drop-shadow(0 0 8px rgba(248, 205, 107, 0.4)) !important;
+}
+
+.bg-black .text-gold-300,
+.bg-neutral-900 .text-gold-300,
+.bg-black\/60 .text-gold-300 {
+  filter: brightness(1.1) drop-shadow(0 0 8px rgba(250, 222, 165, 0.4)) !important;
+}
+
+/* Send Inquiry Button - Golden Gradient */
+.btn-gradient-gold {
+  background: linear-gradient(
+    90deg,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  color: #ffffff !important;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.8),
+    0 0 16px rgba(255, 255, 255, 0.4) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
+  opacity: 0.5 !important;
+}
+
+.btn-gradient-gold:hover {
+  background: linear-gradient(
+    90deg,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c,
+    #ae820d
+  ) !important;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.9),
+    0 0 24px rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 8px 25px rgba(248, 205, 107, 0.4) !important;
+  transform: translateY(-2px) !important;
+  opacity: 0.7 !important;
+}
+
+.btn-gradient-gold:active {
+  transform: translateY(0) !important;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.8),
+    0 0 16px rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
+  opacity: 0.5 !important;
+}
+
+/* Purchase Plan Button - 70% Transparent Gradient Border */
+.btn-purchase-plan {
+  background: transparent !important;
+  border: 2px solid transparent !important;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7))
+      padding-box,
+    linear-gradient(90deg, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.2) !important;
+}
+
+.btn-purchase-plan:hover {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8))
+      padding-box,
+    linear-gradient(90deg, #f8cd6b, #e6b71e, #d4a51c, #ae820d) border-box !important;
+  box-shadow: 0 8px 25px rgba(248, 205, 107, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-purchase-plan:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
+}
+
+/* Statistics Boxes - Rectangle Design with Upper Line Connected to Border */
+.stat-box {
+  background: linear-gradient(
+    135deg,
+    rgba(250, 222, 165, 0.08),
+    rgba(248, 205, 107, 0.05),
+    rgba(230, 183, 30, 0.08)
+  ) !important;
+  border: 2px solid transparent !important;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(250, 222, 165, 0.08),
+      rgba(248, 205, 107, 0.05),
+      rgba(230, 183, 30, 0.08)
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)) padding-box,
+    linear-gradient(90deg, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-origin: border-box, padding-box, border-box !important;
+  background-clip: border-box, padding-box, border-box !important;
+  padding: 2rem 1.5rem !important;
+  border-radius: 1rem !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  min-height: 140px !important;
+}
+
+/* Left Curved Shape - Removed */
+.stat-box::before {
+  display: none !important;
+}
+
+/* Right Curved Shape - Removed */
+.stat-box::after {
+  display: none !important;
+}
+
+.stat-box:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 30px rgba(230, 183, 30, 0.3) !important;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(250, 222, 165, 0.12),
+      rgba(248, 205, 107, 0.08),
+      rgba(230, 183, 30, 0.12)
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)) padding-box,
+    linear-gradient(90deg, #f8cd6b, #e6b71e, #d4a51c, #ae820d) border-box !important;
+}
+
+/* Curved shapes hover effects - removed */
+
+/* Upper Golden Line - Thicker */
+.stat-box .upper-line {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(230, 183, 30, 0.8),
+    rgba(248, 205, 107, 0.6),
+    rgba(250, 222, 165, 0.6),
+    rgba(248, 205, 107, 0.6),
+    rgba(230, 183, 30, 0.8)
+  ) !important;
+  z-index: 2 !important;
+}
+
+.stat-box:hover .upper-line {
+  height: 4px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(248, 205, 107, 0.9),
+    rgba(230, 183, 30, 0.8),
+    rgba(250, 222, 165, 0.8),
+    rgba(230, 183, 30, 0.8),
+    rgba(248, 205, 107, 0.9)
+  ) !important;
+}
+
+.stat-box .stat-number {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(
+    90deg,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  margin-bottom: 0.5rem !important;
+  position: relative !important;
+  z-index: 2 !important;
+  text-shadow: 0 0 20px rgba(230, 183, 30, 0.5) !important;
+}
+
+.stat-box .stat-label {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  position: relative !important;
+  z-index: 2 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 0.5rem !important;
+}
+
+.stat-box:hover .stat-number {
+  background: linear-gradient(
+    90deg,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c,
+    #ae820d
+  ) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  text-shadow: 0 0 30px rgba(248, 205, 107, 0.7) !important;
+}
+
+.stat-box:hover .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Canvas Effect - Golden Checks on Mouse Movement */
+.canvas-effect {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  background:
+    repeating-conic-gradient(
+      from 0deg at 0deg 0deg,
+      transparent 0deg,
+      transparent 90deg,
+      rgba(230, 183, 30, 0.2) 90deg,
+      rgba(230, 183, 30, 0.2) 180deg,
+      transparent 180deg,
+      transparent 270deg,
+      rgba(230, 183, 30, 0.2) 270deg,
+      rgba(230, 183, 30, 0.2) 360deg
+    ),
+    repeating-conic-gradient(
+      from 45deg at 50px 50px,
+      transparent 0deg,
+      transparent 90deg,
+      rgba(230, 183, 30, 0.2) 90deg,
+      rgba(230, 183, 30, 0.2) 180deg,
+      transparent 180deg,
+      transparent 270deg,
+      rgba(230, 183, 30, 0.2) 270deg,
+      rgba(230, 183, 30, 0.2) 360deg
+    ) !important;
+  background-size:
+    50px 50px,
+    50px 50px !important;
+  background-position:
+    0 0,
+    25px 25px !important;
+  mix-blend-mode: screen !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.canvas-effect.active {
+  opacity: 1 !important;
+}
+
+/* Mouse follower effect */
+.mouse-follower {
+  position: fixed !important;
+  width: 200px !important;
+  height: 200px !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+  background: radial-gradient(
+    circle,
+    rgba(230, 183, 30, 0.3) 0%,
+    rgba(248, 205, 107, 0.2) 30%,
+    rgba(250, 222, 165, 0.15) 60%,
+    transparent 100%
+  ) !important;
+  border-radius: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+  mix-blend-mode: screen !important;
+}
+
+.mouse-follower.active {
+  opacity: 1 !important;
+}
+
+/* Apply canvas effect to entire website */
+body {
+  position: relative !important;
+}
+
+body::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  background:
+    repeating-conic-gradient(
+      from 0deg at 0deg 0deg,
+      transparent 0deg,
+      transparent 90deg,
+      rgba(230, 183, 30, 0.2) 90deg,
+      rgba(230, 183, 30, 0.2) 180deg,
+      transparent 180deg,
+      transparent 270deg,
+      rgba(230, 183, 30, 0.2) 270deg,
+      rgba(230, 183, 30, 0.2) 360deg
+    ),
+    repeating-conic-gradient(
+      from 45deg at 25px 25px,
+      transparent 0deg,
+      transparent 90deg,
+      rgba(230, 183, 30, 0.2) 90deg,
+      rgba(230, 183, 30, 0.2) 180deg,
+      transparent 180deg,
+      transparent 270deg,
+      rgba(230, 183, 30, 0.2) 270deg,
+      rgba(230, 183, 30, 0.2) 360deg
+    ) !important;
+  background-size:
+    50px 50px,
+    50px 50px !important;
+  background-position:
+    0 0,
+    25px 25px !important;
+  mix-blend-mode: screen !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+body.canvas-active::before {
+  opacity: 1 !important;
+}
+
+/* Enhanced card hover effects with gold */
+.card {
+  transition: all 0.3s ease !important;
+}
+.card:hover {
+  box-shadow: 0 20px 50px rgba(230, 183, 30, 0.15) !important;
+  border-color: rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Primary button styles - Gold theme */
+.btn-primary,
+button[type="button"],
+button[type="submit"] {
+  /* background-color: #e6b71e !important; */
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover,
+button[type="button"]:hover,
+button[type="submit"]:hover {
+  /* background-color: #f8cd6b !important; */
+  /* box-shadow: 0 8px 25px rgba(248, 205, 107, 0.4) !important; */
+  transform: translateY(-2px) !important;
+}
+
+/* Link hover effects - exclude navbar so nav links stay white */
+a:not(header nav a),
+.link:not(header nav .link) {
+  color: #e6b71e !important;
+  text-decoration: none !important;
+  position: relative !important;
+  transition: all 0.3s ease !important;
+}
+
+a:not(header nav a):hover,
+.link:not(header nav .link):hover {
+  color: #f8cd6b !important;
+  text-shadow: 0 0 8px rgba(248, 205, 107, 0.4) !important;
+}
+
+/* Navbar: force white text for Overview, Workflow, Pricing, Have Query? */
+header nav a,
+header nav button {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+header nav a:hover,
+header nav button:hover {
+  color: #fadea5 !important;
+  text-shadow: 0 0 8px rgba(250, 222, 165, 0.3) !important;
+}
+
+/* Mobile dropdown nav - same white text (global a overrides otherwise) */
+.header-dropdown-menu a,
+.header-dropdown-menu button {
+  color: #ffffff !important;
+}
+.header-dropdown-menu a:hover,
+.header-dropdown-menu button:hover {
+  color: #fadea5 !important;
+}
+
+/* All gradient text - ensure clip and transparent so golden gradient always shows */
+[class*="bg-clip-text"] {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Hero: force golden gradient for "Professional Photoshoot" so it never appears transparent */
+.hero-banner .hero-text [class*="bg-clip-text"],
+.hero-banner .hero-text .hero-gradient-text {
+  background-image: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #d4a51c
+  ) !important;
+}
+
+/* Contact page: force golden gradient for "Query" so it is always visible */
+.contact-page [class*="bg-clip-text"],
+.contact-query-gradient {
+  background-image: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #d4a51c
+  ) !important;
+}
+
+/* Why MARO Studio section: force golden gradient for "MARO Studio" so it is always visible */
+.why-ai-studio .why-maro-gradient-text,
+.why-maro-gradient-text {
+  background-image: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Why MARO Studio section: golden gradient border on the 4 benefit boxes */
+.why-ai-studio .why-maro-benefit-box {
+  background:
+    linear-gradient(#171717, #171717) padding-box,
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.4),
+        rgba(248, 205, 107, 0.4),
+        rgba(230, 183, 30, 0.4),
+        rgba(212, 165, 28, 0.4)
+      )
+      border-box !important;
+  border: 2px solid transparent !important;
+}
+.why-ai-studio .why-maro-benefit-box:hover {
+  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.25) !important;
+}
+
+/* Generate section: Scroll-Stoppers golden gradient text */
+.generate-section .scroll-stoppers-gradient-text {
+  background-image: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Generate section: flow line below active button - golden gradient */
+.generate-section .generate-section-flow-line {
+  background: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  opacity: 0.9;
+}
+/* Pause progress line when carousel is hovered; resume on mouse out */
+.generate-section.carousel-hovered .generate-section-flow-line {
+  animation-play-state: paused !important;
+}
+
+/* Specific override for select product buttons - remove gold background */
+.btn-primary,
+button[type="button"],
+button[type="submit"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Disable transform on hover for all buttons */
+.btn-primary:hover,
+button[type="button"]:hover,
+button[type="submit"]:hover {
+  transform: none !important;
+}
+
+/* Generate section buttons - override general button styles */
+.generate-section button,
+.generate-section .btn-primary,
+.generate-section button[type="button"],
+.generate-section button[type="submit"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Disable transform on hover for generate section buttons */
+.generate-section button:hover,
+.generate-section .btn-primary:hover,
+.generate-section button[type="button"]:hover,
+.generate-section button[type="submit"]:hover {
+  transform: none !important;
+}
+
+/* Force override any gold backgrounds in generate section */
+.generate-section * [class*="bg-gold"],
+.generate-section * [class*="active"],
+.generate-section * [class*="selected"] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Generate section: active category button - no fill, only border */
+.generate-section .generate-active-cat-btn {
+  background: transparent !important;
+  border: 2px solid #e6b71e !important;
+  box-shadow: 0 4px 20px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Generate section: inactive category button - only border */
+.generate-section .generate-inactive-cat-btn {
+  background: transparent !important;
+  border: 2px solid rgba(230, 183, 30, 0.3) !important;
+}
+
+/* How to Use section: "Use" text - golden gradient */
+.how-it-works .how-to-use-gradient-text {
+  background-image: linear-gradient(
+    to right,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* How to Use section: vertical flow line - golden gradient */
+.how-it-works .how-it-works-flow-line {
+  background: linear-gradient(
+    to bottom,
+    #fadea5,
+    #f8cd6b,
+    #e6b71e,
+    #d4a51c
+  ) !important;
+  box-shadow: 0 0 12px rgba(230, 183, 30, 0.5) !important;
+}
+
+/* How to Use section: step 2 theme boxes - border only, no background */
+.how-it-works .how-it-works-theme-box {
+  background: transparent !important;
+  border: 2px solid #e6b71e !important;
+}
+.how-it-works .how-it-works-theme-box:hover {
+  border-color: #f8cd6b !important;
+  background: rgba(248, 205, 107, 0.05) !important;
+}
+.how-it-works .how-it-works-theme-box-selected {
+  background: rgba(230, 183, 30, 0.08) !important;
+  border-color: #e6b71e !important;
+  box-shadow: 0 4px 16px rgba(230, 183, 30, 0.35) !important;
+}
+
+/* How to Use section: step 3 download button - gradient border */
+.how-it-works .how-it-works-download-btn {
+  background:
+    linear-gradient(#171717, #171717) padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  border: 2px solid transparent !important;
+}
+.how-it-works .how-it-works-download-btn:hover {
+  box-shadow: 0 6px 24px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Hero description text - simple white, no shadow */
+.hero-banner .hero-text h2,
+.hero-banner .hero-text .hero-desc {
+  color: #ffffff !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Logo MS square - same golden colour everywhere (Header, Footer, Dashboard, SignIn, Contact, etc.) */
+.logo-square {
+  background-color: #d4a51c !important;
+  color: #ffffff !important;
+}
+
+/* Navbar active dot - golden */
+header nav .rounded-full.bg-gold-500 {
+  background-color: #e6b71e !important;
+}
+
+/* Launch Studio button - golden gradient, 50% transparent */
+.btn-launch-studio {
+  background:
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.5),
+        rgba(248, 205, 107, 0.5),
+        rgba(230, 183, 30, 0.5),
+        rgba(212, 165, 28, 0.5)
+      )
+      padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  color: #ffffff !important;
+  border: 2px solid transparent !important;
+}
+.btn-launch-studio:hover {
+  background:
+    linear-gradient(
+        to right,
+        rgba(250, 222, 165, 0.68),
+        rgba(248, 205, 107, 0.7),
+        rgba(230, 183, 30, 0.7),
+        rgba(212, 165, 28, 0.68)
+      )
+      padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  box-shadow: 0 8px 24px rgba(230, 183, 30, 0.35) !important;
+}
+
+/* Launch Studio button - arrow circle (slightly raised/glow) */
+.launch-studio-arrow {
+  background: rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+.btn-launch-studio:hover .launch-studio-arrow {
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Card background with gold accent on hover */
+.card-hover {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(230, 183, 30, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.card-hover:hover {
+  background: rgba(230, 183, 30, 0.05) !important;
+  border-color: rgba(230, 183, 30, 0.4) !important;
+  box-shadow: 0 0 20px rgba(230, 183, 30, 0.2) !important;
+}
+
+/* Gold accent line animation */
+.accent-line {
+  position: relative;
+  display: inline-block;
+}
+
+.accent-line::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #e6b71e;
+  transition: width 0.3s ease !important;
+}
+
+.accent-line:hover::after {
+  width: 100%;
+}
+
+/* Badge/tag gold styling */
+.badge-gold,
+.tag-gold {
+  background-color: rgba(230, 183, 30, 0.15) !important;
+  color: #f8cd6b !important;
+  border: 1px solid rgba(230, 183, 30, 0.3) !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.badge-gold:hover,
+.tag-gold:hover {
+  background-color: rgba(230, 183, 30, 0.25) !important;
+  border-color: rgba(230, 183, 30, 0.5) !important;
+  box-shadow: 0 0 12px rgba(230, 183, 30, 0.3) !important;
+}
+
+/* Input focus state with gold */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #e6b71e !important;
+  box-shadow:
+    0 0 0 3px rgba(230, 183, 30, 0.1),
+    0 0 0 1px #e6b71e !important;
+  outline: none !important;
+}
+
+/* Divider with gold tint */
+hr,
+.divider {
+  border-color: rgba(230, 183, 30, 0.2) !important;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(230, 183, 30, 0.3),
+    transparent
+  ) !important;
+}

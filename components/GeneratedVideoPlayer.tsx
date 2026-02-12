@@ -61,7 +61,7 @@ export const GeneratedVideoPlayer: React.FC<GeneratedVideoPlayerProps> = ({
             
             <button
                 onClick={handleDownload}
-                className="text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-rose-900/30 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-rose-500 flex items-center justify-center gap-3 w-full max-w-xs"
+                className="text-white bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-gold-900/30 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-gold-500 flex items-center justify-center gap-3 w-full max-w-xs"
             >
                 <DownloadIcon />
                 <span>DOWNLOAD VIDEO (MP4)</span>

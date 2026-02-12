@@ -70,7 +70,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       tabIndex={0}
       aria-label="Upload product image"
     >
-      <div className={`relative w-full h-full rounded-lg bg-neutral-800/50 border-2 border-dashed border-neutral-700 group-hover:border-rose-500 flex flex-col items-center justify-center text-center p-4 transition-all duration-300 ${preview && enableAnimation ? 'animate-pulse-preview' : ''}`}>
+      <div className={`relative w-full h-full rounded-lg bg-neutral-800/50 border-2 border-dashed border-neutral-700 group-hover:border-gold-500 flex flex-col items-center justify-center text-center p-4 transition-all duration-300 ${preview && enableAnimation ? 'animate-pulse-preview' : ''}`}>
           <input
               type="file"
               ref={fileInputRef}
@@ -88,7 +88,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               </div>
           ) : (
               <div className="flex flex-col items-center justify-center space-y-3 text-neutral-400">
-                  <CameraIcon className="w-10 h-10 text-neutral-500 group-hover:text-rose-500 transition-colors" />
+                  <CameraIcon className="w-10 h-10 text-neutral-500 group-hover:text-gold-500 transition-colors" />
                   <p className="font-semibold text-lg text-neutral-200">{title}</p>
                   <p className="text-xs">{subtitle}</p>
               </div>

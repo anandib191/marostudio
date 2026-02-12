@@ -15,7 +15,7 @@ export const Loader: React.FC<LoaderProps> = ({ size = 'md', color = 'rose' }) =
   const colorClasses = {
       white: 'border-white',
       black: 'border-black',
-      rose: 'border-rose-500'
+      rose: 'border-gold-500'
   }
   
   return (

@@ -60,8 +60,10 @@ export const PreviouslyGenerated: React.FC = () => {
     setLoading(true);
     try {
       const cachedItems = await getCachedItems();
+      // Filter to only show images (not PDFs/lookbooks)
+      const imageItems = cachedItems.filter(item => item.type === 'image');
       // Sort by timestamp (newest first)
-      const sortedItems = cachedItems.sort((a, b) => b.timestamp - a.timestamp);
+      const sortedItems = imageItems.sort((a, b) => b.timestamp - a.timestamp);
       setItems(sortedItems);
       
       // Update cache stats
@@ -69,13 +71,11 @@ export const PreviouslyGenerated: React.FC = () => {
         const stats = await getCacheStats();
         setCacheStats(stats);
         
-        console.log('✅ Loaded cached items:', sortedItems.length);
+        console.log('✅ Loaded cached images:', sortedItems.length);
         console.log('📋 Items breakdown:', {
           total: sortedItems.length,
           photo: sortedItems.filter(i => i.studioType === 'photo').length,
           marketing: sortedItems.filter(i => i.studioType === 'marketing').length,
-          images: sortedItems.filter(i => i.type === 'image').length,
-          pdfs: sortedItems.filter(i => i.type === 'pdf').length,
           size: `${stats.totalSizeMB}MB`,
         });
       } catch (statsError) {
@@ -96,34 +96,18 @@ export const PreviouslyGenerated: React.FC = () => {
 
   const handleDownload = async (item: CachedItem) => {
     try {
-      if (item.type === 'pdf') {
-        // PDF is already a data URL, convert to blob for download
-        const response = await fetch(item.url);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const fileName = item.name ? `${item.name}.pdf` : `lookbook-${item.id}.pdf`;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast.success('Lookbook PDF downloaded successfully!');
-      } else {
-        // Image download
-        const response = await fetch(item.url);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `image-${item.id}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast.success('Image downloaded successfully!');
-      }
+      // Image download
+      const response = await fetch(item.url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `image-${item.id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Image downloaded successfully!');
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download');
@@ -190,8 +174,8 @@ export const PreviouslyGenerated: React.FC = () => {
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Background */}
       <div className="fixed inset-0 z-[-1]">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-black to-black"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(99,102,241,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-gold-950/20 via-black to-black"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(230,183,30,0.08),transparent_50%)]"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" style={{ paddingTop: 0, marginTop: 0 }}>
@@ -226,7 +210,7 @@ export const PreviouslyGenerated: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={loadCachedItems}
-                className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-300 text-sm font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-gold-500/20 hover:bg-gold-500/30 border border-gold-500/50 rounded-lg text-gold-300 text-sm font-medium transition-colors flex items-center gap-2"
                 title="Refresh cache"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +249,7 @@ export const PreviouslyGenerated: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gold-500 border-t-transparent mx-auto mb-4"></div>
               <p className="text-neutral-400">Loading images...</p>
             </div>
           </div>
@@ -278,7 +262,7 @@ export const PreviouslyGenerated: React.FC = () => {
             <p className="text-neutral-400 text-sm mb-6">Generate images to see them here!</p>
             <button
               onClick={() => navigate('/studio')}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold transition-colors"
+              className="px-6 py-3 bg-gold-600 hover:bg-gold-500 rounded-lg font-semibold transition-colors"
             >
               Go to Studio
             </button>
@@ -288,32 +272,17 @@ export const PreviouslyGenerated: React.FC = () => {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group relative bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300 cursor-pointer"
+                className="group relative bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-gold-500/50 transition-all duration-300 cursor-pointer"
                 onClick={() => setSelectedItem(item)}
               >
                 <div className="aspect-square relative overflow-hidden bg-neutral-800">
-                  {item.type === 'pdf' ? (
-                    // PDF Icon Preview
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center p-8">
-                        <svg className="w-20 h-20 mx-auto mb-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-sm font-semibold text-white">Lookbook PDF</p>
-                        {item.name && (
-                          <p className="text-xs text-neutral-400 mt-1 line-clamp-1">{item.name}</p>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    // Image Preview
-                    <img
-                      src={item.url}
-                      alt="Generated image"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  )}
+                  {/* Image Preview */}
+                  <img
+                    src={item.url}
+                    alt="Generated image"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-0 left-0 right-0 p-4">
                       <button
@@ -321,12 +290,12 @@ export const PreviouslyGenerated: React.FC = () => {
                           e.stopPropagation();
                           handleDownload(item);
                         }}
-                        className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                        className="w-full px-4 py-2 bg-gold-600 hover:bg-gold-500 rounded-lg text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        {item.type === 'pdf' ? 'Download PDF' : 'Download'}
+                        Download
                       </button>
                     </div>
                   </div>
@@ -335,7 +304,7 @@ export const PreviouslyGenerated: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       item.studioType === 'photo' 
-                        ? 'bg-rose-500/20 text-rose-300'
+                        ? 'bg-gold-500/20 text-gold-300'
                         : 'bg-amber-500/20 text-amber-300'
                     }`}>
                       {item.studioType === 'photo' ? 'Photo Studio' : 'Marketing Studio'}
@@ -408,36 +377,25 @@ export const PreviouslyGenerated: React.FC = () => {
                 className="relative max-w-6xl w-full flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()}
               >
-                {selectedItem.type === 'pdf' ? (
-                  // PDF Viewer
-                  <div className="w-full mb-4 sm:mb-6 rounded-xl overflow-hidden shadow-2xl bg-white">
-                    <iframe
-                      src={selectedItem.url}
-                      className="w-full h-[90vh] sm:h-[93vh] border-0"
-                      title="PDF Preview"
-                    />
-                  </div>
-                ) : (
-                  // Image Viewer
-                  <div className="w-full mb-4 sm:mb-6 rounded-xl overflow-hidden shadow-2xl">
-                    <img
-                      src={selectedItem.url}
-                      alt="Preview"
-                      className="w-full h-auto max-h-[90vh] sm:max-h-[93vh] object-contain"
-                    />
-                  </div>
-                )}
+                {/* Image Viewer */}
+                <div className="w-full mb-4 sm:mb-6 rounded-xl overflow-hidden shadow-2xl">
+                  <img
+                    src={selectedItem.url}
+                    alt="Preview"
+                    className="w-full h-auto max-h-[90vh] sm:max-h-[93vh] object-contain"
+                  />
+                </div>
 
                 {/* Action Buttons (Responsive) */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md mb-6 sm:mb-8">
                   <button
                     onClick={() => handleDownload(selectedItem)}
-                    className="flex-1 px-4 sm:px-5 py-3 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base min-h-[44px]"
+                    className="flex-1 px-4 sm:px-5 py-3 sm:py-2.5 bg-gold-600 hover:bg-gold-700 rounded-lg text-white font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base min-h-[44px]"
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    {selectedItem.type === 'pdf' ? 'Download PDF' : 'Download'}
+                    Download
                   </button>
                   <button
                     onClick={() => {

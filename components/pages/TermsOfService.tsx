@@ -89,7 +89,7 @@ export const TermsOfService: React.FC = () => {
               <div>
                 <h3 className="text-xl font-semibold text-white mb-2">4.4 Refunds</h3>
                 <p className="text-neutral-300 leading-relaxed">
-                  Refund policies are governed by applicable consumer protection laws. Unused credits are generally non-refundable. If you believe you are entitled to a refund, please contact us at <a href="mailto:ceogrowlouder@gmail.com" className="text-indigo-400 hover:text-indigo-300">ceogrowlouder@gmail.com</a>.
+                  Refund policies are governed by applicable consumer protection laws. Unused credits are generally non-refundable. If you believe you are entitled to a refund, please contact us at <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a>.
                 </p>
               </div>
             </div>
@@ -188,7 +188,7 @@ export const TermsOfService: React.FC = () => {
               If you have any questions about these Terms of Service, please contact us:
             </p>
             <div className="mt-4 space-y-2 text-neutral-300">
-              <p><strong>Email:</strong> <a href="mailto:ceogrowlouder@gmail.com" className="text-indigo-400 hover:text-indigo-300">ceogrowlouder@gmail.com</a></p>
+              <p><strong>Email:</strong> <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a></p>
               <p><strong>Company:</strong> Growlouder Productions</p>
             </div>
           </section>
@@ -198,11 +198,11 @@ export const TermsOfService: React.FC = () => {
 
       {/* Footer Links */}
       <div className="mt-12 text-center space-x-6 text-sm">
-        <Link to="/privacy-policy" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link to="/privacy-policy" className="text-gold-400 hover:text-gold-300 transition-colors">
           Privacy Policy
         </Link>
         <span className="text-neutral-600">•</span>
-        <Link to="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link to="/" className="text-gold-400 hover:text-gold-300 transition-colors">
           Back to Home
         </Link>
       </div>

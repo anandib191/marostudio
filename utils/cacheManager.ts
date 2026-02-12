@@ -1,11 +1,10 @@
 export interface CachedItem {
   id: string;
-  url: string; // PDF data URL or image data URL
+  url: string; // Image data URL only
   timestamp: number;
   studioType: 'photo' | 'marketing';
   prompt?: string;
-  name?: string; // Lookbook name/title (for PDFs)
-  type: 'pdf' | 'image'; // Type of cached item
+  type: 'image'; // Type of cached item - only images
 }
 
 const CACHE_KEY = 'generated_cache';
@@ -30,82 +29,6 @@ const getIndexedDBCache = async () => {
     }
   }
   return indexedDBCache;
-};
-
-/**
- * Add a generated lookbook PDF to cache (PhotoStudio)
- */
-export const addLookbookToCache = async (
-  pdfBlob: Blob | string, // Can be Blob or base64 data URL
-  studioType: 'photo' | 'marketing',
-  prompt?: string,
-  name?: string
-): Promise<void> => {
-  // Try IndexedDB first (unlimited storage)
-  const indexedDB = await getIndexedDBCache();
-  if (indexedDB) {
-    try {
-      await indexedDB.addLookbookToCache(pdfBlob, studioType, prompt, name);
-      return;
-    } catch (error) {
-      console.warn('⚠️ IndexedDB failed, falling back to localStorage:', error);
-    }
-  }
-
-  // Fallback to localStorage
-  return new Promise((resolve, reject) => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      const cachedItems: CachedItem[] = cached ? JSON.parse(cached) : [];
-      
-      // Convert Blob to base64 if needed
-      if (pdfBlob instanceof Blob) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const pdfDataUrl = reader.result as string;
-          const newItem: CachedItem = {
-            id: `lookbook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            url: pdfDataUrl,
-            timestamp: Date.now(),
-            studioType,
-            prompt,
-            name,
-            type: 'pdf',
-          };
-
-          cachedItems.unshift(newItem);
-          const trimmedItems = cachedItems.slice(0, MAX_CACHE_SIZE);
-          localStorage.setItem(CACHE_KEY, JSON.stringify(trimmedItems));
-          console.log('✅ Lookbook PDF added to localStorage cache:', newItem.id);
-          window.dispatchEvent(new Event('cacheUpdated'));
-          resolve();
-        };
-        reader.onerror = () => reject(new Error('Failed to read PDF blob'));
-        reader.readAsDataURL(pdfBlob);
-      } else {
-        // Already a data URL
-        const newItem: CachedItem = {
-          id: `lookbook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          url: pdfBlob,
-          timestamp: Date.now(),
-          studioType,
-          prompt,
-          name,
-          type: 'pdf',
-        };
-
-        cachedItems.unshift(newItem);
-        const trimmedItems = cachedItems.slice(0, MAX_CACHE_SIZE);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(trimmedItems));
-        console.log('✅ Lookbook PDF added to localStorage cache:', newItem.id);
-        window.dispatchEvent(new Event('cacheUpdated'));
-        resolve();
-      }
-    } catch (error) {
-      console.error('❌ Failed to add lookbook to cache:', error);
-      reject(error);
-    }
-  });
 };
 
 /**
@@ -237,14 +160,6 @@ export const getCachedItems = async (): Promise<CachedItem[]> => {
     console.error('❌ Failed to get cached items:', error);
     return [];
   }
-};
-
-/**
- * Get cached lookbooks (PDFs only)
- */
-export const getCachedLookbooks = async (): Promise<CachedItem[]> => {
-  const items = await getCachedItems();
-  return items.filter(item => item.type === 'pdf');
 };
 
 /**

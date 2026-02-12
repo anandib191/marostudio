@@ -82,7 +82,7 @@ export const AdminDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500 mx-auto mb-4"></div>
           <p className="text-neutral-400">Loading dashboard...</p>
         </div>
       </div>
@@ -142,13 +142,13 @@ export const AdminDashboard: React.FC = () => {
           <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
             <div className="space-y-3">
-              <button className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors text-sm font-semibold">
+              <button className="w-full px-4 py-2 bg-gold-600 hover:bg-gold-500 text-white rounded-lg transition-colors text-sm font-semibold">
                 Manage Users
               </button>
-              <button className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors text-sm font-semibold">
+              <button className="w-full px-4 py-2 bg-gold-600 hover:bg-gold-500 text-white rounded-lg transition-colors text-sm font-semibold">
                 View Reports
               </button>
-              <button className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors text-sm font-semibold">
+              <button className="w-full px-4 py-2 bg-gold-600 hover:bg-gold-500 text-white rounded-lg transition-colors text-sm font-semibold">
                 System Settings
               </button>
             </div>

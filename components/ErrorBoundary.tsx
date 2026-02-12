@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -11,7 +11,10 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends React.Component<Props, State> {
+  public props: Props;
+  public state: State;
+  public setState: (state: Partial<State>, callback?: () => void) => void;
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -98,7 +101,7 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="flex gap-4 justify-center">
               <button
                 onClick={this.handleReset}
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-gold-600 hover:bg-gold-500 text-white rounded-lg transition-colors"
               >
                 Try Again
               </button>

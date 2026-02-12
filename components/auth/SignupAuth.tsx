@@ -34,27 +34,27 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
   // Validate phone number
   const validatePhoneNumber = (phone: string): string => {
     const cleaned = phone.replace(/\D/g, '');
-    
+
     if (!cleaned) {
       return 'Phone number is required';
     }
-    
+
     if (cleaned.length !== 10) {
       return 'Phone number must be exactly 10 digits';
     }
-    
+
     // Check if it contains only digits
     if (!/^[0-9]{10}$/.test(cleaned)) {
       return 'Phone number must contain only digits';
     }
-    
+
     return '';
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhoneNumber(value);
-    
+
     // Validate on change
     if (value) {
       const error = validatePhoneNumber(value);
@@ -94,12 +94,12 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
 
     try {
       const url = `${API_URL}/api/auth/send-otp`;
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: email.trim(), 
+        body: JSON.stringify({
+          email: email.trim(),
           is_signup: true,
           name: name.trim(),
           phoneNumber: phoneNumber.trim(),
@@ -113,12 +113,12 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         } catch {
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
-        
+
         // Handle rate limit errors professionally with user-friendly messages
         if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
           const retryAfter = errorData.retryAfter || 0;
           const canRetry = errorData.canRetry !== false; // Default to true if not specified
-          
+
           let userMessage = '';
           if (canRetry && retryAfter > 0 && retryAfter < 60) {
             // Short wait (less than 1 minute) - friendly message
@@ -136,7 +136,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
             // Use server message or default
             userMessage = errorData.message || 'Please wait a moment before requesting a new code.';
           }
-          
+
           const error: any = new Error(userMessage);
           error.status = 429;
           error.errorType = 'RATE_LIMIT';
@@ -144,17 +144,17 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
           error.canRetry = canRetry;
           throw error;
         }
-        
+
         // Check if user already exists
         if (errorData.userExists) {
           throw new Error('User already registered. Please login instead.');
         }
-        
+
         // Check if email is invalid (disposable/fake)
         if (errorData.invalidEmail) {
           throw new Error(errorData.message || 'Invalid email address. Please use a valid email.');
         }
-        
+
         throw new Error(errorData.message || errorData.detail || `Failed to send OTP: ${response.status}`);
       }
 
@@ -169,7 +169,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       // Start 20 second cooldown for resend (signup is more lenient)
       setResendCooldown(20);
       setCanResend(false);
-      
+
       // Countdown timer
       const countdownInterval = setInterval(() => {
         setResendCooldown((prev) => {
@@ -183,7 +183,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       }, 1000);
     } catch (err: any) {
       console.error('Send OTP error:', err);
-      
+
       // Handle user already exists error with login option
       if (err.userExists) {
         setError(err.message || 'An account with this email already exists. Please login instead.');
@@ -231,7 +231,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       }
       // Dispatch custom event to notify Header component
       window.dispatchEvent(new Event('userAuthChanged'));
-      
+
       onAuthSuccess(email, data.access_token);
     } catch (err: any) {
       setError(err.message || 'Invalid OTP. Please try again.');
@@ -244,7 +244,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
     if (!canResend || resendCooldown > 0) {
       return;
     }
-    
+
     setError('');
     setLoading(true);
 
@@ -252,8 +252,8 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       const response = await fetch(`${API_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
+        body: JSON.stringify({
+          email,
           is_signup: true,
           name: name.trim(),
           phoneNumber: phoneNumber.trim(),
@@ -267,18 +267,18 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
         } catch {
           throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
-        
+
         // Handle rate limit errors professionally
         if (response.status === 429 || errorData.errorType === 'RATE_LIMIT') {
           const retryAfter = errorData.retryAfter || 0;
           const canRetry = errorData.canRetry !== false;
-          
+
           let userMessage = '';
           if (canRetry && retryAfter > 0 && retryAfter < 60) {
             userMessage = `Please wait ${retryAfter} second${retryAfter !== 1 ? 's' : ''} before requesting a new code.`;
             setResendCooldown(retryAfter);
             setCanResend(false);
-            
+
             // Start countdown
             const countdownInterval = setInterval(() => {
               setResendCooldown((prev) => {
@@ -301,11 +301,11 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
           } else {
             userMessage = errorData.message || 'Please wait a moment before requesting a new code.';
           }
-          
+
           setError(userMessage);
           return;
         }
-        
+
         throw new Error(errorData.message || errorData.detail || 'Failed to resend OTP');
       }
 
@@ -320,7 +320,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       // Reset cooldown
       setResendCooldown(20);
       setCanResend(false);
-      
+
       // Start countdown timer
       const countdownInterval = setInterval(() => {
         setResendCooldown((prev) => {
@@ -341,7 +341,7 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) return;
-    
+
     setError('');
     setLoading(true);
 
@@ -359,15 +359,15 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
       }
 
       // Store user token
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('user_email', data.user?.email || '');
-        localStorage.setItem('user_role', data.role || 'user');
-        if (data.user?.name) {
-          localStorage.setItem('user_name', data.user.name);
-        }
-        // Dispatch custom event to notify Header component
-        window.dispatchEvent(new Event('userAuthChanged'));
-      
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user_email', data.user?.email || '');
+      localStorage.setItem('user_role', data.role || 'user');
+      if (data.user?.name) {
+        localStorage.setItem('user_name', data.user.name);
+      }
+      // Dispatch custom event to notify Header component
+      window.dispatchEvent(new Event('userAuthChanged'));
+
       onAuthSuccess(data.user?.email || '', data.access_token);
     } catch (err: any) {
       setError(err.message || 'Google sign up failed. Please try again.');
@@ -380,8 +380,8 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
     <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center z-[100]" style={{ overflow: 'hidden', height: '100vh', top: '80px' }}>
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-[-1]">
-        <img 
-          src="https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?q=80&w=1920&auto=format&fit=crop" 
+        <img
+          src="https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?q=80&w=1920&auto=format&fit=crop"
           alt="Authentication background"
           className="w-full h-full object-cover opacity-30"
         />
@@ -393,187 +393,184 @@ export const SignupAuth: React.FC<SignupAuthProps> = ({ onAuthSuccess, onSwitchT
 
         {/* Auth Form */}
         <div className="w-full max-w-md mx-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-        <h1 className="text-lg font-bold text-white font-serif-display mb-0.5 text-center">
-          Create Account
-        </h1>
-        <p className="text-xs text-neutral-400 mb-2 text-center">
-          {step === 'details' 
-            ? 'Fill in your details to get started'
-            : 'Enter the OTP sent to your email'
-          }
-        </p>
+          <h1 className="text-lg font-bold text-white font-serif-display mb-0.5 text-center">
+            Create Account
+          </h1>
+          <p className="text-xs text-neutral-400 mb-2 text-center">
+            {step === 'details'
+              ? 'Fill in your details to get started'
+              : 'Enter the OTP sent to your email'
+            }
+          </p>
 
-        {error && (
-          <div className={`mb-2 p-1.5 rounded-lg text-xs ${
-            error.includes('already exists') || error.includes('login instead')
+          {error && (
+            <div className={`mb-2 p-1.5 rounded-lg text-xs ${error.includes('already exists') || error.includes('login instead')
               ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300'
               : 'bg-red-500/20 border border-red-500/50 text-red-300'
-          }`}>
-            <div className="flex flex-col gap-1">
-              <span>{error}</span>
-              {(error.includes('already exists') || error.includes('login instead')) && onSwitchToLogin && (
-                <button
-                  type="button"
-                  onClick={onSwitchToLogin}
-                  className="text-blue-400 hover:text-blue-300 font-semibold underline mt-1 text-left"
-                >
-                  Sign in instead →
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {step === 'details' ? (
-          <>
-            <div className="mb-2 w-full flex justify-center">
-              <div className="w-full">
-                <div className="flex justify-center">
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => setError('Google sign up failed. Please try again.')}
-                    theme="outline"
-                    shape="rectangular"
-                    text="signup_with"
-                    size="large"
-                    width="100%"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="relative mb-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-2 bg-black/60 text-neutral-400">OR</span>
-              </div>
-            </div>
-            <form onSubmit={handleSendOTP} className="space-y-2">
-              <div>
-                <label htmlFor="name" className="block text-xs font-medium text-neutral-300 mb-1">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  placeholder="John Doe"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label htmlFor="phone" className="block text-xs font-medium text-neutral-300 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={handlePhoneChange}
-                  required
-                  className={`w-full px-3 py-2 bg-white/5 border rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 text-sm ${
-                    phoneError 
-                      ? 'border-red-500/50 focus:ring-red-500 focus:border-red-500' 
-                      : 'border-white/10 focus:ring-indigo-500 focus:border-transparent'
-                  }`}
-                  placeholder="9876543210"
-                  disabled={loading}
-                />
-                {phoneError && (
-                  <p className="mt-1 text-xs text-red-400">{phoneError}</p>
+              }`}>
+              <div className="flex flex-col gap-1">
+                <span>{error}</span>
+                {(error.includes('already exists') || error.includes('login instead')) && onSwitchToLogin && (
+                  <button
+                    type="button"
+                    onClick={onSwitchToLogin}
+                    className="text-blue-400 hover:text-blue-300 font-semibold underline mt-1 text-left"
+                  >
+                    Sign in instead →
+                  </button>
                 )}
               </div>
+            </div>
+          )}
+
+          {step === 'details' ? (
+            <>
+              <div className="mb-2 w-full flex justify-center">
+                <div className="w-full">
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => setError('Google sign up failed. Please try again.')}
+                      theme="outline"
+                      shape="rectangular"
+                      text="signup_with"
+                      size="large"
+                      width="100%"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="relative mb-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-black/60 text-neutral-400">OR</span>
+                </div>
+              </div>
+              <form onSubmit={handleSendOTP} className="space-y-2">
+                <div>
+                  <label htmlFor="name" className="block text-xs font-medium text-neutral-300 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent text-sm"
+                    placeholder="John Doe"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-medium text-neutral-300 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={handlePhoneChange}
+                    required
+                    className={`w-full px-3 py-2 bg-white/5 border rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 text-sm ${phoneError
+                      ? 'border-red-500/50 focus:ring-red-500 focus:border-red-500'
+                      : 'border-white/10 focus:ring-gold-500 focus:border-transparent'
+                      }`}
+                    placeholder="9876543210"
+                    disabled={loading}
+                  />
+                  {phoneError && (
+                    <p className="mt-1 text-xs text-red-400">{phoneError}</p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-xs font-medium text-neutral-300 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent text-sm"
+                    placeholder="your.email@example.com"
+                    disabled={loading}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || !name.trim() || !phoneNumber.trim() || !email.trim() || !!phoneError}
+                  className="w-full py-1.5 btn-auth-submit text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {loading ? 'Sending OTP...' : 'Send OTP'}
+                </button>
+                <div className="text-center text-xs text-neutral-400 pt-0.5">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={onSwitchToLogin}
+                    className="text-gold-400 hover:text-gold-300 font-semibold"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <form onSubmit={handleVerifyOTP} className="space-y-2">
               <div>
-                <label htmlFor="email" className="block text-xs font-medium text-neutral-300 mb-1">
-                  Email Address
+                <label htmlFor="otp" className="block text-xs font-medium text-neutral-300 mb-1">
+                  OTP Code
                 </label>
                 <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="otp"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   required
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  placeholder="your.email@example.com"
+                  maxLength={6}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent text-center text-lg tracking-widest"
+                  placeholder="000000"
                   disabled={loading}
                 />
+              </div>
+              <div className="text-xs text-neutral-400 text-center">
+                OTP sent to <span className="text-white">{email}</span>
               </div>
               <button
                 type="submit"
-                disabled={loading || !name.trim() || !phoneNumber.trim() || !email.trim() || !!phoneError}
-                className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                disabled={loading || otp.length !== 6}
+                className="w-full py-1.5 btn-auth-submit text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                {loading ? 'Sending OTP...' : 'Send OTP'}
+                {loading ? 'Verifying...' : 'Verify OTP & Create Account'}
               </button>
-              <div className="text-center text-xs text-neutral-400 pt-0.5">
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={onSwitchToLogin}
-                  className="text-indigo-400 hover:text-indigo-300 font-semibold"
-                >
-                  Sign In
-                </button>
-              </div>
-            </form>
-          </>
-        ) : (
-          <form onSubmit={handleVerifyOTP} className="space-y-2">
-            <div>
-              <label htmlFor="otp" className="block text-xs font-medium text-neutral-300 mb-1">
-                OTP Code
-              </label>
-              <input
-                id="otp"
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                required
-                maxLength={6}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-widest"
-                placeholder="000000"
-                disabled={loading}
-              />
-            </div>
-            <div className="text-xs text-neutral-400 text-center">
-              OTP sent to <span className="text-white">{email}</span>
-            </div>
-            <button
-              type="submit"
-              disabled={loading || otp.length !== 6}
-              className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              {loading ? 'Verifying...' : 'Verify OTP & Create Account'}
-            </button>
-            <button
-              type="button"
-              onClick={handleResendOTP}
-              disabled={!canResend || resendCooldown > 0 || loading}
-              className={`w-full py-0.5 text-xs transition-colors ${
-                !canResend || resendCooldown > 0 || loading
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={!canResend || resendCooldown > 0 || loading}
+                className={`w-full py-0.5 text-xs transition-colors ${!canResend || resendCooldown > 0 || loading
                   ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                  : 'text-indigo-400 hover:text-indigo-300'
-              }`}
-            >
-              {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend OTP'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStep('details');
-                setOtp('');
-                setError('');
-              }}
-              className="w-full py-0.5 text-neutral-400 hover:text-neutral-300 text-xs transition-colors"
-            >
-              Change Email
-            </button>
-          </form>
-        )}
+                  : 'text-gold-400 hover:text-gold-300'
+                  }`}
+              >
+                {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend OTP'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('details');
+                  setOtp('');
+                  setError('');
+                }}
+                className="w-full py-0.5 text-gradient-gold text-xs transition-colors hover:scale-105 transform duration-300"
+              >
+                Change Email
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

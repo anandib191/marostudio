@@ -10,14 +10,14 @@ export const YouTubeEmbedSection: React.FC = () => {
       <div className="container-lg3 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="youtube-embed-header text-center mb-12 md:mb-16 animate-fade-in-up">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white leading-tight tracking-tight">
-            YouTube <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">Videos</span>
+            YouTube <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Videos</span>
           </h2>
         </div>
 
         {/* Videos Display */}
         <div className="videos-display-container grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <div className="video-wrapper flex flex-col gap-4 transition-all hover:-translate-y-1">
-            <div className="video-container relative w-full pb-[56.25%] h-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/10 transition-all hover:border-indigo-500/30 hover:shadow-xl">
+            <div className="video-container relative w-full pb-[56.25%] h-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/10 transition-all hover:border-gold-500/30 hover:shadow-xl">
               <iframe
                 src={`https://www.youtube.com/embed/${video1Id}`}
                 title="YouTube video player 1"
@@ -33,7 +33,7 @@ export const YouTubeEmbedSection: React.FC = () => {
           </div>
 
           <div className="video-wrapper flex flex-col gap-4 transition-all hover:-translate-y-1">
-            <div className="video-container relative w-full pb-[56.25%] h-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/10 transition-all hover:border-indigo-500/30 hover:shadow-xl">
+            <div className="video-container relative w-full pb-[56.25%] h-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/10 transition-all hover:border-gold-500/30 hover:shadow-xl">
               <iframe
                 src={`https://www.youtube.com/embed/${video2Id}`}
                 title="YouTube video player 2"

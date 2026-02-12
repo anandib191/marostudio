@@ -5,9 +5,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { HomeIcon } from './icons/HomeIcon';
 import { NavMenuIcon } from './icons/NavMenuIcon';
 import { CloseIcon } from './icons/CloseIcon';
-import { LogoutIcon } from './icons/LogoutIcon';
 import { Logo } from './Logo';
-import { ConfirmationModal } from './ui/ConfirmationModal';
+import { ProfileDropdown } from './ProfileDropdown';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -20,7 +19,7 @@ interface HeaderProps {
 
 const navLinks: Array<{ path: string; label: string; isScroll?: boolean }> = [
   { path: '/', label: 'Overview' },
-  { path: '#our-flow', label: 'Workflow', isScroll: true },
+  { path: '#our-flow', label: 'WORKFLOW', isScroll: true },
   { path: '/pricing', label: 'Pricing' },
   { path: '/contact', label: 'Have Query?' },
 ];
@@ -28,9 +27,9 @@ const navLinks: Array<{ path: string; label: string; isScroll?: boolean }> = [
 export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick, isMenuOpen, activeSection }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState<string>('/');
 
@@ -138,12 +137,16 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     // Check if user is authenticated
     const token = localStorage.getItem('access_token');
     const storedName = localStorage.getItem('user_name');
+    const storedEmail = localStorage.getItem('user_email');
     
     setIsAuthenticated(!!token);
     
-    // Set name from localStorage if available
+    // Set name and email from localStorage if available
     if (storedName) {
       setUserName(storedName);
+    }
+    if (storedEmail) {
+      setUserEmail(storedEmail);
     }
 
     const fetchUserData = async () => {
@@ -152,6 +155,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         if (!token) {
           setSubscriptionPlan(null);
           setUserName(null);
+          setUserEmail(null);
           return;
         }
 
@@ -173,6 +177,17 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             // Clear username if no name is available (don't use email)
             setUserName(null);
             localStorage.removeItem('user_name');
+          }
+          
+          // Set user email from API response or localStorage
+          if (data.email && data.email.trim()) {
+            setUserEmail(data.email.trim());
+            localStorage.setItem('user_email', data.email.trim());
+          } else if (storedEmail && storedEmail.trim()) {
+            setUserEmail(storedEmail.trim());
+          } else {
+            setUserEmail(null);
+            localStorage.removeItem('user_email');
           }
           
           // Check if subscription is still valid
@@ -203,16 +218,20 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     const handleAuthChange = () => {
       const newToken = localStorage.getItem('access_token');
       const newName = localStorage.getItem('user_name');
+      const newEmail = localStorage.getItem('user_email');
       setIsAuthenticated(!!newToken);
       if (newName) {
         setUserName(newName);
+      }
+      if (newEmail) {
+        setUserEmail(newEmail);
       }
       fetchUserData();
     };
     
     // Also listen for storage changes (when user logs in/registers in another tab)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'access_token' || e.key === 'user_name') {
+      if (e.key === 'access_token' || e.key === 'user_name' || e.key === 'user_email') {
         handleAuthChange();
       }
     };
@@ -228,7 +247,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
   }, []);
 
   return (
-    <header className="sticky top-0 z-[101] bg-black/60 backdrop-blur-xl border-b border-white/5">
+    <header className="sticky top-0 z-[101] bg-black/70 backdrop-blur-xl border-b-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0 flex flex-col gap-1">
@@ -241,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                 <Logo />
             </Link>
             {subscriptionPlan && (
-              <span className="hidden sm:inline-block px-3 py-1.5 text-xs font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full uppercase tracking-wider">
+              <span className="hidden sm:inline-block px-3 py-1.5 text-xs font-semibold text-gold-400 bg-gold-500/10 border border-gold-500/20 rounded-full uppercase tracking-wider">
                 {subscriptionPlan}
               </span>
             )}
@@ -297,12 +316,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                     }
                   }}
                   className={`relative transition-colors ${
-                    isActive(link.path) ? 'text-white' : 'text-neutral-500 hover:text-white'
+                    isActive(link.path) ? 'text-white drop-shadow-lg' : 'text-white hover:text-gold-300 hover:drop-shadow-lg'
                   }`}
                 >
                   {link.label}
                   {isActive(link.path) && (
-                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500" />
                   )}
                 </button>
               );
@@ -322,12 +341,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                   }
                 }}
                 className={`relative transition-colors ${
-                  isActive(link.path) ? 'text-white' : 'text-neutral-500 hover:text-white'
+                  isActive(link.path) ? 'text-white' : 'text-white hover:text-gold-300'
                 }`}
               >
                 {link.label}
                 {isActive(link.path) && (
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
+                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500" />
                 )}
               </Link>
             );
@@ -346,34 +365,29 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
               </button>
             )}
 
-            {/* Logout Icon - Visible on small screens */}
-            {isAuthenticated && (
+            {/* Profile Dropdown - Show for authenticated users */}
+            {isAuthenticated ? (
+              <ProfileDropdown userEmail={userEmail} onLogout={handleLogout} />
+            ) : (
+              /* Sign In Button - Show for unauthenticated users */
               <button 
-                onClick={() => setShowLogoutModal(true)}
-                className="md:hidden p-2 text-red-500 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
-                title="Logout"
-                aria-label="Logout"
+                onClick={() => navigate('/login')}
+                className="text-[9px] md:text-[10px] uppercase tracking-widest text-gold-400 hover:text-gold-300 font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300 border border-gold-500/30 hover:border-gold-400 hover:bg-gold-500/10"
               >
-                <LogoutIcon className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* Logout Button - Visible on medium+ screens */}
-            {isAuthenticated && (
-              <button 
-                onClick={() => setShowLogoutModal(true)}
-                className="hidden md:block text-[9px] md:text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300"
-                title="Logout"
-              >
-                Logout
+                Sign In
               </button>
             )}
 
           <button 
             onClick={() => location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')} 
-            className="hidden md:block text-[9px] md:text-[10px] uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-500 font-bold py-2 md:py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 transform active:scale-95 shadow-lg shadow-indigo-900/20"
+            className="btn-launch-studio hidden md:flex items-center gap-1.5 text-[9px] md:text-[10px] uppercase tracking-widest text-white font-bold py-0.5 md:py-1 pl-2 pr-0.5 md:pl-2.5 md:pr-0.5 rounded-full transition-all duration-300 transform active:scale-95"
           >
-            Launch Studio
+            <span>Launch Studio</span>
+            <span className="launch-studio-arrow flex-shrink-0 w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/20 flex items-center justify-center">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                <path d="M7 17L17 7M17 7h-6M17 7v6" />
+              </svg>
+            </span>
           </button>
 
              <button
@@ -385,17 +399,6 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             </button>
         </div>
       </div>
-
-      <ConfirmationModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-        title="Confirm Logout"
-        message="Are you sure you want to logout? You'll need to sign in again to access the site."
-        confirmText="Logout"
-        cancelText="Cancel"
-        confirmButtonClass="bg-red-600 hover:bg-red-500"
-      />
     </header>
   );
 };

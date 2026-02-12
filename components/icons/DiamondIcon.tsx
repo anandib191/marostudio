@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const DiamondIcon: React.FC<{ className?: string }> = ({ className = "text-indigo-600 w-9 h-9" }) => (
+export const DiamondIcon: React.FC<{ className?: string }> = ({ className = "text-gold-600 w-9 h-9" }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         viewBox="0 0 24 24" 

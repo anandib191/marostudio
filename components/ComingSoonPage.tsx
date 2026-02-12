@@ -46,7 +46,7 @@ export const ComingSoonPage: React.FC = () => {
         <div id="ai-video" className="w-full py-24 md:py-32">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16 animate-fade-in-up">
-                    <span className="inline-flex items-center gap-2.5 bg-neutral-800/60 border border-neutral-700 text-sm font-semibold px-4 py-2 rounded-full text-rose-300">
+                    <span className="inline-flex items-center gap-2.5 bg-neutral-800/60 border border-neutral-700 text-sm font-semibold px-4 py-2 rounded-full text-gold-300">
                         <VideoIcon className="w-4 h-4" />
                         COMING SOON
                     </span>

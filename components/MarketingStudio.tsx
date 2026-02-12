@@ -10,7 +10,7 @@ import { DownloadIcon } from './icons/DownloadIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 import { LoadingScreen } from './LoadingScreen';
-import { CreditsSummaryBox } from './CreditsSummaryBox';
+import { UnifiedCreditsSummaryBox } from './UnifiedCreditsSummaryBox';
 import { addToCache, getCachedItems } from '../utils/cacheManager';
 import { toast } from 'react-toastify';
 
@@ -24,27 +24,31 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     const [isLoading, setIsLoading] = useState(false);
     const [generatedPoster, setGeneratedPoster] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [marketingPosterCredits, setMarketingPosterCredits] = useState<number | null>(null);
+    const [totalCredits, setTotalCredits] = useState<number | null>(null);
+    const [usedPhotoshootCredits, setUsedPhotoshootCredits] = useState<number>(0);
+    const [usedMarketingCredits, setUsedMarketingCredits] = useState<number>(0);
+    const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
         if (!token) {
-            setMarketingPosterCredits(null);
+            setTotalCredits(null);
+            setRemainingCredits(null);
             return;
         }
 
         try {
-            const res = await fetch(`${API_URL}/api/credits?t=${Date.now()}`, {
+            const res = await fetch(`${API_URL}/api/credits`, {
                 headers: { Authorization: `Bearer ${token}` },
-                cache: 'no-store',
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                const credits = typeof data.marketingPosterCredits === 'number' ? data.marketingPosterCredits : null;
-                setMarketingPosterCredits(credits);
-                console.log('Fetched marketing poster credits:', credits);
+                setTotalCredits(data.totalCredits);
+                setUsedPhotoshootCredits(data.usedPhotoshootCredits);
+                setUsedMarketingCredits(data.usedMarketingCredits);
+                setRemainingCredits(data.remainingCredits);
             }
         } catch (err) {
             console.error('Failed to fetch credits:', err);
@@ -268,10 +272,12 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         try {
                             const deductData = await deductRes.json();
                             console.log('Deduct response:', deductData);
-                            if (deductData.success && typeof deductData.marketingPosterCredits === 'number') {
-                                // Update from server response immediately
-                                setMarketingPosterCredits(deductData.marketingPosterCredits);
-                                console.log('Credits updated from response:', deductData.marketingPosterCredits);
+                            if (deductData.success) {
+                                // Update from server response
+                                setTotalCredits(deductData.totalCredits);
+                                setUsedPhotoshootCredits(deductData.usedPhotoshootCredits);
+                                setUsedMarketingCredits(deductData.usedMarketingCredits);
+                                setRemainingCredits(deductData.remainingCredits);
                             } else {
                                 // Fallback: fetch from server
                                 console.log('Deduct response missing credits, fetching...');
@@ -387,7 +393,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             value={extraDetails}
                             onChange={(e) => setExtraDetails(e.target.value)}
                             placeholder="e.g., Summer Sale, 20% Off, New Arrival"
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-3 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-3 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
                             rows={2}
                         />
                     </div>
@@ -395,7 +401,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     {!isAuthenticated ? (
                         <button
                             onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
-                            className="w-full text-white bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:from-orange-600 hover:via-rose-600 hover:to-pink-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                            className="w-full text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -406,20 +412,20 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         <>
                             <button
                                 onClick={handleGenerate}
-                                disabled={!imageFile || isLoading || (marketingPosterCredits !== null && marketingPosterCredits < 5)}
+                                disabled={!imageFile || isLoading || (remainingCredits !== null && remainingCredits < 5)}
                                 className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                             >
                                 <SparklesIcon className="w-5 h-5" />
                                 GENERATE POSTER
                             </button>
-                            {marketingPosterCredits !== null && (
+                            {remainingCredits !== null && (
                                 <div className="mt-3 space-y-2">
-                                    <CreditsSummaryBox 
-                                        credits={marketingPosterCredits} 
-                                        creditType="marketing"
-                                        creditsPerGeneration={5}
+                                    <UnifiedCreditsSummaryBox 
+                                        totalCredits={totalCredits}
+                                        usedPhotoshootCredits={usedPhotoshootCredits}
+                                        usedMarketingCredits={usedMarketingCredits}
                                     />
-                                    {marketingPosterCredits < 5 && (
+                                    {remainingCredits < 5 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {

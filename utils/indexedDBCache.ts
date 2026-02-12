@@ -5,12 +5,11 @@
 
 export interface CachedItem {
   id: string;
-  url: string; // PDF data URL or image data URL
+  url: string; // Image data URL only
   timestamp: number;
   studioType: 'photo' | 'marketing';
   prompt?: string;
-  name?: string; // Lookbook name/title (for PDFs)
-  type: 'pdf' | 'image'; // Type of cached item
+  type: 'image'; // Type of cached item - only images
 }
 
 const DB_NAME = 'nextgen_cache_db';
@@ -120,61 +119,6 @@ const migrateFromLocalStorage = async (): Promise<void> => {
 };
 
 /**
- * Add a generated lookbook PDF to cache (PhotoStudio)
- */
-export const addLookbookToCache = async (
-  pdfBlob: Blob | string,
-  studioType: 'photo' | 'marketing',
-  prompt?: string,
-  name?: string
-): Promise<void> => {
-  try {
-    await migrateFromLocalStorage(); // Ensure migration on first use
-    
-    const db = await initDB();
-    
-    // Convert Blob to base64 if needed
-    let pdfDataUrl: string;
-    if (pdfBlob instanceof Blob) {
-      pdfDataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read PDF blob'));
-        reader.readAsDataURL(pdfBlob);
-      });
-    } else {
-      pdfDataUrl = pdfBlob;
-    }
-
-    const newItem: CachedItem = {
-      id: `lookbook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      url: pdfDataUrl,
-      timestamp: Date.now(),
-      studioType,
-      prompt,
-      name,
-      type: 'pdf',
-    };
-
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    
-    await new Promise<void>((resolve, reject) => {
-      const request = store.add(newItem);
-      request.onsuccess = () => {
-        console.log('✅ Lookbook PDF added to IndexedDB cache:', newItem.id);
-        window.dispatchEvent(new Event('cacheUpdated'));
-        resolve();
-      };
-      request.onerror = () => reject(request.error);
-    });
-  } catch (error) {
-    console.error('❌ Failed to add lookbook to IndexedDB cache:', error);
-    throw error;
-  }
-};
-
-/**
  * Add a generated image to cache (PhotoStudio categories)
  */
 export const addToCache = async (
@@ -245,14 +189,6 @@ export const getCachedItems = async (): Promise<CachedItem[]> => {
     console.error('❌ Failed to get cached items:', error);
     return [];
   }
-};
-
-/**
- * Get cached lookbooks (PDFs only)
- */
-export const getCachedLookbooks = async (): Promise<CachedItem[]> => {
-  const items = await getCachedItems();
-  return items.filter(item => item.type === 'pdf');
 };
 
 /**

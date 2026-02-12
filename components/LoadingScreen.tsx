@@ -86,7 +86,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ imageUrl, generate
                 <div className="w-full h-full flex items-center justify-center">
                     <div className="w-16 h-16 relative">
                         <div className="absolute inset-0 rounded-full border-8 border-white/20"></div>
-                        <div className="absolute inset-0 rounded-full border-8 border-transparent border-l-pink-500 animate-spin"></div>
+                        <div className="absolute inset-0 rounded-full border-8 border-transparent border-l-gold-500 animate-spin"></div>
                     </div>
                 </div>
               )}

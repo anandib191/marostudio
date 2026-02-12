@@ -111,16 +111,16 @@ export const BookDemoPage: React.FC = () => {
                     {/* Left Column */}
                     <div className="lg:w-1/2 text-center lg:text-left">
                         <span className="inline-flex items-center gap-2.5 bg-neutral-800/60 border border-neutral-700 text-sm font-semibold px-4 py-2 rounded-full">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-gold-500"></span>
                             BOOK YOUR DEMO
                         </span>
                         <h1 className="mt-6 font-serif-display text-5xl sm:text-6xl md:text-7xl font-bold text-white tracking-tight leading-tight">
                             See{' '}
-                            <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
                                 MARO Studio
                             </span>{' '}
                             in{' '}
-                            <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
                                 Action
                             </span>
                         </h1>
@@ -137,7 +137,7 @@ export const BookDemoPage: React.FC = () => {
                         <div className="w-full max-w-md mx-auto bg-neutral-900/50 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl p-8">
                             <h2 className="text-2xl font-bold text-center text-white">
                                 Schedule Your{' '}
-                                <span className="bg-gradient-to-r from-indigo-400 to-indigo-500 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-gold-400 to-gold-500 bg-clip-text text-transparent">
                                     Demo
                                 </span>
                             </h2>
@@ -155,7 +155,7 @@ export const BookDemoPage: React.FC = () => {
                                             onChange={(e) => setFullName(e.target.value)}
                                             placeholder="John Doe"
                                             required
-                                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
                                         />
                                     </div>
                                     <div>
@@ -167,7 +167,7 @@ export const BookDemoPage: React.FC = () => {
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="john@company.com"
                                             required
-                                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
                                         />
                                     </div>
                                 </div>
@@ -180,7 +180,7 @@ export const BookDemoPage: React.FC = () => {
                                         onChange={(e) => setCompanyName(e.target.value)}
                                         placeholder="Your Company"
                                         required
-                                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
                                     />
                                 </div>
                                 <div>
@@ -228,7 +228,7 @@ export const BookDemoPage: React.FC = () => {
                                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                                 placeholder="Mobile number"
                                                 required
-                                                className="block w-full z-20 bg-neutral-800 border border-l-0 border-neutral-700 rounded-r-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 pl-12"
+                                                className="block w-full z-20 bg-neutral-800 border border-l-0 border-neutral-700 rounded-r-lg py-2.5 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500 pl-12"
                                             />
                                         </div>
                                     </div>
@@ -236,7 +236,7 @@ export const BookDemoPage: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full text-white bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-indigo-900/30 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full text-white bg-gradient-to-r from-gold-600 to-gold-700 hover:from-gold-500 hover:to-gold-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-gold-900/30 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-gold-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? 'Booking...' : 'Book Your Demo'}
                                 </button>

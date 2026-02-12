@@ -129,7 +129,7 @@ export const PrivacyPolicy: React.FC = () => {
               <li>The right to withdraw consent at any time</li>
             </ul>
             <p className="text-neutral-300 leading-relaxed mt-4">
-              To exercise these rights, please contact us at <a href="mailto:ceogrowlouder@gmail.com" className="text-indigo-400 hover:text-indigo-300">ceogrowlouder@gmail.com</a>.
+              To exercise these rights, please contact us at <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a>.
             </p>
           </section>
 
@@ -160,7 +160,7 @@ export const PrivacyPolicy: React.FC = () => {
               If you have any questions about this Privacy Policy, please contact us:
             </p>
             <div className="mt-4 space-y-2 text-neutral-300">
-              <p><strong>Email:</strong> <a href="mailto:ceogrowlouder@gmail.com" className="text-indigo-400 hover:text-indigo-300">ceogrowlouder@gmail.com</a></p>
+              <p><strong>Email:</strong> <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a></p>
               <p><strong>Company:</strong> Growlouder Productions</p>
             </div>
           </section>
@@ -170,11 +170,11 @@ export const PrivacyPolicy: React.FC = () => {
 
       {/* Footer Links */}
       <div className="mt-12 text-center space-x-6 text-sm">
-        <Link to="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link to="/terms" className="text-gold-400 hover:text-gold-300 transition-colors">
           Terms of Service
         </Link>
         <span className="text-neutral-600">•</span>
-        <Link to="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link to="/" className="text-gold-400 hover:text-gold-300 transition-colors">
           Back to Home
         </Link>
       </div>

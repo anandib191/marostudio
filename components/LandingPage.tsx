@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { HeroBanner } from './HeroBanner';
-import { FeaturesSection } from './FeaturesSection';
+// import { FeaturesSection } from './FeaturesSection'; // COMMENTED: "Create Professional Photoshoots & Visuals Without a Studio" section - uncomment to restore
 import { StatisticsSection } from './StatisticsSection';
 import { WhyAIStudioSection } from './WhyAIStudioSection';
 import { GenerateContentSection } from './GenerateContentSection';
@@ -24,8 +24,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onBookDemo })
       {/* Statistics Section */}
       <StatisticsSection />
 
-      {/* Features Section - Professional Photoshoots & Visuals */}
-      <FeaturesSection />
+      {/* COMMENTED: "Create Professional Photoshoots & Visuals Without a Studio" section - to restore: uncomment import above and the line below */}
+      {/* <FeaturesSection /> */}
 
       {/* Why MARO Studio Section */}
       <WhyAIStudioSection />

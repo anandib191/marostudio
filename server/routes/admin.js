@@ -91,8 +91,7 @@ router.get("/users", protect, admin, async (req, res) => {
 
     // Get free tier config
     const config = await AppConfig.getConfig();
-    const freePhotoshootCredits = config.freeTierPhotoshootCredits || 3;
-    const freeMarketingCredits = config.freeTierMarketingPosterCredits || 5;
+    const freeTotalCredits = config.freeTierTotalCredits || 100;
 
     // Enrich users with plan info, used credits, and active status
     const enrichedUsers = users.map((user) => {
@@ -102,48 +101,31 @@ router.get("/users", protect, admin, async (req, res) => {
         : null;
 
       // Calculate total credits based on CURRENT plan (after admin updates)
-      const totalPhotoshootCredits = plan
-        ? plan.photoshootCredits || 0
-        : freePhotoshootCredits;
-      const totalMarketingCredits = plan
-        ? plan.marketingPosterCredits || 0
-        : freeMarketingCredits;
+      // Use unified credits if available, otherwise fall back to free tier
+      const totalCredits = plan ? plan.totalCredits || 0 : freeTotalCredits;
 
-      // Calculate used credits correctly:
-      // If user has originalPlanCredits stored, use that (more accurate)
-      // Otherwise, use current plan total (for users who purchased before this update)
-      const originalTotalPhotoshoot =
-        user.originalPlanPhotoshootCredits || totalPhotoshootCredits;
-      const originalTotalMarketing =
-        user.originalPlanMarketingPosterCredits || totalMarketingCredits;
-
-      // Calculate used credits: used = originalTotal - remaining
-      // This shows actual usage even if admin updated plan credits
-      // Note: Each generation costs 20 credits, so calculate generations used
-      const CREDITS_PER_GENERATION = 20;
-      const usedPhotoshootCredits = Math.max(
-        0,
-        originalTotalPhotoshoot - (user.photoshootCredits || 0),
-      );
-      const usedMarketingCredits = Math.max(
-        0,
-        originalTotalMarketing - (user.marketingPosterCredits || 0),
-      );
+      // Calculate used credits correctly using unified system
+      const usedPhotoshootCredits = user.usedPhotoshootCredits || 0;
+      const usedMarketingCredits = user.usedMarketingCredits || 0;
+      const totalUsedCredits = usedPhotoshootCredits + usedMarketingCredits;
+      const remainingCredits = Math.max(0, totalCredits - totalUsedCredits);
 
       // Calculate generations used (for display)
+      const CREDITS_PER_PHOTOSHOOT = 20;
+      const CREDITS_PER_MARKETING = 5;
       const photoshootGenerationsUsed = Math.floor(
-        usedPhotoshootCredits / CREDITS_PER_GENERATION,
+        usedPhotoshootCredits / CREDITS_PER_PHOTOSHOOT,
       );
       const marketingGenerationsUsed = Math.floor(
-        usedMarketingCredits / CREDITS_PER_GENERATION,
+        usedMarketingCredits / CREDITS_PER_MARKETING,
       );
 
       // Calculate remaining generations
       const photoshootGenerationsRemaining = Math.floor(
-        (user.photoshootCredits || 0) / CREDITS_PER_GENERATION,
+        remainingCredits / CREDITS_PER_PHOTOSHOOT,
       );
       const marketingGenerationsRemaining = Math.floor(
-        (user.marketingPosterCredits || 0) / CREDITS_PER_GENERATION,
+        remainingCredits / CREDITS_PER_MARKETING,
       );
 
       // Check if subscription is active
@@ -154,11 +136,12 @@ router.get("/users", protect, admin, async (req, res) => {
 
       return {
         ...user.toObject(),
-        planName: planName || "Free",
-        totalPhotoshootCredits,
-        totalMarketingCredits,
+        // Unified credit system
+        totalCredits,
         usedPhotoshootCredits,
         usedMarketingCredits,
+        remainingCredits,
+        planName,
         photoshootGenerationsUsed,
         marketingGenerationsUsed,
         photoshootGenerationsRemaining,
@@ -254,6 +237,8 @@ router.get("/price-plans", protect, admin, async (req, res) => {
 router.put("/price-plans", protect, admin, async (req, res) => {
   try {
     const { plans } = req.body;
+    console.log("Backend received plans:", plans);
+
     if (!Array.isArray(plans) || plans.length === 0) {
       return res
         .status(400)
@@ -262,29 +247,34 @@ router.put("/price-plans", protect, admin, async (req, res) => {
     // Validate each plan
     for (const p of plans) {
       if (!p.name || p.price == null || p.yearlyPrice == null) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Each plan must have name, price, yearlyPrice",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Each plan must have name, price, yearlyPrice",
+        });
       }
     }
+
+    console.log("Plans validation passed, processing...");
 
     // Delete all existing plans
     await PricePlan.deleteMany({});
 
     // Insert new plans
-    const plansToInsert = plans.map((p) => ({
-      name: String(p.name),
-      price: String(p.price),
-      yearlyPrice: String(p.yearlyPrice),
-      description: String(p.description || ""),
-      features: Array.isArray(p.features) ? p.features.map(String) : [],
-      isPopular: Boolean(p.isPopular),
-      photoshootCredits: Number(p.photoshootCredits) || 0,
-      marketingPosterCredits: Number(p.marketingPosterCredits) || 0,
-    }));
+    const plansToInsert = plans.map((p) => {
+      const planData = {
+        name: String(p.name),
+        price: String(p.price),
+        yearlyPrice: String(p.yearlyPrice),
+        description: String(p.description || ""),
+        features: Array.isArray(p.features) ? p.features.map(String) : [],
+        isPopular: Boolean(p.isPopular),
+        totalCredits: Number(p.totalCredits) || 0,
+      };
+      console.log("Processing plan:", planData);
+      return planData;
+    });
+
+    console.log("Final plans to insert:", plansToInsert);
 
     // Ensure only one plan is popular
     let foundPopular = false;
@@ -326,12 +316,10 @@ router.post("/price-plans", protect, admin, async (req, res) => {
     } = req.body;
 
     if (!name || price == null || yearlyPrice == null) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "name, price, and yearlyPrice are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "name, price, and yearlyPrice are required",
+      });
     }
 
     // If setting as popular, unset all others
@@ -378,12 +366,10 @@ router.put("/price-plans/:id", protect, admin, async (req, res) => {
     } = req.body;
 
     if (!name || price == null || yearlyPrice == null) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "name, price, and yearlyPrice are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "name, price, and yearlyPrice are required",
+      });
     }
 
     // If setting as popular, unset all others
@@ -630,66 +616,55 @@ router.post("/sync-credits", protect, admin, async (req, res) => {
 
         // Calculate USED credits based on ORIGINAL plan credits (when user purchased)
         // This is the correct way to calculate used credits even after admin updates plan
-        const originalTotalPhotoshoot =
-          user.originalPlanPhotoshootCredits ||
-          newPlanCredits.photoshootCredits;
-        const originalTotalMarketing =
-          user.originalPlanMarketingPosterCredits ||
-          newPlanCredits.marketingPosterCredits;
+        const originalTotalCredits =
+          user.originalPlanCredits || newPlanCredits.totalCredits;
 
         // Calculate USED credits: used = originalTotal - remaining
         // This correctly calculates how many credits user has actually consumed
-        const usedPhotoshootCredits = Math.max(
-          0,
-          originalTotalPhotoshoot - (user.photoshootCredits || 0),
-        );
-        const usedMarketingCredits = Math.max(
-          0,
-          originalTotalMarketing - (user.marketingPosterCredits || 0),
-        );
+        const usedPhotoshootCredits = user.usedPhotoshootCredits || 0;
+        const usedMarketingCredits = user.usedMarketingCredits || 0;
+        const totalUsedCredits = usedPhotoshootCredits + usedMarketingCredits;
 
         // Calculate NEW remaining credits: newRemaining = newTotal - usedCredits
         // This preserves the used amount when admin updates plan credits
-        const newPhotoshootCredits = Math.max(
-          0,
-          newPlanCredits.photoshootCredits - usedPhotoshootCredits,
-        );
-        const newMarketingCredits = Math.max(
-          0,
-          newPlanCredits.marketingPosterCredits - usedMarketingCredits,
-        );
+        const totalCredits = newPlanCredits.totalCredits;
 
-        const oldPhotoshootCredits = user.photoshootCredits;
-        const oldMarketingCredits = user.marketingPosterCredits;
+        const oldTotalCredits = user.totalCredits || 0;
+        const oldUsedPhotoshootCredits = user.usedPhotoshootCredits || 0;
+        const oldUsedMarketingCredits = user.usedMarketingCredits || 0;
 
-        // Update user credits with new remaining (preserving used amount)
-        user.photoshootCredits = newPhotoshootCredits;
-        user.marketingPosterCredits = newMarketingCredits;
+        // Update user credits with unified system
+        // When user purchases a new plan, they get fresh full credits (not deducting used)
+        user.totalCredits = totalCredits; // Fresh full plan credits
+        user.usedPhotoshootCredits = 0; // Reset usage for new plan
+        user.usedMarketingCredits = 0; // Reset usage for new plan
 
         // Log credit change history for transparency
-        if (
-          oldPhotoshootCredits !== newPhotoshootCredits ||
-          oldMarketingCredits !== newMarketingCredits
-        ) {
+        if (oldTotalCredits !== user.totalCredits) {
           if (!user.creditHistory) {
             user.creditHistory = [];
           }
 
           user.creditHistory.push({
             date: new Date(),
-            action: "admin_sync",
+            action: "plan_purchase",
             planName: planName,
-            photoshootCredits: {
-              previous: oldPhotoshootCredits,
-              new: newPhotoshootCredits,
-              change: newPhotoshootCredits - oldPhotoshootCredits,
+            totalCredits: {
+              previous: oldTotalCredits,
+              new: user.totalCredits,
+              change: user.totalCredits - oldTotalCredits,
             },
-            marketingPosterCredits: {
-              previous: oldMarketingCredits,
-              new: newMarketingCredits,
-              change: newMarketingCredits - oldMarketingCredits,
+            usedPhotoshootCredits: {
+              previous: oldUsedPhotoshootCredits,
+              new: 0, // Reset to 0 for new plan
+              change: -oldUsedPhotoshootCredits,
             },
-            reason: `Plan "${planName}" credits updated by admin (${billingPeriod}). Settlement: Used credits preserved (${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing). New total: ${newTotalPhotoshootCredits} photoshoot (${billingPeriod === "yearly" ? `${newMonthlyPhotoshootCredits}/month × 12` : `${newMonthlyPhotoshootCredits}/month`}), ${newTotalMarketingCredits} marketing (${billingPeriod === "yearly" ? `${newMonthlyMarketingCredits}/month × 12` : `${newMonthlyMarketingCredits}/month`}).`,
+            usedMarketingCredits: {
+              previous: oldUsedMarketingCredits,
+              new: 0, // Reset to 0 for new plan
+              change: -oldUsedMarketingCredits,
+            },
+            reason: `Purchased ${planName} plan - Fresh credits assigned`,
             adminEmail: req.user.email,
           });
 
@@ -750,8 +725,7 @@ router.post("/sync-credits", protect, admin, async (req, res) => {
 
     // Also reset expired subscriptions to free tier
     const config = await AppConfig.getConfig();
-    const freePhotoshootCredits = config.freeTierPhotoshootCredits || 3;
-    const freeMarketingCredits = config.freeTierMarketingPosterCredits || 5;
+    const freeTotalCredits = config.freeTierTotalCredits || 100;
 
     const expiredUsers = await User.find({
       subscriptionPlan: { $ne: null, $exists: true },
@@ -762,8 +736,10 @@ router.post("/sync-credits", protect, admin, async (req, res) => {
     for (const user of expiredUsers) {
       user.subscriptionPlan = null;
       user.subscriptionExpiresAt = null;
-      user.photoshootCredits = freePhotoshootCredits;
-      user.marketingPosterCredits = freeMarketingCredits;
+      // Reset to free tier with unified credits
+      user.totalCredits = freeTotalCredits;
+      user.usedPhotoshootCredits = 0;
+      user.usedMarketingCredits = 0;
       await user.save();
       expiredReset++;
     }
@@ -798,6 +774,8 @@ router.get("/free-tier-credits", protect, admin, async (req, res) => {
     const config = await AppConfig.getConfig();
     res.status(200).json({
       success: true,
+      freeTierTotalCredits: config.freeTierTotalCredits || 100,
+      // Keep backward compatibility for now
       freeTierPhotoshootCredits: config.freeTierPhotoshootCredits,
       freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
     });
@@ -817,6 +795,10 @@ router.put(
   protect,
   admin,
   [
+    body("freeTierTotalCredits")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("Total credits must be a non-negative integer"),
     body("freeTierPhotoshootCredits")
       .optional()
       .isInt({ min: 0 })
@@ -837,14 +819,24 @@ router.put(
         });
       }
 
-      const { freeTierPhotoshootCredits, freeTierMarketingPosterCredits } =
-        req.body;
+      const {
+        freeTierTotalCredits,
+        freeTierPhotoshootCredits,
+        freeTierMarketingPosterCredits,
+      } = req.body;
       const config = await AppConfig.getConfig();
 
       // Store old values to check if they changed
+      const oldTotalCredits = config.freeTierTotalCredits || 100;
       const oldPhotoshootCredits = config.freeTierPhotoshootCredits;
       const oldMarketingCredits = config.freeTierMarketingPosterCredits;
 
+      // Update unified credits if provided
+      if (freeTierTotalCredits !== undefined) {
+        config.freeTierTotalCredits = parseInt(freeTierTotalCredits);
+      }
+
+      // Keep backward compatibility for now
       if (freeTierPhotoshootCredits !== undefined) {
         config.freeTierPhotoshootCredits = parseInt(freeTierPhotoshootCredits);
       }
@@ -859,6 +851,8 @@ router.put(
       // Update all existing free users (users without subscription plan) with new free tier credits
       // Only update if credits actually changed
       const creditsChanged =
+        (freeTierTotalCredits !== undefined &&
+          parseInt(freeTierTotalCredits) !== oldTotalCredits) ||
         (freeTierPhotoshootCredits !== undefined &&
           parseInt(freeTierPhotoshootCredits) !== oldPhotoshootCredits) ||
         (freeTierMarketingPosterCredits !== undefined &&
@@ -874,6 +868,11 @@ router.put(
           ],
         });
 
+        const newTotalCredits =
+          freeTierTotalCredits !== undefined
+            ? parseInt(freeTierTotalCredits)
+            : config.freeTierTotalCredits || 100;
+
         const newPhotoshootCredits =
           freeTierPhotoshootCredits !== undefined
             ? parseInt(freeTierPhotoshootCredits)
@@ -884,36 +883,19 @@ router.put(
             : config.freeTierMarketingPosterCredits;
 
         for (const user of freeUsers) {
-          // Calculate used credits to preserve usage
-          const usedPhotoshootCredits = Math.max(
-            0,
-            oldPhotoshootCredits - (user.photoshootCredits || 0),
-          );
-          const usedMarketingCredits = Math.max(
-            0,
-            oldMarketingCredits - (user.marketingPosterCredits || 0),
-          );
+          // For unified credit system, update totalCredits and preserve usage
+          const currentTotalCredits = user.totalCredits || oldTotalCredits;
+          const currentUsedPhotoshootCredits = user.usedPhotoshootCredits || 0;
+          const currentUsedMarketingCredits = user.usedMarketingCredits || 0;
 
-          // Calculate new remaining credits: newTotal - usedCredits
-          const newRemainingPhotoshoot = Math.max(
-            0,
-            newPhotoshootCredits - usedPhotoshootCredits,
-          );
-          const newRemainingMarketing = Math.max(
-            0,
-            newMarketingCredits - usedMarketingCredits,
-          );
+          // Update to new total credits while preserving usage
+          const newTotalCreditsForUser = newTotalCredits;
 
           // Only update if credits actually changed
-          if (
-            user.photoshootCredits !== newRemainingPhotoshoot ||
-            user.marketingPosterCredits !== newRemainingMarketing
-          ) {
-            const oldPhotoshoot = user.photoshootCredits;
-            const oldMarketing = user.marketingPosterCredits;
+          if (user.totalCredits !== newTotalCreditsForUser) {
+            const oldTotal = user.totalCredits || oldTotalCredits;
 
-            user.photoshootCredits = newRemainingPhotoshoot;
-            user.marketingPosterCredits = newRemainingMarketing;
+            user.totalCredits = newTotalCreditsForUser;
 
             // Log credit change in history
             if (!user.creditHistory) {
@@ -923,42 +905,27 @@ router.put(
               date: new Date(),
               action: "admin_sync",
               planName: "Free",
-              photoshootCredits: {
-                previous: oldPhotoshoot,
-                new: newRemainingPhotoshoot,
-                change: newRemainingPhotoshoot - oldPhotoshoot,
+              totalCredits: {
+                previous: oldTotal,
+                new: newTotalCreditsForUser,
+                change: newTotalCreditsForUser - oldTotal,
               },
-              marketingPosterCredits: {
-                previous: oldMarketing,
-                new: newRemainingMarketing,
-                change: newRemainingMarketing - oldMarketing,
+              usedPhotoshootCredits: {
+                previous: currentUsedPhotoshootCredits,
+                new: currentUsedPhotoshootCredits,
+                change: 0,
               },
-              reason: `Free tier credits updated by admin. Used credits preserved: ${usedPhotoshootCredits} photoshoot, ${usedMarketingCredits} marketing.`,
+              usedMarketingCredits: {
+                previous: currentUsedMarketingCredits,
+                new: currentUsedMarketingCredits,
+                change: 0,
+              },
+              reason: "Free tier credits updated by admin",
               adminEmail: req.user.email,
             });
 
-            // Keep only last 50 history entries
-            if (user.creditHistory.length > 50) {
-              user.creditHistory = user.creditHistory.slice(-50);
-            }
-
             await user.save();
             updatedUsers++;
-            logger.info(`Free tier credits updated for ${user.email}:`, {
-              old: { photoshoot: oldPhotoshoot, marketing: oldMarketing },
-              new: {
-                photoshoot: newRemainingPhotoshoot,
-                marketing: newRemainingMarketing,
-              },
-              used: {
-                photoshoot: usedPhotoshootCredits,
-                marketing: usedMarketingCredits,
-              },
-              newTotal: {
-                photoshoot: newPhotoshootCredits,
-                marketing: newMarketingCredits,
-              },
-            });
           }
         }
       }
@@ -966,6 +933,8 @@ router.put(
       res.status(200).json({
         success: true,
         message: `Free tier credits updated successfully${updatedUsers > 0 ? `. Updated ${updatedUsers} free users.` : ""}`,
+        freeTierTotalCredits: config.freeTierTotalCredits || 100,
+        // Keep backward compatibility
         freeTierPhotoshootCredits: config.freeTierPhotoshootCredits,
         freeTierMarketingPosterCredits: config.freeTierMarketingPosterCredits,
         updatedUsers: updatedUsers,

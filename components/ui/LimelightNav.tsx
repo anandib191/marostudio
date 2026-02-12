@@ -64,7 +64,7 @@ export const LimelightNav = ({
 
   return (
     <div className="relative flex flex-col items-center">
-      <nav className={`relative inline-flex items-center h-16 rounded-full bg-neutral-900/60 border border-white/5 px-2 ${className}`}>
+      <nav className={`relative inline-flex items-center h-16 rounded-full bg-neutral-900/60 border border-gold-500/10 px-2 ${className}`}>
         {items.map(({ id, icon, label, onClick }, index) => (
             <button
               key={id}
@@ -76,7 +76,7 @@ export const LimelightNav = ({
             >
               {cloneElement(icon, {
                 className: `w-6 h-6 transition-all duration-500 ${
-                  activeIndex === index ? 'text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'opacity-30 text-white'
+                  activeIndex === index ? 'text-gold-400 drop-shadow-[0_0_8px_rgba(230,183,30,0.5)]' : 'opacity-30 text-white'
                 } ${icon.props.className || ''} ${iconClassName || ''}`,
               })}
             </button>
@@ -84,17 +84,17 @@ export const LimelightNav = ({
 
         <div 
           ref={limelightRef}
-          className={`absolute top-0 z-10 w-10 h-[2px] rounded-full bg-indigo-500 ${
+          className={`absolute top-0 z-10 w-10 h-[2px] rounded-full bg-gold-500 ${
             isReady ? 'transition-[left] duration-500 cubic-bezier(0.16, 1, 0.3, 1)' : ''
           } ${limelightClassName}`}
           style={{ left: '-999px' }}
         >
-          <div className="absolute left-[-50%] top-0 w-[200%] h-14 bg-indigo-500/10 blur-xl pointer-events-none" />
+          <div className="absolute left-[-50%] top-0 w-[200%] h-14 bg-gold-500/10 blur-xl pointer-events-none" />
         </div>
       </nav>
       <div className="mt-4 h-6 flex items-center justify-center">
         {activeLabel && (
-          <p key={activeLabel} className="text-[10px] uppercase tracking-[0.3em] font-bold text-indigo-400 animate-fade-in-up">
+          <p key={activeLabel} className="text-[10px] uppercase tracking-[0.3em] font-bold text-gold-400 animate-fade-in-up">
             {activeLabel}
           </p>
         )}

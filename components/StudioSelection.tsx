@@ -54,7 +54,7 @@ export const StudioSelection: React.FC<StudioSelectionProps> = ({ onSelect, onBa
             <div className="w-full max-w-sm md:max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <GlassButton onClick={() => onSelect('photo')} className="group w-full">
                     <div className="px-6 py-8 md:py-12 flex flex-col w-full items-center justify-center gap-4 md:gap-6">
-                        <CameraIcon className="w-10 h-10 md:w-14 md:h-14 text-rose-300 group-hover:text-rose-200 transition-colors duration-300" />
+                        <CameraIcon className="w-10 h-10 md:w-14 md:h-14 text-gold-300 group-hover:text-gold-200 transition-colors duration-300" />
                         <h3 className="font-sans font-semibold text-xl md:text-2xl text-white">Photo Studio</h3>
                         <p className="text-sm text-neutral-400 text-center">Generate full photoshoots with AI models and custom styles.</p>
                     </div>
@@ -73,20 +73,20 @@ export const StudioSelection: React.FC<StudioSelectionProps> = ({ onSelect, onBa
                 <div className="mt-8 flex justify-center">
                     <button
                         onClick={() => navigate('/previously-generated')}
-                        className="group relative px-6 py-3 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/30 hover:border-indigo-500/50 rounded-xl transition-all duration-300 flex items-center gap-3"
+                        className="group relative px-6 py-3 bg-gradient-to-r from-gold-600/20 to-gold-600/20 hover:from-gold-600/30 hover:to-gold-600/30 border border-gold-500/30 hover:border-gold-500/50 rounded-xl transition-all duration-300 flex items-center gap-3"
                     >
                         <div className="flex items-center gap-3">
-                            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="font-semibold text-white">Previously Generated</span>
                             {cachedCount > 0 && (
-                                <span className="px-2 py-0.5 bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-full">
+                                <span className="px-2 py-0.5 bg-gold-500/30 text-gold-300 text-xs font-bold rounded-full">
                                     {cachedCount}
                                 </span>
                             )}
                         </div>
-                        <svg className="w-4 h-4 text-indigo-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gold-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                     </button>

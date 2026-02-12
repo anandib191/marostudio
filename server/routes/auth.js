@@ -1,14 +1,14 @@
-import express from 'express';
-import { body, validationResult } from 'express-validator';
-import User from '../models/User.js';
-import OTP from '../models/OTP.js';
-import AppConfig from '../models/AppConfig.js';
-import { generateOTP } from '../utils/generateOTP.js';
-import { sendOTPEmail } from '../utils/sendEmail.js';
-import { validateEmail } from '../utils/validateEmail.js';
-import jwt from 'jsonwebtoken';
-import logger from '../utils/logger.js';
-import { otpLimiter } from '../middleware/rateLimiter.js';
+import express from "express";
+import { body, validationResult } from "express-validator";
+import User from "../models/User.js";
+import OTP from "../models/OTP.js";
+import AppConfig from "../models/AppConfig.js";
+import { generateOTP } from "../utils/generateOTP.js";
+import { sendOTPEmail } from "../utils/sendEmail.js";
+import { validateEmail } from "../utils/validateEmail.js";
+import jwt from "jsonwebtoken";
+import logger from "../utils/logger.js";
+import { otpLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
@@ -18,14 +18,17 @@ const router = express.Router();
  * @access  Public
  */
 router.post(
-  '/send-otp',
+  "/send-otp",
   otpLimiter, // Apply OTP-specific rate limiter (30 requests per 15 minutes)
   [
-    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
-    body('is_admin').optional().isBoolean(),
-    body('is_signup').optional().isBoolean(), // New: indicates if this is for signup
-    body('name').optional().trim(),
-    body('phoneNumber').optional().trim(),
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email"),
+    body("is_admin").optional().isBoolean(),
+    body("is_signup").optional().isBoolean(), // New: indicates if this is for signup
+    body("name").optional().trim(),
+    body("phoneNumber").optional().trim(),
   ],
   async (req, res) => {
     try {
@@ -33,7 +36,7 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation error',
+          message: "Validation error",
           errors: errors.array(),
         });
       }
@@ -45,9 +48,11 @@ router.post(
       if (is_signup) {
         logger.info(`🔍 Validating email for signup: ${normalizedEmail}`);
         const emailValidation = await validateEmail(normalizedEmail);
-        
+
         if (!emailValidation.valid) {
-          logger.warn(`❌ Email validation failed for ${normalizedEmail}: ${emailValidation.message}`);
+          logger.warn(
+            `❌ Email validation failed for ${normalizedEmail}: ${emailValidation.message}`,
+          );
           return res.status(400).json({
             success: false,
             message: emailValidation.message,
@@ -59,13 +64,13 @@ router.post(
 
       // Check user existence based on signup/login
       const existingUser = await User.findOne({ email: normalizedEmail });
-      
+
       if (is_signup) {
         // For signup: User should NOT exist
         if (existingUser) {
           return res.status(400).json({
             success: false,
-            message: 'User already registered. Please login instead.',
+            message: "User already registered. Please login instead.",
             userExists: true,
           });
         }
@@ -74,14 +79,28 @@ router.post(
         if (!existingUser) {
           return res.status(400).json({
             success: false,
-            message: 'No account found with this email. Please sign up first.',
+            message: "No account found with this email. Please sign up first.",
             userNotFound: true,
           });
+        }
+
+        // STRICT ADMIN CHECK: If this is an admin login, verify the user has admin role
+        if (is_admin) {
+          if (existingUser.role !== 'admin') {
+            return res.status(403).json({
+              success: false,
+              message: "No admin found with this email.",
+              userNotFound: true, // Keep this flag for frontend handling
+            });
+          }
         }
       }
 
       // Check if email is in admin list
-      const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
+      const adminEmails =
+        process.env.ADMIN_EMAILS?.split(",").map((e) =>
+          e.trim().toLowerCase(),
+        ) || [];
       const isAdmin = is_admin && adminEmails.includes(normalizedEmail);
 
       // Generate OTP
@@ -96,7 +115,9 @@ router.post(
         otp,
         isAdmin,
         isSignup: is_signup || false,
-        signupData: is_signup ? { name: name?.trim(), phoneNumber: phoneNumber?.trim() } : null,
+        signupData: is_signup
+          ? { name: name?.trim(), phoneNumber: phoneNumber?.trim() }
+          : null,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
       });
 
@@ -107,25 +128,25 @@ router.post(
         await sendOTPEmail(normalizedEmail, otp);
         res.status(200).json({
           success: true,
-          message: 'OTP sent successfully',
+          message: "OTP sent successfully",
         });
       } catch (emailError) {
-        logger.error('Email error:', emailError);
+        logger.error("Email error:", emailError);
         // Still delete OTP if email fails
         await OTP.deleteOne({ email: normalizedEmail });
         return res.status(500).json({
           success: false,
-          message: 'Failed to send email. Please try again.',
+          message: "Failed to send email. Please try again.",
         });
       }
     } catch (error) {
-      logger.error('Send OTP error:', error);
+      logger.error("Send OTP error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
       });
     }
-  }
+  },
 );
 
 /**
@@ -134,10 +155,15 @@ router.post(
  * @access  Public
  */
 router.post(
-  '/verify-otp',
+  "/verify-otp",
   [
-    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
-    body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email"),
+    body("otp")
+      .isLength({ min: 6, max: 6 })
+      .withMessage("OTP must be 6 digits"),
   ],
   async (req, res) => {
     try {
@@ -145,7 +171,7 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation error',
+          message: "Validation error",
           errors: errors.array(),
         });
       }
@@ -159,7 +185,7 @@ router.post(
       if (!otpDoc) {
         return res.status(400).json({
           success: false,
-          message: 'OTP not found. Please request a new OTP.',
+          message: "OTP not found. Please request a new OTP.",
         });
       }
 
@@ -168,7 +194,7 @@ router.post(
         await OTP.deleteOne({ email: normalizedEmail });
         return res.status(400).json({
           success: false,
-          message: 'OTP expired. Please request a new OTP.',
+          message: "OTP expired. Please request a new OTP.",
         });
       }
 
@@ -176,32 +202,33 @@ router.post(
       if (otpDoc.otp !== otp) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid OTP.',
+          message: "Invalid OTP.",
         });
       }
 
       // Determine user role
-      const role = otpDoc.isAdmin ? 'admin' : 'user';
+      const role = otpDoc.isAdmin ? "admin" : "user";
 
       // Find or create user
       let user = await User.findOne({ email: normalizedEmail });
 
       // Get free tier credits from config
       const config = await AppConfig.getConfig();
-      const freePhotoshootCredits = config.freeTierPhotoshootCredits || 3;
-      const freeMarketingCredits = config.freeTierMarketingPosterCredits || 5;
+      const freeTotalCredits = config.freeTierTotalCredits || 100;
 
       if (!user) {
         // New user signup - use signup data from OTP if available
         const signupData = otpDoc.signupData || {};
         user = new User({
-          name: signupData.name || '',
-          phoneNumber: signupData.phoneNumber || '',
+          name: signupData.name || "",
+          phoneNumber: signupData.phoneNumber || "",
           email: normalizedEmail,
           role,
           isVerified: true,
-          photoshootCredits: freePhotoshootCredits,
-          marketingPosterCredits: freeMarketingCredits,
+          // Unified credit system
+          totalCredits: freeTotalCredits,
+          usedPhotoshootCredits: 0,
+          usedMarketingCredits: 0,
         });
         await user.save();
       } else {
@@ -215,18 +242,24 @@ router.post(
           }
         }
         // Update user role if changed to admin
-        if (otpDoc.isAdmin && user.role !== 'admin') {
-          user.role = 'admin';
+        if (otpDoc.isAdmin && user.role !== "admin") {
+          user.role = "admin";
         }
         user.isVerified = true;
         user.lastLogin = new Date();
         // Only set free credits if user has no subscription plan AND credits are undefined/null
         // Don't reset credits if user has a paid plan
         if (!user.subscriptionPlan) {
-          if (user.photoshootCredits === undefined || user.photoshootCredits === null) {
+          if (
+            user.photoshootCredits === undefined ||
+            user.photoshootCredits === null
+          ) {
             user.photoshootCredits = freePhotoshootCredits;
           }
-          if (user.marketingPosterCredits === undefined || user.marketingPosterCredits === null) {
+          if (
+            user.marketingPosterCredits === undefined ||
+            user.marketingPosterCredits === null
+          ) {
             user.marketingPosterCredits = freeMarketingCredits;
           }
         }
@@ -237,7 +270,7 @@ router.post(
       const token = jwt.sign(
         { id: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRE || '30m' }
+        { expiresIn: process.env.JWT_EXPIRE || "30m" },
       );
 
       // Delete OTP after successful verification
@@ -246,7 +279,7 @@ router.post(
       res.status(200).json({
         success: true,
         access_token: token,
-        token_type: 'bearer',
+        token_type: "bearer",
         role: user.role,
         email: user.email,
         user: {
@@ -256,13 +289,13 @@ router.post(
         },
       });
     } catch (error) {
-      logger.error('Verify OTP error:', error);
+      logger.error("Verify OTP error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
       });
     }
-  }
+  },
 );
 
 /**
@@ -271,17 +304,15 @@ router.post(
  * @access  Public
  */
 router.post(
-  '/google',
-  [
-    body('credential').notEmpty().withMessage('Google credential is required'),
-  ],
+  "/google",
+  [body("credential").notEmpty().withMessage("Google credential is required")],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation error',
+          message: "Validation error",
           errors: errors.array(),
         });
       }
@@ -290,13 +321,15 @@ router.post(
 
       // Verify Google ID token by calling Google's tokeninfo endpoint
       try {
-        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        const response = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`,
+        );
         const tokenInfo = await response.json();
 
         if (!response.ok || tokenInfo.error) {
           return res.status(400).json({
             success: false,
-            message: 'Invalid Google token',
+            message: "Invalid Google token",
           });
         }
 
@@ -305,27 +338,31 @@ router.post(
         const normalizedEmail = email.toLowerCase().trim();
 
         // Check if email is in admin list
-        const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
+        const adminEmails =
+          process.env.ADMIN_EMAILS?.split(",").map((e) =>
+            e.trim().toLowerCase(),
+          ) || [];
         const isAdmin = adminEmails.includes(normalizedEmail);
-        const role = isAdmin ? 'admin' : 'user';
+        const role = isAdmin ? "admin" : "user";
 
         // Find or create user
         let user = await User.findOne({ email: normalizedEmail });
 
         // Get free tier credits from config
         const config = await AppConfig.getConfig();
-        const freePhotoshootCredits = config.freeTierPhotoshootCredits || 3;
-        const freeMarketingCredits = config.freeTierMarketingPosterCredits || 5;
+        const freeTotalCredits = config.freeTierTotalCredits || 100;
 
         if (!user) {
           // New user - create account
           user = new User({
-            name: name || '',
+            name: name || "",
             email: normalizedEmail,
             role,
             isVerified: true,
-            photoshootCredits: freePhotoshootCredits,
-            marketingPosterCredits: freeMarketingCredits,
+            // Unified credit system
+            totalCredits: freeTotalCredits,
+            usedPhotoshootCredits: 0,
+            usedMarketingCredits: 0,
             googleId, // Store Google ID for future reference
           });
           await user.save();
@@ -337,17 +374,23 @@ router.post(
           if (!user.googleId) {
             user.googleId = googleId;
           }
-          if (isAdmin && user.role !== 'admin') {
-            user.role = 'admin';
+          if (isAdmin && user.role !== "admin") {
+            user.role = "admin";
           }
           user.isVerified = true;
           user.lastLogin = new Date();
           // Only set free credits if user has no subscription plan AND credits are undefined/null
           if (!user.subscriptionPlan) {
-            if (user.photoshootCredits === undefined || user.photoshootCredits === null) {
+            if (
+              user.photoshootCredits === undefined ||
+              user.photoshootCredits === null
+            ) {
               user.photoshootCredits = freePhotoshootCredits;
             }
-            if (user.marketingPosterCredits === undefined || user.marketingPosterCredits === null) {
+            if (
+              user.marketingPosterCredits === undefined ||
+              user.marketingPosterCredits === null
+            ) {
               user.marketingPosterCredits = freeMarketingCredits;
             }
           }
@@ -358,13 +401,13 @@ router.post(
         const token = jwt.sign(
           { id: user._id, email: user.email, role: user.role },
           process.env.JWT_SECRET,
-          { expiresIn: process.env.JWT_EXPIRE || '30m' }
+          { expiresIn: process.env.JWT_EXPIRE || "30m" },
         );
 
         res.status(200).json({
           success: true,
           access_token: token,
-          token_type: 'bearer',
+          token_type: "bearer",
           role: user.role,
           user: {
             email: user.email,
@@ -373,20 +416,20 @@ router.post(
           },
         });
       } catch (verifyError) {
-        logger.error('Google token verification error:', verifyError);
+        logger.error("Google token verification error:", verifyError);
         return res.status(400).json({
           success: false,
-          message: 'Failed to verify Google token',
+          message: "Failed to verify Google token",
         });
       }
     } catch (error) {
-      logger.error('Google auth error:', error);
+      logger.error("Google auth error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
       });
     }
-  }
+  },
 );
 
 export default router;

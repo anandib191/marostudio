@@ -16,20 +16,20 @@ export const AIStudioDownloadSection: React.FC = () => {
               </p>
             </div>
             <div className="download-subbox">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent leading-tight">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent leading-tight">
                 MARO Studio App
               </h3>
               <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
                 Start Your Product Shoot
               </h3>
-              <div className="scan-code flex flex-col sm:flex-row gap-4 sm:gap-6 items-start mt-6 p-4 sm:p-6 bg-neutral-900 rounded-xl border border-white/10 transition-all hover:border-indigo-500/30 hover:shadow-lg">
+              <div className="scan-code flex flex-col sm:flex-row gap-4 sm:gap-6 items-start mt-6 p-4 sm:p-6 bg-neutral-900 rounded-xl border border-white/10 transition-all hover:border-gold-500/30 hover:shadow-lg">
                 <div className="code flex-shrink-0 transition-transform hover:scale-105">
                   <QRCodeSVG
                     value="https://play.google.com/store/apps/details?id=com.app.ai.studio"
                     size={140}
                     level="H"
                     includeMargin={true}
-                    style={{ borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '8px', background: '#FFFFFF' }}
+                    style={{ borderRadius: '12px', border: '1px solid rgba(230, 183, 30, 0.3)', padding: '8px', background: '#FFFFFF' }}
                   />
                 </div>
                 <div className="flex-1">

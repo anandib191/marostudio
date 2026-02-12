@@ -49,7 +49,7 @@ export const ImageCarousel: React.FC = () => {
     return (
         <div className="w-full relative py-12 md:py-24 overflow-hidden perspective-container flex flex-col items-center">
             {/* Ambient Background Glow to match the active slide */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[500px] bg-indigo-500/10 blur-[200px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[500px] bg-gold-500/10 blur-[200px] rounded-full pointer-events-none -z-10" />
 
             <div className="relative flex items-center justify-center w-full h-[450px] md:h-[650px]">
                 {carouselItems.map((item, index) => {
@@ -91,8 +91,8 @@ export const ImageCarousel: React.FC = () => {
                                 <div className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
                                     <div className="absolute bottom-16 left-12 text-left">
                                         <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 mb-5 shadow-2xl">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                                            <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-indigo-300">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse" />
+                                            <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold-300">
                                                 {item.tag}
                                             </span>
                                         </div>
@@ -119,7 +119,7 @@ export const ImageCarousel: React.FC = () => {
                         key={index}
                         onClick={() => setActiveIndex(index)}
                         className={`h-1.5 rounded-full transition-all duration-1000 ${
-                            activeIndex === index ? 'w-24 bg-indigo-500' : 'w-4 bg-neutral-800 hover:bg-neutral-700'
+                            activeIndex === index ? 'w-24 bg-gold-500' : 'w-4 bg-neutral-800 hover:bg-neutral-700'
                         }`}
                         aria-label={`Switch to slide ${index + 1}`}
                     />

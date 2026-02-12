@@ -17,10 +17,10 @@ export const SubmissionPopup: React.FC<SubmissionPopupProps> = ({ isOpen, onClos
     if (!isOpen) return null;
 
     const mainTextColor = 'text-neutral-500';
-    const highlightColor = 'text-indigo-600';
+    const highlightColor = 'text-gold-600';
     const boldColor = 'text-neutral-800';
-    const buttonBg = 'bg-indigo-600';
-    const buttonHoverBg = 'hover:bg-indigo-700';
+    const buttonBg = 'bg-gold-600';
+    const buttonHoverBg = 'hover:bg-gold-700';
     const buttonTextColor = 'text-white';
 
     const successContent = (
@@ -69,7 +69,7 @@ export const SubmissionPopup: React.FC<SubmissionPopupProps> = ({ isOpen, onClos
 
                 <button 
                     onClick={onClose} 
-                    className={`mt-10 w-full ${buttonBg} ${buttonTextColor} font-bold text-[11px] uppercase tracking-[0.3em] py-4 px-6 rounded-2xl shadow-xl shadow-indigo-900/20 transition-all duration-300 transform hover:scale-[1.02] ${buttonHoverBg} focus:outline-none`}
+                    className={`mt-10 w-full ${buttonBg} ${buttonTextColor} font-bold text-[11px] uppercase tracking-[0.3em] py-4 px-6 rounded-2xl shadow-xl shadow-gold-900/20 transition-all duration-300 transform hover:scale-[1.02] ${buttonHoverBg} focus:outline-none`}
                 >
                     Return to Studio
                 </button>

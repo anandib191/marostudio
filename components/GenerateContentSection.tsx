@@ -139,12 +139,12 @@ export const GenerateContentSection: React.FC = () => {
   };
 
   return (
-    <section className="generate-section w-full py-12 bg-neutral-900">
+    <section className={`generate-section w-full py-12 bg-neutral-900 ${isHovered ? 'carousel-hovered' : ''}`}>
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-4xl font-bold text-white mb-4">
-          Turn Products into <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent">Scroll-Stoppers</span>
+          Turn Products into <span className="scroll-stoppers-gradient-text bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Scroll-Stoppers</span>
           </h2>
           <p className="text-lg text-neutral-400">
             Create studio quality visuals with advanced AI that transforms your ideas into stunning photographs.
@@ -159,16 +159,16 @@ export const GenerateContentSection: React.FC = () => {
               onClick={() => handleCategoryClick(category)}
               className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden transform hover:scale-105 ${
                 activeCategory === category
-                  ? 'bg-gradient-to-r from-indigo-500 to-rose-500 text-white shadow-lg shadow-indigo-500/50 scale-105'
-                  : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:shadow-md border border-neutral-700 hover:border-neutral-600'
+                  ? 'generate-active-cat-btn text-white shadow-lg shadow-gold-500/50 scale-105'
+                  : 'generate-inactive-cat-btn text-neutral-300 hover:bg-neutral-700/80 hover:shadow-md'
               }`}
             >
               <span className="relative z-10">{category}</span>
-              {activeCategory === category && !isHovered && (
-                <div className="absolute bottom-0 left-0 h-0.5 bg-white/80 animate-progress z-0 progress-bar-small-screen"></div>
+              {activeCategory === category && (
+                <div className="absolute bottom-0 left-0 h-0.5 generate-section-flow-line animate-progress z-0 progress-bar-small-screen"></div>
               )}
               {activeCategory !== category && (
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-rose-500/0 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-gold-500/0 via-gold-500/5 to-gold-500/0 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
               )}
             </button>
           ))}
@@ -307,8 +307,8 @@ export const GenerateContentSection: React.FC = () => {
 
         .image-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-          border-color: rgba(99, 102, 241, 0.5);
+          box-shadow: 0 20px 40px rgba(230, 183, 30, 0.3);
+          border-color: rgba(230, 183, 30, 0.5);
         }
 
         .image-container {
@@ -393,7 +393,7 @@ export const GenerateContentSection: React.FC = () => {
           height: 48px;
           border-radius: 50%;
           border: 3px solid rgba(99, 102, 241, 0.3);
-          border-top-color: #6366f1;
+          border-top-color: #e6b71e;
           animation: spin 1s linear infinite;
         }
 
@@ -461,7 +461,7 @@ export const GenerateContentSection: React.FC = () => {
           inset: 0;
           background: linear-gradient(
             180deg,
-            rgba(99, 102, 241, 0.1) 0%,
+            rgba(230, 183, 30, 0.1) 0%,
             rgba(0, 0, 0, 0.4) 50%,
             rgba(0, 0, 0, 0.7) 100%
           );
@@ -479,7 +479,7 @@ export const GenerateContentSection: React.FC = () => {
           inset: 0;
           border-radius: 12px;
           border: 2px solid transparent;
-          background: linear-gradient(135deg, #6366f1, #ec4899) border-box;
+          background: linear-gradient(135deg, #e6b71e, #ae820d) border-box;
           -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -517,8 +517,8 @@ export const GenerateContentSection: React.FC = () => {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #6366f1;
-          box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+          background: #e6b71e;
+          box-shadow: 0 0 8px rgba(230, 183, 30, 0.6);
           animation: dotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 

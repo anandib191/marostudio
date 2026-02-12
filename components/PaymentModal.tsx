@@ -130,7 +130,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           email: localStorage.getItem('user_email') || '',
         },
         theme: {
-          color: '#6366f1',
+          color: '#e6b71e',
         },
         modal: {
           ondismiss: function () {
@@ -157,9 +157,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 border border-white/20 rounded-3xl shadow-2xl max-w-md w-full mx-4 p-8">
+      <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 border-2 border-gold-500/30 rounded-3xl shadow-2xl shadow-gold-500/20 max-w-md w-full mx-4 p-8">
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-white mb-2 font-serif-display">
+          <h3 className="text-2xl font-bold text-gold-400 mb-2 font-serif-display drop-shadow-md">
             Complete Payment
           </h3>
           <p className="text-neutral-400 text-sm">
@@ -167,18 +167,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </p>
         </div>
 
-        <div className="mb-6 p-4 bg-black/40 rounded-xl border border-white/5">
+        <div className="mb-6 p-4 bg-black/40 rounded-xl border border-gold-500/20 hover:border-gold-500/30 transition-colors">
           <div className="flex justify-between items-center mb-2">
             <span className="text-neutral-400">Plan</span>
-            <span className="text-white font-semibold">{planName}</span>
+            <span className="text-gold-300 font-semibold">{planName}</span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-neutral-400">Billing Period</span>
-            <span className="text-white font-semibold capitalize">{billingPeriod}</span>
+            <span className="text-gold-300 font-semibold capitalize">{billingPeriod}</span>
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+          <div className="flex justify-between items-center pt-2 border-t border-gold-500/20">
             <span className="text-neutral-400">Amount</span>
-            <span className="text-white font-bold text-xl">₹{amount}</span>
+            <span className="text-gold-400 font-bold text-xl drop-shadow">₹{amount}</span>
           </div>
         </div>
 
@@ -193,7 +193,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <button
             onClick={handlePayment}
             disabled={isLoading || !isScriptLoaded}
-            className="flex-1 px-6 py-3 text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all duration-300 font-semibold text-sm uppercase tracking-wider shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-6 py-3 text-white bg-gold-600 hover:bg-gold-500 rounded-xl transition-all duration-300 font-semibold text-sm uppercase tracking-wider shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Processing...' : 'Pay Now'}
           </button>

@@ -11,7 +11,7 @@ import { MagicSparkleIcon } from './icons/MagicSparkleIcon';
 const UploadVisual: React.FC = () => (
     <div className="w-full h-full flex items-center justify-center animate-fade-in">
         <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 bg-neutral-900/50 backdrop-blur-2xl rounded-3xl border-2 border-dashed border-neutral-700 flex flex-col items-center justify-center text-center p-4 overflow-hidden group">
-             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center shadow-lg shadow-pink-900/40 mb-4 z-10">
+             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-900/40 mb-4 z-10">
                 <UploadCloudIcon className="w-8 h-8 text-white" />
             </div>
             <img 
@@ -35,7 +35,7 @@ const StyleVisual: React.FC = () => (
                 className="absolute inset-0 w-full h-full object-cover opacity-40 blur-[2px]"
             />
             
-            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1 bg-indigo-500 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-xl">
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1 bg-gold-500 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-xl">
                 <MagicSparkleIcon className="w-3 h-3" />
                 <span>Side View Processing</span>
             </div>
@@ -44,8 +44,8 @@ const StyleVisual: React.FC = () => (
                 <div className="px-5 py-3 bg-white/10 rounded-xl border border-white/10 backdrop-blur-xl shadow-2xl">
                     <p className="text-white font-bold text-sm uppercase tracking-widest">Modern</p>
                 </div>
-                <div className="px-5 py-3 bg-rose-500/40 rounded-xl border border-rose-500 backdrop-blur-xl -translate-y-4 shadow-2xl">
-                    <p className="text-rose-100 font-bold text-sm uppercase tracking-widest">Cinematic</p>
+                <div className="px-5 py-3 bg-gold-500/40 rounded-xl border border-gold-500 backdrop-blur-xl -translate-y-4 shadow-2xl">
+                    <p className="text-gold-100 font-bold text-sm uppercase tracking-widest">Cinematic</p>
                 </div>
                 <div className="px-5 py-3 bg-white/10 rounded-xl border border-white/10 backdrop-blur-xl translate-y-4 shadow-2xl">
                     <p className="text-white font-bold text-sm uppercase tracking-widest">Vintage</p>
@@ -72,19 +72,19 @@ const AssetsVisual: React.FC = () => (
             <div className="relative z-10 flex flex-col items-center gap-6">
                 <div className="p-6 bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex items-center gap-6 scale-90 md:scale-100">
                     <div className="flex flex-col items-center gap-2 text-center group">
-                        <div className="p-3 bg-rose-500/10 rounded-2xl group-hover:bg-rose-500/20 transition-colors">
-                            <FilePdfIcon className="w-12 h-12 text-rose-500" />
+                        <div className="p-3 bg-gold-500/10 rounded-2xl group-hover:bg-gold-500/20 transition-colors">
+                            <FilePdfIcon className="w-12 h-12 text-gold-500" />
                         </div>
                         <span className="font-bold text-white text-[10px] uppercase tracking-widest">Catalog.pdf</span>
                     </div>
                     <div className="flex flex-col items-center gap-2 text-center group">
-                        <div className="p-3 bg-indigo-500/10 rounded-2xl group-hover:bg-indigo-500/20 transition-colors">
-                            <FileZipIcon className="w-12 h-12 text-indigo-400" />
+                        <div className="p-3 bg-gold-500/10 rounded-2xl group-hover:bg-gold-500/20 transition-colors">
+                            <FileZipIcon className="w-12 h-12 text-gold-400" />
                         </div>
                         <span className="font-bold text-white text-[10px] uppercase tracking-widest">Assets.zip</span>
                     </div>
                 </div>
-                 <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-indigo-600/90 backdrop-blur-xl text-white font-bold text-xs uppercase tracking-widest border border-indigo-400/50 shadow-2xl">
+                 <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-gold-600/90 backdrop-blur-xl text-white font-bold text-xs uppercase tracking-widest border border-gold-400/50 shadow-2xl">
                     <CheckIcon className="w-4 h-4" />
                     <span>Side View Rendered</span>
                 </div>
@@ -119,7 +119,7 @@ export const HowItWorks: React.FC = () => {
     return (
         <div className="w-full max-w-7xl mx-auto py-4 md:py-6 animate-fade-in-up" style={{ animationDelay: '900ms' }}>
             <div className="text-center mb-8 md:mb-12 px-4">
-                <span className="text-indigo-500 font-bold text-[10px] uppercase tracking-[0.5em] mb-4 block">Process</span>
+                <span className="text-gold-500 font-bold text-[10px] uppercase tracking-[0.5em] mb-4 block">Process</span>
                 <h2 className="font-serif-display text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-bold text-white tracking-tighter">Liquid Workflow</h2>
                 <p className="mt-6 text-neutral-500 text-lg md:text-xl font-light">From static asset to cinematic reality in three steps.</p>
             </div>

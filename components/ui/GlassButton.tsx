@@ -37,7 +37,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
             backdropFilter: "blur(4px)",
             filter: "url(#glass-distortion)",
             isolation: "isolate",
-            backgroundColor: isActive ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
             ...baseStyle,
           }}
         />
@@ -47,7 +47,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
           className="absolute inset-0 z-10 rounded-xl overflow-hidden"
           style={{
             boxShadow: `inset 1px 1px 1px 0 rgba(255, 255, 255, 0.2), inset -1px -1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 6px rgba(0, 0, 0, 0.1)`,
-            border: isActive ? '1px solid rgba(236, 72, 153, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)',
+            border: isActive ? '1px solid rgba(230, 183, 30, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)',
             ...baseStyle,
           }}
         />

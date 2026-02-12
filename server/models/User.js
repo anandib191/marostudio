@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Please provide an email'],
+      required: [true, "Please provide an email"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -24,21 +24,27 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
+      enum: ["user", "admin"],
+      default: "user",
     },
     isVerified: {
       type: Boolean,
       default: false,
     },
-    photoshootCredits: {
+    // Unified credit system
+    totalCredits: {
       type: Number,
-      default: 3, // Free users get 3 credits
+      default: 100, // Free users get 100 total credits
       min: 0,
     },
-    marketingPosterCredits: {
+    usedPhotoshootCredits: {
       type: Number,
-      default: 5, // Free users get 5 credits
+      default: 0,
+      min: 0,
+    },
+    usedMarketingCredits: {
+      type: Number,
+      default: 0,
       min: 0,
     },
     subscriptionPlan: {
@@ -47,7 +53,7 @@ const userSchema = new mongoose.Schema(
     },
     subscriptionBillingPeriod: {
       type: String,
-      enum: ['monthly', 'yearly'],
+      enum: ["monthly", "yearly"],
       default: null, // 'monthly' or 'yearly' - null means free user
     },
     subscriptionPurchasedAt: {
@@ -59,38 +65,58 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     // Store original plan credits when user purchases (for accurate used credits calculation)
-    originalPlanPhotoshootCredits: {
-      type: Number,
-      default: null,
-    },
-    originalPlanMarketingPosterCredits: {
+    originalPlanCredits: {
       type: Number,
       default: null,
     },
     // Credit change history for transparency
-    creditHistory: [{
-      date: {
-        type: Date,
-        default: Date.now,
+    creditHistory: [
+      {
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        action: {
+          type: String,
+          enum: [
+            "purchase",
+            "admin_sync",
+            "usage",
+            "expiry",
+            "manual_adjustment",
+          ],
+        },
+        planName: String,
+        photoshootCredits: {
+          previous: Number,
+          new: Number,
+          change: Number, // positive = increase, negative = decrease
+        },
+        marketingPosterCredits: {
+          previous: Number,
+          new: Number,
+          change: Number,
+        },
+        // Unified credit tracking
+        totalCredits: {
+          previous: Number,
+          new: Number,
+          change: Number,
+        },
+        usedPhotoshootCredits: {
+          previous: Number,
+          new: Number,
+          change: Number,
+        },
+        usedMarketingCredits: {
+          previous: Number,
+          new: Number,
+          change: Number,
+        },
+        reason: String, // e.g., "Plan credits updated by admin", "Subscription expired"
+        adminEmail: String, // If changed by admin
       },
-      action: {
-        type: String,
-        enum: ['purchase', 'admin_sync', 'usage', 'expiry', 'manual_adjustment'],
-      },
-      planName: String,
-      photoshootCredits: {
-        previous: Number,
-        new: Number,
-        change: Number, // positive = increase, negative = decrease
-      },
-      marketingPosterCredits: {
-        previous: Number,
-        new: Number,
-        change: Number,
-      },
-      reason: String, // e.g., "Plan credits updated by admin", "Subscription expired"
-      adminEmail: String, // If changed by admin
-    }],
+    ],
     createdAt: {
       type: Date,
       default: Date.now,
@@ -101,11 +127,11 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Note: email index is automatically created by unique: true
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 export default User;

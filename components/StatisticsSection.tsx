@@ -44,15 +44,16 @@ export const StatisticsSection: React.FC = () => {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="counter-grid-item bg-black p-6 md:p-8 rounded-xl border border-white/10 transition-all hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-lg"
+              className="stat-box"
               style={{ animationDelay: `${0.1 * (index + 1)}s` }}
             >
-              <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold mb-2 bg-gradient-to-r from-indigo-400 via-indigo-500 to-rose-500 bg-clip-text text-transparent leading-none tracking-tight">
+              <div className="upper-line"></div>
+              <div className="stat-number">
                 {stat.number}
-              </h3>
-              <p className="text-sm md:text-base text-neutral-400 font-medium">
+              </div>
+              <div className="stat-label">
                 {stat.label}
-              </p>
+              </div>
             </div>
           ))}
         </div>
