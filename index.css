@@ -33,27 +33,35 @@
 .text-gold {
   color: #e6b71e !important;
 }
+
 .text-gold-100 {
   color: #fdf6e6 !important;
 }
+
 .text-gold-200 {
   color: #fce9c5 !important;
 }
+
 .text-gold-300 {
   color: #fadea5 !important;
 }
+
 .text-gold-400 {
   color: #f8cd6b !important;
 }
+
 .text-gold-500 {
   color: #e6b71e !important;
 }
+
 .text-gold-600 {
   color: #d4a51c !important;
 }
+
 .text-gold-700 {
   color: #ae820d !important;
 }
+
 .text-gold-800 {
   color: #8d6809 !important;
 }
@@ -62,9 +70,11 @@
 .text-gold-300\/80 {
   color: rgba(250, 222, 165, 0.8) !important;
 }
+
 .text-gold-400\/80 {
   color: rgba(248, 205, 107, 0.8) !important;
 }
+
 .text-gold-500\/80 {
   color: rgba(230, 183, 30, 0.8) !important;
 }
@@ -73,24 +83,31 @@
 .bg-gold {
   background-color: #e6b71e !important;
 }
+
 .bg-gold-100 {
   background-color: #fdf6e6 !important;
 }
+
 .bg-gold-200 {
   background-color: #fce9c5 !important;
 }
+
 .bg-gold-300 {
   background-color: #fadea5 !important;
 }
+
 .bg-gold-400 {
   background-color: #f8cd6b !important;
 }
+
 .bg-gold-500 {
   background-color: #e6b71e !important;
 }
+
 .bg-gold-600 {
   background-color: #d4a51c !important;
 }
+
 .bg-gold-700 {
   background-color: #ae820d !important;
 }
@@ -99,27 +116,35 @@
 .bg-gold-500\/5 {
   background-color: rgba(230, 183, 30, 0.05) !important;
 }
+
 .bg-gold-500\/10 {
   background-color: rgba(230, 183, 30, 0.1) !important;
 }
+
 .bg-gold-500\/20 {
   background-color: rgba(230, 183, 30, 0.2) !important;
 }
+
 .bg-gold-500\/30 {
   background-color: rgba(230, 183, 30, 0.3) !important;
 }
+
 .bg-gold-500\/80 {
   background-color: rgba(230, 183, 30, 0.8) !important;
 }
+
 .bg-gold-500\/85 {
   background-color: rgba(230, 183, 30, 0.85) !important;
 }
+
 .bg-gold-500\/90 {
   background-color: rgba(230, 183, 30, 0.9) !important;
 }
+
 .bg-gold-600\/20 {
   background-color: rgba(212, 165, 28, 0.2) !important;
 }
+
 .bg-gold-600\/30 {
   background-color: rgba(212, 165, 28, 0.3) !important;
 }
@@ -128,12 +153,15 @@
 .border-gold-500 {
   border-color: #e6b71e !important;
 }
+
 .border-gold-500\/20 {
   border-color: rgba(230, 183, 30, 0.2) !important;
 }
+
 .border-gold-500\/30 {
   border-color: rgba(230, 183, 30, 0.3) !important;
 }
+
 .border-gold-500\/50 {
   border-color: rgba(230, 183, 30, 0.5) !important;
 }
@@ -142,6 +170,7 @@
 .shadow-gold-500\/20 {
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.2) !important;
 }
+
 .shadow-gold-900\/40 {
   box-shadow: 0 20px 50px rgba(109, 83, 6, 0.4) !important;
 }
@@ -150,24 +179,31 @@
 .hover\:text-gold-400:hover {
   color: #f8cd6b !important;
 }
+
 .hover\:text-gold-300:hover {
   color: #fadea5 !important;
 }
+
 .hover\:text-gold-200:hover {
   color: #fce9c5 !important;
 }
+
 .hover\:bg-gold-500:hover {
   background-color: #e6b71e !important;
 }
+
 .hover\:bg-gold-500\/20:hover {
   background-color: rgba(230, 183, 30, 0.2) !important;
 }
+
 .hover\:border-gold-500:hover {
   border-color: #e6b71e !important;
 }
+
 .hover\:shadow-gold-500\/30:hover {
   box-shadow: 0 20px 40px rgba(230, 183, 30, 0.3) !important;
 }
+
 .hover\:shadow-lg:hover {
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.25) !important;
 }
@@ -176,12 +212,15 @@
 .group:hover .group-hover\:text-gold-400 {
   color: #f8cd6b !important;
 }
+
 .group:hover .group-hover\:text-gold-300 {
   color: #fadea5 !important;
 }
+
 .group:hover .group-hover\:shadow-gold-500\/30 {
   box-shadow: 0 20px 40px rgba(230, 183, 30, 0.3) !important;
 }
+
 .group:hover .group-hover\:bg-gold-500\/10 {
   background-color: rgba(230, 183, 30, 0.1) !important;
 }
@@ -189,28 +228,23 @@
 /* Create Your First Image button only - golden gradient fill + gradient border */
 .button-ui {
   background:
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.2),
-        rgba(248, 205, 107, 0.2),
-        rgba(230, 183, 30, 0.2),
-        rgba(212, 165, 28, 0.2)
-      )
-      padding-box,
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.2),
+      rgba(248, 205, 107, 0.2),
+      rgba(230, 183, 30, 0.2),
+      rgba(212, 165, 28, 0.2)) padding-box,
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   color: #ffffff !important;
   border: 2px solid transparent !important;
 }
+
 .button-ui:hover {
   background:
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.6),
-        rgba(248, 205, 107, 0.6),
-        rgba(230, 183, 30, 0.6),
-        rgba(212, 165, 28, 0.6)
-      )
-      padding-box,
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.6),
+      rgba(248, 205, 107, 0.6),
+      rgba(230, 183, 30, 0.6),
+      rgba(212, 165, 28, 0.6)) padding-box,
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.4) !important;
 }
@@ -221,6 +255,7 @@
   color: #ffffff !important;
   border: 1.5px solid rgba(230, 183, 30, 0.4) !important;
 }
+
 .button-demo:hover {
   background-color: rgba(230, 183, 30, 0.12) !important;
   border-color: rgba(248, 205, 107, 0.5) !important;
@@ -230,14 +265,11 @@
 /* AFTER badge on carousel - golden gradient (same as Create Your First Image) */
 .after-badge {
   background:
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.9),
-        rgba(248, 205, 107, 0.92),
-        rgba(230, 183, 30, 0.92),
-        rgba(212, 165, 28, 0.9)
-      )
-      padding-box,
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.9),
+      rgba(248, 205, 107, 0.92),
+      rgba(230, 183, 30, 0.92),
+      rgba(212, 165, 28, 0.9)) padding-box,
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   color: #ffffff !important;
   border: 1.5px solid transparent !important;
@@ -247,6 +279,7 @@
 button {
   transition: all 0.3s ease !important;
 }
+
 a {
   transition: all 0.3s ease !important;
 }
@@ -255,9 +288,11 @@ a {
 .text-gold-400 {
   text-shadow: 0 2px 8px rgba(230, 183, 30, 0.3) !important;
 }
+
 .text-gold-300 {
   text-shadow: 0 2px 8px rgba(250, 222, 165, 0.3) !important;
 }
+
 .text-gold-500 {
   text-shadow: 0 2px 8px rgba(230, 183, 30, 0.3) !important;
 }
@@ -283,13 +318,11 @@ a {
 
 /* Send Inquiry Button - Golden Gradient */
 .btn-gradient-gold {
-  background: linear-gradient(
-    90deg,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background: linear-gradient(90deg,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   color: #ffffff !important;
   text-shadow:
     0 0 8px rgba(255, 255, 255, 0.8),
@@ -303,13 +336,11 @@ a {
 }
 
 .btn-gradient-gold:hover {
-  background: linear-gradient(
-    90deg,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c,
-    #ae820d
-  ) !important;
+  background: linear-gradient(90deg,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c,
+      #ae820d) !important;
   text-shadow:
     0 0 12px rgba(255, 255, 255, 0.9),
     0 0 24px rgba(255, 255, 255, 0.6) !important;
@@ -327,52 +358,108 @@ a {
   opacity: 0.5 !important;
 }
 
-/* Purchase Plan Button - 70% Transparent Gradient Border */
+/* Purchase Plan Button - Golden Radiant Background */
 .btn-purchase-plan {
-  background: transparent !important;
-  border: 2px solid transparent !important;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7))
-      padding-box,
-    linear-gradient(90deg, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
-  background-origin: padding-box, border-box !important;
-  background-clip: padding-box, border-box !important;
+  background: linear-gradient(90deg,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   color: #ffffff !important;
-  font-weight: 600 !important;
+  border: none !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.2) !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .btn-purchase-plan:hover {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8))
-      padding-box,
-    linear-gradient(90deg, #f8cd6b, #e6b71e, #d4a51c, #ae820d) border-box !important;
-  box-shadow: 0 8px 25px rgba(248, 205, 107, 0.4) !important;
+  background: linear-gradient(90deg,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c,
+      #ae820d) !important;
+  box-shadow: 0 8px 25px rgba(248, 205, 107, 0.6) !important;
   transform: translateY(-2px) !important;
+  filter: brightness(1.1) !important;
 }
 
 .btn-purchase-plan:active {
   transform: translateY(0) !important;
-  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Auth Submit Button - Golden Gradient (for Send OTP, Verify OTP buttons) */
+.btn-auth-submit {
+  background: linear-gradient(90deg,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-auth-submit:hover {
+  background: linear-gradient(90deg,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c,
+      #ae820d) !important;
+  box-shadow: 0 8px 25px rgba(248, 205, 107, 0.6) !important;
+  transform: translateY(-2px) !important;
+  filter: brightness(1.1) !important;
+}
+
+.btn-auth-submit:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Text Gradient Gold (for Change Email text) */
+.text-gradient-gold {
+  background: linear-gradient(90deg,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+.text-gradient-gold:hover {
+  background: linear-gradient(90deg,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c,
+      #ae820d) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  filter: brightness(1.2) !important;
 }
 
 /* Statistics Boxes - Rectangle Design with Upper Line Connected to Border */
 .stat-box {
-  background: linear-gradient(
-    135deg,
-    rgba(250, 222, 165, 0.08),
-    rgba(248, 205, 107, 0.05),
-    rgba(230, 183, 30, 0.08)
-  ) !important;
-  border: 2px solid transparent !important;
-  background-image:
-    linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(250, 222, 165, 0.08),
       rgba(248, 205, 107, 0.05),
-      rgba(230, 183, 30, 0.08)
-    ),
+      rgba(230, 183, 30, 0.08)) !important;
+  border: 2px solid transparent !important;
+  background-image:
+    linear-gradient(135deg,
+      rgba(250, 222, 165, 0.08),
+      rgba(248, 205, 107, 0.05),
+      rgba(230, 183, 30, 0.08)),
     linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)) padding-box,
     linear-gradient(90deg, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   background-origin: border-box, padding-box, border-box !important;
@@ -404,12 +491,10 @@ a {
   transform: translateY(-4px) !important;
   box-shadow: 0 12px 30px rgba(230, 183, 30, 0.3) !important;
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(250, 222, 165, 0.12),
       rgba(248, 205, 107, 0.08),
-      rgba(230, 183, 30, 0.12)
-    ),
+      rgba(230, 183, 30, 0.12)),
     linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)) padding-box,
     linear-gradient(90deg, #f8cd6b, #e6b71e, #d4a51c, #ae820d) border-box !important;
 }
@@ -423,39 +508,33 @@ a {
   left: 0 !important;
   right: 0 !important;
   height: 3px !important;
-  background: linear-gradient(
-    90deg,
-    rgba(230, 183, 30, 0.8),
-    rgba(248, 205, 107, 0.6),
-    rgba(250, 222, 165, 0.6),
-    rgba(248, 205, 107, 0.6),
-    rgba(230, 183, 30, 0.8)
-  ) !important;
+  background: linear-gradient(90deg,
+      rgba(230, 183, 30, 0.8),
+      rgba(248, 205, 107, 0.6),
+      rgba(250, 222, 165, 0.6),
+      rgba(248, 205, 107, 0.6),
+      rgba(230, 183, 30, 0.8)) !important;
   z-index: 2 !important;
 }
 
 .stat-box:hover .upper-line {
   height: 4px !important;
-  background: linear-gradient(
-    90deg,
-    rgba(248, 205, 107, 0.9),
-    rgba(230, 183, 30, 0.8),
-    rgba(250, 222, 165, 0.8),
-    rgba(230, 183, 30, 0.8),
-    rgba(248, 205, 107, 0.9)
-  ) !important;
+  background: linear-gradient(90deg,
+      rgba(248, 205, 107, 0.9),
+      rgba(230, 183, 30, 0.8),
+      rgba(250, 222, 165, 0.8),
+      rgba(230, 183, 30, 0.8),
+      rgba(248, 205, 107, 0.9)) !important;
 }
 
 .stat-box .stat-number {
   font-size: 2.5rem !important;
   font-weight: 700 !important;
-  background: linear-gradient(
-    90deg,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background: linear-gradient(90deg,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   background-clip: text !important;
   -webkit-background-clip: text !important;
   color: transparent !important;
@@ -477,13 +556,11 @@ a {
 }
 
 .stat-box:hover .stat-number {
-  background: linear-gradient(
-    90deg,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c,
-    #ae820d
-  ) !important;
+  background: linear-gradient(90deg,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c,
+      #ae820d) !important;
   background-clip: text !important;
   -webkit-background-clip: text !important;
   color: transparent !important;
@@ -504,8 +581,7 @@ a {
   pointer-events: none !important;
   z-index: 1 !important;
   background:
-    repeating-conic-gradient(
-      from 0deg at 0deg 0deg,
+    repeating-conic-gradient(from 0deg at 0deg 0deg,
       transparent 0deg,
       transparent 90deg,
       rgba(230, 183, 30, 0.2) 90deg,
@@ -513,10 +589,8 @@ a {
       transparent 180deg,
       transparent 270deg,
       rgba(230, 183, 30, 0.2) 270deg,
-      rgba(230, 183, 30, 0.2) 360deg
-    ),
-    repeating-conic-gradient(
-      from 45deg at 50px 50px,
+      rgba(230, 183, 30, 0.2) 360deg),
+    repeating-conic-gradient(from 45deg at 50px 50px,
       transparent 0deg,
       transparent 90deg,
       rgba(230, 183, 30, 0.2) 90deg,
@@ -524,8 +598,7 @@ a {
       transparent 180deg,
       transparent 270deg,
       rgba(230, 183, 30, 0.2) 270deg,
-      rgba(230, 183, 30, 0.2) 360deg
-    ) !important;
+      rgba(230, 183, 30, 0.2) 360deg) !important;
   background-size:
     50px 50px,
     50px 50px !important;
@@ -548,13 +621,11 @@ a {
   height: 200px !important;
   pointer-events: none !important;
   z-index: 2 !important;
-  background: radial-gradient(
-    circle,
-    rgba(230, 183, 30, 0.3) 0%,
-    rgba(248, 205, 107, 0.2) 30%,
-    rgba(250, 222, 165, 0.15) 60%,
-    transparent 100%
-  ) !important;
+  background: radial-gradient(circle,
+      rgba(230, 183, 30, 0.3) 0%,
+      rgba(248, 205, 107, 0.2) 30%,
+      rgba(250, 222, 165, 0.15) 60%,
+      transparent 100%) !important;
   border-radius: 50% !important;
   transform: translate(-50%, -50%) !important;
   opacity: 0 !important;
@@ -581,8 +652,7 @@ body::before {
   pointer-events: none !important;
   z-index: 1 !important;
   background:
-    repeating-conic-gradient(
-      from 0deg at 0deg 0deg,
+    repeating-conic-gradient(from 0deg at 0deg 0deg,
       transparent 0deg,
       transparent 90deg,
       rgba(230, 183, 30, 0.2) 90deg,
@@ -590,10 +660,8 @@ body::before {
       transparent 180deg,
       transparent 270deg,
       rgba(230, 183, 30, 0.2) 270deg,
-      rgba(230, 183, 30, 0.2) 360deg
-    ),
-    repeating-conic-gradient(
-      from 45deg at 25px 25px,
+      rgba(230, 183, 30, 0.2) 360deg),
+    repeating-conic-gradient(from 45deg at 25px 25px,
       transparent 0deg,
       transparent 90deg,
       rgba(230, 183, 30, 0.2) 90deg,
@@ -601,8 +669,7 @@ body::before {
       transparent 180deg,
       transparent 270deg,
       rgba(230, 183, 30, 0.2) 270deg,
-      rgba(230, 183, 30, 0.2) 360deg
-    ) !important;
+      rgba(230, 183, 30, 0.2) 360deg) !important;
   background-size:
     50px 50px,
     50px 50px !important;
@@ -622,6 +689,7 @@ body.canvas-active::before {
 .card {
   transition: all 0.3s ease !important;
 }
+
 .card:hover {
   box-shadow: 0 20px 50px rgba(230, 183, 30, 0.15) !important;
   border-color: rgba(230, 183, 30, 0.4) !important;
@@ -666,6 +734,7 @@ header nav button {
   color: #ffffff !important;
   text-decoration: none !important;
 }
+
 header nav a:hover,
 header nav button:hover {
   color: #fadea5 !important;
@@ -677,6 +746,7 @@ header nav button:hover {
 .header-dropdown-menu button {
   color: #ffffff !important;
 }
+
 .header-dropdown-menu a:hover,
 .header-dropdown-menu button:hover {
   color: #fadea5 !important;
@@ -692,35 +762,29 @@ header nav button:hover {
 /* Hero: force golden gradient for "Professional Photoshoot" so it never appears transparent */
 .hero-banner .hero-text [class*="bg-clip-text"],
 .hero-banner .hero-text .hero-gradient-text {
-  background-image: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #d4a51c
-  ) !important;
+  background-image: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #d4a51c) !important;
 }
 
 /* Contact page: force golden gradient for "Query" so it is always visible */
 .contact-page [class*="bg-clip-text"],
 .contact-query-gradient {
-  background-image: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #d4a51c
-  ) !important;
+  background-image: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #d4a51c) !important;
 }
 
 /* Why MARO Studio section: force golden gradient for "MARO Studio" so it is always visible */
 .why-ai-studio .why-maro-gradient-text,
 .why-maro-gradient-text {
-  background-image: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background-image: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
@@ -730,29 +794,25 @@ header nav button:hover {
 .why-ai-studio .why-maro-benefit-box {
   background:
     linear-gradient(#171717, #171717) padding-box,
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.4),
-        rgba(248, 205, 107, 0.4),
-        rgba(230, 183, 30, 0.4),
-        rgba(212, 165, 28, 0.4)
-      )
-      border-box !important;
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.4),
+      rgba(248, 205, 107, 0.4),
+      rgba(230, 183, 30, 0.4),
+      rgba(212, 165, 28, 0.4)) border-box !important;
   border: 2px solid transparent !important;
 }
+
 .why-ai-studio .why-maro-benefit-box:hover {
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.25) !important;
 }
 
 /* Generate section: Scroll-Stoppers golden gradient text */
 .generate-section .scroll-stoppers-gradient-text {
-  background-image: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background-image: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
@@ -760,15 +820,14 @@ header nav button:hover {
 
 /* Generate section: flow line below active button - golden gradient */
 .generate-section .generate-section-flow-line {
-  background: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   opacity: 0.9;
 }
+
 /* Pause progress line when carousel is hovered; resume on mouse out */
 .generate-section.carousel-hovered .generate-section-flow-line {
   animation-play-state: paused !important;
@@ -832,13 +891,11 @@ button[type="submit"]:hover {
 
 /* How to Use section: "Use" text - golden gradient */
 .how-it-works .how-to-use-gradient-text {
-  background-image: linear-gradient(
-    to right,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background-image: linear-gradient(to right,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
@@ -846,13 +903,11 @@ button[type="submit"]:hover {
 
 /* How to Use section: vertical flow line - golden gradient */
 .how-it-works .how-it-works-flow-line {
-  background: linear-gradient(
-    to bottom,
-    #fadea5,
-    #f8cd6b,
-    #e6b71e,
-    #d4a51c
-  ) !important;
+  background: linear-gradient(to bottom,
+      #fadea5,
+      #f8cd6b,
+      #e6b71e,
+      #d4a51c) !important;
   box-shadow: 0 0 12px rgba(230, 183, 30, 0.5) !important;
 }
 
@@ -861,10 +916,12 @@ button[type="submit"]:hover {
   background: transparent !important;
   border: 2px solid #e6b71e !important;
 }
+
 .how-it-works .how-it-works-theme-box:hover {
   border-color: #f8cd6b !important;
   background: rgba(248, 205, 107, 0.05) !important;
 }
+
 .how-it-works .how-it-works-theme-box-selected {
   background: rgba(230, 183, 30, 0.08) !important;
   border-color: #e6b71e !important;
@@ -878,6 +935,7 @@ button[type="submit"]:hover {
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   border: 2px solid transparent !important;
 }
+
 .how-it-works .how-it-works-download-btn:hover {
   box-shadow: 0 6px 24px rgba(230, 183, 30, 0.4) !important;
 }
@@ -904,28 +962,23 @@ header nav .rounded-full.bg-gold-500 {
 /* Launch Studio button - golden gradient, 50% transparent */
 .btn-launch-studio {
   background:
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.5),
-        rgba(248, 205, 107, 0.5),
-        rgba(230, 183, 30, 0.5),
-        rgba(212, 165, 28, 0.5)
-      )
-      padding-box,
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.5),
+      rgba(248, 205, 107, 0.5),
+      rgba(230, 183, 30, 0.5),
+      rgba(212, 165, 28, 0.5)) padding-box,
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   color: #ffffff !important;
   border: 2px solid transparent !important;
 }
+
 .btn-launch-studio:hover {
   background:
-    linear-gradient(
-        to right,
-        rgba(250, 222, 165, 0.68),
-        rgba(248, 205, 107, 0.7),
-        rgba(230, 183, 30, 0.7),
-        rgba(212, 165, 28, 0.68)
-      )
-      padding-box,
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.68),
+      rgba(248, 205, 107, 0.7),
+      rgba(230, 183, 30, 0.7),
+      rgba(212, 165, 28, 0.68)) padding-box,
     linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
   box-shadow: 0 8px 24px rgba(230, 183, 30, 0.35) !important;
 }
@@ -937,6 +990,7 @@ header nav .rounded-full.bg-gold-500 {
     0 0 0 1px rgba(255, 255, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
+
 .btn-launch-studio:hover .launch-studio-arrow {
   background: rgba(255, 255, 255, 0.28) !important;
 }
@@ -1010,10 +1064,8 @@ select:focus {
 hr,
 .divider {
   border-color: rgba(230, 183, 30, 0.2) !important;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(230, 183, 30, 0.3),
-    transparent
-  ) !important;
+  background: linear-gradient(to right,
+      transparent,
+      rgba(230, 183, 30, 0.3),
+      transparent) !important;
 }

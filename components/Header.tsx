@@ -11,10 +11,10 @@ import { ProfileDropdown } from './ProfileDropdown';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface HeaderProps {
-    hasGeneratedContent: boolean;
-    onMenuClick: () => void;
-    isMenuOpen: boolean;
-    activeSection: string;
+  hasGeneratedContent: boolean;
+  onMenuClick: () => void;
+  isMenuOpen: boolean;
+  activeSection: string;
 }
 
 const navLinks: Array<{ path: string; label: string; isScroll?: boolean }> = [
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     if (location.pathname !== '/') {
       return location.pathname === path;
     }
-    
+
     // For home page, check activeNavItem
     if (path === '/') {
       return activeNavItem === '/';
@@ -81,19 +81,19 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
       const workflowSection = document.getElementById('our-flow');
       const scrollPosition = window.scrollY;
       const headerHeight = 100;
-      
+
       if (workflowSection) {
         const rect = workflowSection.getBoundingClientRect();
         const sectionTop = rect.top + scrollPosition;
         const viewportTop = scrollPosition;
-        
+
         // More precise detection: Workflow is active when section is near top of viewport
         // Consider it active when section top is within 250px of viewport top
         const isWorkflowActive = (
-          sectionTop <= viewportTop + 250 && 
+          sectionTop <= viewportTop + 250 &&
           sectionTop >= viewportTop - 100
         );
-        
+
         if (isWorkflowActive && scrollPosition > 200) {
           setActiveNavItem('#our-flow');
         } else if (scrollPosition < 150) {
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
 
     window.addEventListener('scroll', throttledHandleScroll, { passive: true });
     handleScroll(); // Check initial state
-    
+
     return () => window.removeEventListener('scroll', throttledHandleScroll);
   }, [location.pathname]);
 
@@ -131,16 +131,16 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     localStorage.removeItem('user_name');
     // Force page reload to refresh all components
     window.location.href = '/';
-    };
+  };
 
   useEffect(() => {
     // Check if user is authenticated
     const token = localStorage.getItem('access_token');
     const storedName = localStorage.getItem('user_name');
     const storedEmail = localStorage.getItem('user_email');
-    
+
     setIsAuthenticated(!!token);
-    
+
     // Set name and email from localStorage if available
     if (storedName) {
       setUserName(storedName);
@@ -178,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             setUserName(null);
             localStorage.removeItem('user_name');
           }
-          
+
           // Set user email from API response or localStorage
           if (data.email && data.email.trim()) {
             setUserEmail(data.email.trim());
@@ -189,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             setUserEmail(null);
             localStorage.removeItem('user_email');
           }
-          
+
           // Check if subscription is still valid
           if (data.subscriptionPlan && data.subscriptionExpiresAt) {
             const expiresAt = new Date(data.subscriptionExpiresAt);
@@ -213,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
     fetchUserData();
     // Refresh every 5 seconds to catch auth/credit updates (reduced from 3s to avoid rate limits)
     const interval = setInterval(fetchUserData, 5000);
-    
+
     // Listen for custom auth change events (when user logs in/registers)
     const handleAuthChange = () => {
       const newToken = localStorage.getItem('access_token');
@@ -228,17 +228,17 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
       }
       fetchUserData();
     };
-    
+
     // Also listen for storage changes (when user logs in/registers in another tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'access_token' || e.key === 'user_name' || e.key === 'user_email') {
         handleAuthChange();
       }
     };
-    
+
     window.addEventListener('userAuthChanged', handleAuthChange);
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('userAuthChanged', handleAuthChange);
@@ -252,12 +252,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         {/* Logo */}
         <div className="flex-shrink-0 flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <Link 
+            <Link
               to="/"
-                aria-label="Go to homepage"
-                className="transition-opacity hover:opacity-80"
-              >
-                <Logo />
+              aria-label="Go to homepage"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Logo />
             </Link>
             {subscriptionPlan && (
               <span className="hidden sm:inline-block px-3 py-1.5 text-xs font-semibold text-gold-400 bg-gold-500/10 border border-gold-500/20 rounded-full uppercase tracking-wider">
@@ -272,14 +272,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             </p>
           )}
         </div>
-        
+
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold">
           {navLinks.map(link => {
             // Hide pricing for unauthenticated users
-            if (link.path === '/pricing' && !isAuthenticated) {
-              return null;
-            }
+
             if (link.isScroll) {
               return (
                 <button
@@ -315,9 +313,8 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                       }
                     }
                   }}
-                  className={`relative transition-colors ${
-                    isActive(link.path) ? 'text-white drop-shadow-lg' : 'text-white hover:text-gold-300 hover:drop-shadow-lg'
-                  }`}
+                  className={`relative transition-colors ${isActive(link.path) ? 'text-white drop-shadow-lg' : 'text-white hover:text-gold-300 hover:drop-shadow-lg'
+                    }`}
                 >
                   {link.label}
                   {isActive(link.path) && (
@@ -340,9 +337,8 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                     }
                   }
                 }}
-                className={`relative transition-colors ${
-                  isActive(link.path) ? 'text-white' : 'text-white hover:text-gold-300'
-                }`}
+                className={`relative transition-colors ${isActive(link.path) ? 'text-white' : 'text-white hover:text-gold-300'
+                  }`}
               >
                 {link.label}
                 {isActive(link.path) && (
@@ -352,34 +348,34 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             );
           })}
         </nav>
-            
+
         {/* Actions */}
         <div className="flex items-center gap-3 md:gap-4">
-            {hasGeneratedContent && (
-              <button 
+          {hasGeneratedContent && (
+            <button
               onClick={() => navigate('/')}
-                className="hidden sm:flex p-2 text-neutral-400 hover:text-white transition-colors"
-                title="Back to Home"
-              >
-                <HomeIcon className="w-4 h-4" />
-              </button>
-            )}
+              className="hidden sm:flex p-2 text-neutral-400 hover:text-white transition-colors"
+              title="Back to Home"
+            >
+              <HomeIcon className="w-4 h-4" />
+            </button>
+          )}
 
-            {/* Profile Dropdown - Show for authenticated users */}
-            {isAuthenticated ? (
-              <ProfileDropdown userEmail={userEmail} onLogout={handleLogout} />
-            ) : (
-              /* Sign In Button - Show for unauthenticated users */
-              <button 
-                onClick={() => navigate('/login')}
-                className="text-[9px] md:text-[10px] uppercase tracking-widest text-gold-400 hover:text-gold-300 font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300 border border-gold-500/30 hover:border-gold-400 hover:bg-gold-500/10"
-              >
-                Sign In
-              </button>
-            )}
+          {/* Profile Dropdown - Show for authenticated users */}
+          {isAuthenticated ? (
+            <ProfileDropdown userEmail={userEmail} onLogout={handleLogout} />
+          ) : (
+            /* Sign In Button - Show for unauthenticated users */
+            <button
+              onClick={() => navigate('/login')}
+              className="text-[9px] md:text-[10px] uppercase tracking-widest text-gold-400 hover:text-gold-300 font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300 border border-gold-500/30 hover:border-gold-400 hover:bg-gold-500/10"
+            >
+              Sign In
+            </button>
+          )}
 
-          <button 
-            onClick={() => location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')} 
+          <button
+            onClick={() => location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')}
             className="btn-launch-studio hidden md:flex items-center gap-1.5 text-[9px] md:text-[10px] uppercase tracking-widest text-white font-bold py-0.5 md:py-1 pl-2 pr-0.5 md:pl-2.5 md:pr-0.5 rounded-full transition-all duration-300 transform active:scale-95"
           >
             <span>Launch Studio</span>
@@ -390,13 +386,13 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             </span>
           </button>
 
-             <button
-                onClick={onMenuClick}
-                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                className="p-2 rounded-lg text-neutral-400 hover:text-white md:hidden"
-            >
-                {isMenuOpen ? <CloseIcon className="w-6 h-6" /> : <NavMenuIcon className="w-6 h-6" />}
-            </button>
+          <button
+            onClick={onMenuClick}
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            className="p-2 rounded-lg text-neutral-400 hover:text-white md:hidden"
+          >
+            {isMenuOpen ? <CloseIcon className="w-6 h-6" /> : <NavMenuIcon className="w-6 h-6" />}
+          </button>
         </div>
       </div>
     </header>
