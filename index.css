@@ -225,27 +225,15 @@
   background-color: rgba(230, 183, 30, 0.1) !important;
 }
 
-/* Create Your First Image button only - golden gradient fill + gradient border */
+/* Create Your First Image button only - solid gold */
 .button-ui {
-  background:
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.2),
-      rgba(248, 205, 107, 0.2),
-      rgba(230, 183, 30, 0.2),
-      rgba(212, 165, 28, 0.2)) padding-box,
-    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
-  border: 2px solid transparent !important;
+  border: none !important;
 }
 
 .button-ui:hover {
-  background:
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.6),
-      rgba(248, 205, 107, 0.6),
-      rgba(230, 183, 30, 0.6),
-      rgba(212, 165, 28, 0.6)) padding-box,
-    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-color: #ae820d !important;
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.4) !important;
 }
 
@@ -262,17 +250,11 @@
   box-shadow: 0 10px 30px rgba(230, 183, 30, 0.35) !important;
 }
 
-/* AFTER badge on carousel - golden gradient (same as Create Your First Image) */
+/* AFTER badge on carousel - solid gold */
 .after-badge {
-  background:
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.9),
-      rgba(248, 205, 107, 0.92),
-      rgba(230, 183, 30, 0.92),
-      rgba(212, 165, 28, 0.9)) padding-box,
-    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
-  border: 1.5px solid transparent !important;
+  border: none !important;
 }
 
 /* Button and interactive elements */
@@ -316,59 +298,40 @@ a {
   filter: brightness(1.1) drop-shadow(0 0 8px rgba(250, 222, 165, 0.4)) !important;
 }
 
-/* Send Inquiry Button - Golden Gradient */
+/* Send Inquiry Button - Solid Gold */
 .btn-gradient-gold {
-  background: linear-gradient(90deg,
-      #fadea5,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c) !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.8),
-    0 0 16px rgba(255, 255, 255, 0.4) !important;
+  text-shadow: none !important;
   border: none !important;
   font-weight: 600 !important;
   font-size: 14px !important;
   transition: all 0.3s ease !important;
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
-  opacity: 0.5 !important;
+  opacity: 0.8 !important;
 }
 
 .btn-gradient-gold:hover {
-  background: linear-gradient(90deg,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c,
-      #ae820d) !important;
-  text-shadow:
-    0 0 12px rgba(255, 255, 255, 0.9),
-    0 0 24px rgba(255, 255, 255, 0.6) !important;
+  background-color: #ae820d !important;
   box-shadow: 0 8px 25px rgba(248, 205, 107, 0.4) !important;
   transform: translateY(-2px) !important;
-  opacity: 0.7 !important;
+  opacity: 1 !important;
 }
 
 .btn-gradient-gold:active {
   transform: translateY(0) !important;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.8),
-    0 0 16px rgba(255, 255, 255, 0.4) !important;
+  text-shadow: none !important;
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.3) !important;
-  opacity: 0.5 !important;
+  opacity: 0.8 !important;
 }
 
-/* Purchase Plan Button - Golden Radiant Background */
+/* Purchase Plan Button - Solid Gold */
 .btn-purchase-plan {
-  background: linear-gradient(90deg,
-      #fadea5,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c) !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
   border: none !important;
   font-weight: 700 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  text-shadow: none !important;
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
   transition: all 0.3s ease !important;
   opacity: 1 !important;
@@ -377,14 +340,9 @@ a {
 }
 
 .btn-purchase-plan:hover {
-  background: linear-gradient(90deg,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c,
-      #ae820d) !important;
+  background-color: #ae820d !important;
   box-shadow: 0 8px 25px rgba(248, 205, 107, 0.6) !important;
   transform: translateY(-2px) !important;
-  filter: brightness(1.1) !important;
 }
 
 .btn-purchase-plan:active {
@@ -392,35 +350,37 @@ a {
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
 }
 
-/* Auth Submit Button - Golden Gradient (for Send OTP, Verify OTP buttons) */
+/* Auth Submit Button - Solid Gold (for Send OTP, Verify OTP buttons) */
 .btn-auth-submit {
-  background: linear-gradient(90deg,
-      #fadea5,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c) !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
   border: none !important;
   font-weight: 700 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  text-shadow: none !important;
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
   transition: all 0.3s ease !important;
 }
 
 .btn-auth-submit:hover {
-  background: linear-gradient(90deg,
-      #f8cd6b,
-      #e6b71e,
-      #d4a51c,
-      #ae820d) !important;
+  background-color: #ae820d !important;
   box-shadow: 0 8px 25px rgba(248, 205, 107, 0.6) !important;
   transform: translateY(-2px) !important;
-  filter: brightness(1.1) !important;
 }
 
 .btn-auth-submit:active {
   transform: translateY(0) !important;
   box-shadow: 0 4px 15px rgba(230, 183, 30, 0.4) !important;
+}
+
+/* Animations */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
 }
 
 /* Text Gradient Gold (for Change Email text) */
@@ -790,20 +750,350 @@ header nav button:hover {
   color: transparent !important;
 }
 
-/* Why MARO Studio section: golden gradient border on the 4 benefit boxes */
-.why-ai-studio .why-maro-benefit-box {
-  background:
-    linear-gradient(#171717, #171717) padding-box,
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.4),
-      rgba(248, 205, 107, 0.4),
-      rgba(230, 183, 30, 0.4),
-      rgba(212, 165, 28, 0.4)) border-box !important;
-  border: 2px solid transparent !important;
+/* ═══════════════════════════════════════════════════════════════
+   Why MARO Studio – Redesigned Section
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ── */
+.why-section-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 5rem 0 4rem;
+  background: #000;
+  overflow: hidden;
 }
 
-.why-ai-studio .why-maro-benefit-box:hover {
-  box-shadow: 0 10px 30px rgba(230, 183, 30, 0.25) !important;
+/* ── Radial background glow ── */
+.why-section-bg-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 900px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center,
+      rgba(230, 183, 30, 0.06) 0%,
+      rgba(212, 165, 28, 0.03) 40%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Inner container ── */
+.why-section-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ── Heading block ── */
+.why-heading-block {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.why-heading {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.why-heading-accent {
+  width: 60px;
+  height: 3px;
+  margin: 0.75rem auto 1rem;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #fadea5, #e6b71e, #d4a51c);
+}
+
+.why-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.03em;
+  font-weight: 400;
+}
+
+/* ── Card row ── */
+.why-cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+/* ── Individual card ── */
+.why-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.25rem 1.5rem 2rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(250, 222, 165, 0.08);
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background 0.35s ease;
+
+  /* Scroll-entrance: hidden by default */
+  opacity: 0;
+  transform: translateY(36px);
+}
+
+.why-card--visible {
+  animation: whyFadeSlideUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: inherit;
+}
+
+@keyframes whyFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Card hover ── */
+.why-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(230, 183, 30, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 12px 40px rgba(230, 183, 30, 0.12),
+    0 0 0 1px rgba(230, 183, 30, 0.08);
+}
+
+/* ── Gold top-edge glow ── */
+.why-card-top-glow {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(248, 205, 107, 0.5),
+      rgba(230, 183, 30, 0.7),
+      rgba(248, 205, 107, 0.5),
+      transparent);
+  opacity: 0.6;
+  transition: opacity 0.35s ease, left 0.35s ease, right 0.35s ease;
+}
+
+.why-card:hover .why-card-top-glow {
+  opacity: 1;
+  left: 5%;
+  right: 5%;
+}
+
+/* ── Number badge ── */
+.why-card-number {
+  position: absolute;
+  top: 0.85rem;
+  right: 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(248, 205, 107, 0.25);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.35s ease;
+}
+
+.why-card:hover .why-card-number {
+  color: rgba(248, 205, 107, 0.55);
+}
+
+/* ── Icon ring ── */
+.why-card-icon-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  margin-bottom: 1.25rem;
+  background: rgba(230, 183, 30, 0.06);
+  border: 2px solid rgba(230, 183, 30, 0.18);
+  transition: border-color 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.why-card:hover .why-card-icon-ring {
+  border-color: rgba(248, 205, 107, 0.45);
+  background: rgba(230, 183, 30, 0.1);
+  box-shadow: 0 0 18px rgba(230, 183, 30, 0.18);
+}
+
+.why-card-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  transition: transform 0.35s ease;
+}
+
+.why-card:hover .why-card-icon-img {
+  transform: scale(1.12);
+}
+
+/* ── Card title ── */
+.why-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.why-card-title::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #fadea5, #e6b71e);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.why-card:hover .why-card-title::after {
+  width: 70%;
+}
+
+/* ── Card description ── */
+.why-card-desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 0.35s ease;
+  margin-top: 0.25rem;
+}
+
+.why-card:hover .why-card-desc {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ── CTA wrap ── */
+.why-cta-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+/* ── Shimmer CTA button ── */
+.why-cta-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.9rem 2rem;
+  border-radius: 0.625rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff !important;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(to right,
+      rgba(250, 222, 165, 0.18),
+      rgba(248, 205, 107, 0.18),
+      rgba(230, 183, 30, 0.18),
+      rgba(212, 165, 28, 0.18)) padding-box,
+    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.why-cta-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg,
+      transparent,
+      rgba(255, 255, 255, 0.12),
+      transparent);
+  transform: skewX(-20deg);
+  animation: whyShimmer 3s ease-in-out infinite;
+}
+
+@keyframes whyShimmer {
+  0% {
+    left: -75%;
+  }
+
+  100% {
+    left: 125%;
+  }
+}
+
+.why-cta-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 32px rgba(230, 183, 30, 0.35) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .why-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .why-section-wrapper {
+    padding: 3.5rem 0 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .why-cards-row {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .why-section-wrapper {
+    padding: 2.5rem 0 2rem;
+  }
+
+  .why-heading-block {
+    margin-bottom: 2rem;
+  }
+
+  .why-card {
+    padding: 1.75rem 1.25rem 1.5rem;
+  }
+
+  .why-card-icon-ring {
+    width: 56px;
+    height: 56px;
+  }
+
+  .why-card-icon-img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .why-cta-wrap {
+    margin-top: 2rem;
+  }
 }
 
 /* Generate section: Scroll-Stoppers golden gradient text */
@@ -959,27 +1249,15 @@ header nav .rounded-full.bg-gold-500 {
   background-color: #e6b71e !important;
 }
 
-/* Launch Studio button - golden gradient, 50% transparent */
+/* Launch Studio button - solid gold */
 .btn-launch-studio {
-  background:
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.5),
-      rgba(248, 205, 107, 0.5),
-      rgba(230, 183, 30, 0.5),
-      rgba(212, 165, 28, 0.5)) padding-box,
-    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-color: #d4a51c !important;
   color: #ffffff !important;
-  border: 2px solid transparent !important;
+  border: none !important;
 }
 
 .btn-launch-studio:hover {
-  background:
-    linear-gradient(to right,
-      rgba(250, 222, 165, 0.68),
-      rgba(248, 205, 107, 0.7),
-      rgba(230, 183, 30, 0.7),
-      rgba(212, 165, 28, 0.68)) padding-box,
-    linear-gradient(to right, #fadea5, #f8cd6b, #e6b71e, #d4a51c) border-box !important;
+  background-color: #ae820d !important;
   box-shadow: 0 8px 24px rgba(230, 183, 30, 0.35) !important;
 }
 

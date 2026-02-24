@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Header } from './components/Header';
+import { StudioTopBar } from './components/StudioTopBar';
 import { DropdownMenu } from './components/DropdownMenu';
 import { GlassFilter } from './components/ui/GlassFilter';
 import { BookDemoPage } from './components/BookDemoPage';
@@ -20,6 +21,7 @@ import { PreviouslyGenerated } from './components/PreviouslyGenerated';
 import { PrivacyPolicy } from './components/pages/PrivacyPolicy';
 import { TermsOfService } from './components/pages/TermsOfService';
 import { AuthInterceptor } from './components/auth/AuthInterceptor';
+import { WelcomePopup } from './components/WelcomePopup';
 
 // Canvas Effect Hook
 const useCanvasEffect = () => {
@@ -103,6 +105,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-neutral-200 font-sans relative flex flex-col">
       <AuthInterceptor />
+      <WelcomePopup />
       {showLandingBackground && (
         <>
           <div className="fixed inset-0 w-full h-full z-[-2] bg-black" />
@@ -119,8 +122,10 @@ const AppContent: React.FC = () => {
         </>
       )}
 
-      {/* Only show header on public pages (hide for /admin, /dashboard) */}
-      {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/dashboard') && (
+      {/* Studio pages get a minimal top bar; all other public pages get the full header */}
+      {location.pathname === '/studio' || location.pathname === '/previously-generated' ? (
+        <StudioTopBar />
+      ) : !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/dashboard') ? (
         <>
           <Header
             hasGeneratedContent={hasGeneratedContent}
@@ -135,7 +140,7 @@ const AppContent: React.FC = () => {
             />
           )}
         </>
-      )}
+      ) : null}
 
       {!showLandingBackground && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/dashboard') && (
         <GlassFilter />
@@ -143,7 +148,9 @@ const AppContent: React.FC = () => {
 
       <main className={`relative z-10 flex-grow flex flex-col ${location.pathname.startsWith('/dashboard')
         ? 'p-0 items-stretch justify-start'
-        : `${showLandingBackground ? 'justify-start' : 'items-center justify-center'} px-4 sm:px-5 md:px-6 lg:px-8 ${(location.pathname === '/contact' || location.pathname === '/pricing' || location.pathname === '/workflow' || location.pathname === '/') ? 'pt-0 pb-4 md:pb-6' : 'py-8 md:py-16'}`
+        : location.pathname === '/studio' || location.pathname === '/previously-generated'
+          ? 'p-0 items-stretch justify-start'
+          : `${showLandingBackground ? 'justify-start' : 'items-center justify-center'} px-4 sm:px-5 md:px-6 lg:px-8 ${(location.pathname === '/contact' || location.pathname === '/pricing' || location.pathname === '/workflow' || location.pathname === '/') ? 'pt-0 pb-4 md:pb-6' : 'py-8 md:py-16'}`
         }`}>
         {isCheckingAuth ? (
           <div className="flex items-center justify-center min-h-screen">

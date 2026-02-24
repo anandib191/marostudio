@@ -247,7 +247,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
   }, []);
 
   return (
-    <header className="sticky top-0 z-[101] bg-black/70 backdrop-blur-xl border-b-0">
+    <header className="sticky top-0 z-[101] bg-black/50 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0 flex flex-col gap-1">
@@ -274,7 +274,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-10 text-xs md:text-sm uppercase tracking-[0.15em] font-bold">
           {navLinks.map(link => {
             // Hide pricing for unauthenticated users
 
@@ -313,13 +313,11 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                       }
                     }
                   }}
-                  className={`relative transition-colors ${isActive(link.path) ? 'text-white drop-shadow-lg' : 'text-white hover:text-gold-300 hover:drop-shadow-lg'
+                  className={`group relative py-2 transition-colors duration-300 ${isActive(link.path) ? 'text-white' : 'text-neutral-400 hover:text-white'
                     }`}
                 >
                   {link.label}
-                  {isActive(link.path) && (
-                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500" />
-                  )}
+                  <span className={`absolute -bottom-1 left-0 h-[2px] bg-gold-500 transition-all duration-300 ${isActive(link.path) ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-100'}`} />
                 </button>
               );
             }
@@ -337,13 +335,11 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
                     }
                   }
                 }}
-                className={`relative transition-colors ${isActive(link.path) ? 'text-white' : 'text-white hover:text-gold-300'
+                className={`group relative py-2 transition-colors duration-300 ${isActive(link.path) ? 'text-white' : 'text-neutral-400 hover:text-white'
                   }`}
               >
                 {link.label}
-                {isActive(link.path) && (
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500" />
-                )}
+                <span className={`absolute -bottom-1 left-0 h-[2px] bg-gold-500 transition-all duration-300 ${isActive(link.path) ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-100'}`} />
               </Link>
             );
           })}
@@ -368,7 +364,7 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
             /* Sign In Button - Show for unauthenticated users */
             <button
               onClick={() => navigate('/login')}
-              className="text-[9px] md:text-[10px] uppercase tracking-widest text-gold-400 hover:text-gold-300 font-bold py-2 md:py-2.5 px-3 md:px-4 rounded-full transition-all duration-300 border border-gold-500/30 hover:border-gold-400 hover:bg-gold-500/10"
+              className="text-xs md:text-sm uppercase tracking-widest text-gold-400 hover:text-gold-300 font-bold py-2 md:py-2.5 px-4 md:px-5 rounded-full transition-all duration-300 border border-gold-500/30 hover:border-gold-400 hover:bg-gold-500/10"
             >
               Sign In
             </button>
@@ -376,11 +372,12 @@ export const Header: React.FC<HeaderProps> = ({ hasGeneratedContent, onMenuClick
 
           <button
             onClick={() => location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')}
-            className="btn-launch-studio hidden md:flex items-center gap-1.5 text-[9px] md:text-[10px] uppercase tracking-widest text-white font-bold py-0.5 md:py-1 pl-2 pr-0.5 md:pl-2.5 md:pr-0.5 rounded-full transition-all duration-300 transform active:scale-95"
+            className="group relative hidden md:flex items-center gap-2 text-xs md:text-sm uppercase tracking-widest text-white font-bold py-1.5 md:py-2 pl-4 pr-1.5 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 bg-gradient-to-r from-gold-500/20 to-gold-600/20 border border-gold-500/50 hover:border-gold-400 shadow-[0_0_15px_rgba(240,196,100,0.15)] hover:shadow-[0_0_25px_rgba(240,196,100,0.3)] overflow-hidden"
           >
-            <span>Launch Studio</span>
-            <span className="launch-studio-arrow flex-shrink-0 w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/20 flex items-center justify-center">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+            <span className="absolute inset-0 w-full h-full -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-shimmer" />
+            <span className="relative z-10">Launch Studio</span>
+            <span className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-gold-500 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5 shadow-[0_0_10px_rgba(240,196,100,0.5)]">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black">
                 <path d="M7 17L17 7M17 7h-6M17 7v6" />
               </svg>
             </span>

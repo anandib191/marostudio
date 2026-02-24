@@ -6,6 +6,7 @@ import { StatisticsSection } from './StatisticsSection';
 import { WhyAIStudioSection } from './WhyAIStudioSection';
 import { GenerateContentSection } from './GenerateContentSection';
 import { HowItWorksSection } from './HowItWorksSection';
+import { FloatingGallerySection } from './FloatingGallerySection';
 import { Footer } from './Footer';
 
 interface LandingPageProps {
@@ -21,11 +22,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onBookDemo })
       {/* Hero Banner Section - Full width below navbar */}
       <HeroBanner onStart={onStart} />
 
+      {/* Floating Gallery Section */}
+      <FloatingGallerySection />
+
       {/* Statistics Section */}
       <StatisticsSection />
 
       {/* COMMENTED: "Create Professional Photoshoots & Visuals Without a Studio" section - to restore: uncomment import above and the line below */}
       {/* <FeaturesSection /> */}
+
+      {/* How to Use Section (includes YouTube videos) */}
+      <HowItWorksSection />
 
       {/* Why MARO Studio Section */}
       <WhyAIStudioSection />
@@ -33,10 +40,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onBookDemo })
       {/* Generate Content Section */}
       <GenerateContentSection />
 
-      {/* How to Use Section (includes YouTube videos) */}
-      <HowItWorksSection />
-
-      <Footer ref={contactRef}/>
+      <Footer ref={contactRef} />
     </div>
   );
 };

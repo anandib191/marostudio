@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; }> = ({ onExit, onContentGenerated }) => {
+export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; onStepChange?: (step: number) => void; }> = ({ onExit, onContentGenerated, onStepChange }) => {
     const navigate = useNavigate();
     const [imageFile, setImageFile] = useState<ImageFile | null>(null);
     const [logoFile, setLogoFile] = useState<ImageFile | null>(null);
@@ -59,7 +59,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
         // Check authentication status
         const token = localStorage.getItem('access_token');
         setIsAuthenticated(!!token);
-        
+
         if (token) {
             fetchCredits();
             // Refresh credits every 5 seconds to catch payment/admin updates (reduced to avoid rate limits)
@@ -79,6 +79,18 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, [fetchCredits]);
 
+    // Notify parent about step changes for sidebar tracking
+    // step 0: no image, step 1: image uploaded, step -1: generating or done
+    useEffect(() => {
+        if (isLoading || generatedPoster) {
+            onStepChange?.(-1);
+        } else if (imageFile) {
+            onStepChange?.(1);
+        } else {
+            onStepChange?.(0);
+        }
+    }, [imageFile, isLoading, generatedPoster, onStepChange]);
+
     const handleImageUpload = (file: ImageFile) => {
         setImageFile(file);
         setGeneratedPoster(null);
@@ -88,7 +100,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     const handleLogoUpload = (file: ImageFile) => {
         setLogoFile(file);
     };
-    
+
     const handleGenerate = async () => {
         if (!imageFile) {
             setError('Please upload an image first.');
@@ -114,7 +126,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     body: JSON.stringify({ type: 'marketing' }),
                 });
                 const checkData = await checkRes.json();
-                
+
                 if (!checkData.success || !checkData.hasCredits) {
                     const errorMsg = checkData.message || 'You have no marketing poster credits remaining.';
                     setError(errorMsg);
@@ -140,45 +152,45 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
             try {
                 console.log('🔄 Starting cache process for marketing poster...');
                 console.log('📋 Poster URL type:', poster ? (poster.startsWith('data:') ? 'data URL' : 'remote URL') : 'null');
-                
+
                 let posterDataUrl = poster;
-                
+
                 // If poster is a URL (not already a data URL), convert it to data URL
                 if (poster && !poster.startsWith('data:')) {
                     console.log('🔄 Converting remote URL to data URL...');
                     console.log('📋 Poster URL:', poster.substring(0, 100));
-                    
+
                     // Check if URL is valid
                     if (!poster.startsWith('http://') && !poster.startsWith('https://')) {
                         console.error('❌ Invalid URL format:', poster.substring(0, 100));
                         throw new Error('Invalid URL format');
                     }
-                    
+
                     try {
                         console.log('📡 Fetching poster from URL...');
                         const response = await fetch(poster, {
                             mode: 'cors',
                             cache: 'no-cache'
                         });
-                        
+
                         if (!response.ok) {
                             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                         }
-                        
+
                         console.log('✅ Response OK, converting to blob...');
                         const blob = await response.blob();
                         console.log('✅ Fetched blob, size:', blob.size, 'bytes, type:', blob.type);
-                        
+
                         if (blob.size === 0) {
                             throw new Error('Blob is empty');
                         }
-                        
+
                         const reader = new FileReader();
                         posterDataUrl = await new Promise<string>((resolve, reject) => {
                             const timeout = setTimeout(() => {
                                 reject(new Error('FileReader timeout'));
                             }, 10000); // 10 second timeout
-                            
+
                             reader.onloadend = () => {
                                 clearTimeout(timeout);
                                 const result = reader.result as string;
@@ -216,20 +228,20 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     console.error('❌ Poster is null or empty');
                     throw new Error('Poster is null or empty');
                 }
-                
+
                 // Ensure we have a valid URL/data URL before caching
                 if (!posterDataUrl || posterDataUrl.length === 0) {
                     throw new Error('Invalid poster data URL');
                 }
-                
+
                 const cachePrompt = `Marketing poster${extraDetails ? ` - ${extraDetails.substring(0, 50)}` : ''}`;
                 console.log('💾 Adding to cache with prompt:', cachePrompt);
                 console.log('📋 Data URL length:', posterDataUrl?.length);
                 console.log('📋 Data URL preview:', posterDataUrl?.substring(0, 50) + '...');
-                
+
                 await addToCache(posterDataUrl, 'marketing', cachePrompt);
                 console.log('✅ Marketing poster added to cache successfully');
-                
+
                 // Verify it was cached
                 setTimeout(async () => {
                     try {
@@ -266,7 +278,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         },
                         body: JSON.stringify({ type: 'marketing' }),
                     });
-                    
+
                     // Update credits immediately after successful deduction
                     if (deductRes.ok) {
                         try {
@@ -311,26 +323,26 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
             setIsLoading(false);
         }
     };
-    
+
     const handleDownload = async () => {
         if (!generatedPoster) return;
-        
+
         try {
             // Convert data URL to blob for reliable download
             const response = await fetch(generatedPoster);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = `marketing-poster-${Date.now()}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up the blob URL
             window.URL.revokeObjectURL(url);
-            
+
             toast.success('Poster downloaded successfully!', {
                 position: 'top-right',
                 autoClose: 2000,
@@ -351,7 +363,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     return (
         <div className="w-full max-w-5xl mx-auto animate-fade-in-up">
             <div className="relative text-center mb-10">
-                 <button
+                <button
                     onClick={onExit}
                     className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
                     aria-label="Go back to studio selection"
@@ -362,19 +374,19 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                 <h2 className="font-serif-display text-3xl sm:text-4xl font-bold text-white">Marketing Studio</h2>
                 <p className="mt-2 text-neutral-300">Create promotional posters in a snap.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 <div className="bg-neutral-900/40 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl space-y-6">
                     <div>
                         <h3 className="font-semibold text-lg text-white mb-4 text-center">1. Upload Your Product</h3>
                         <ImageUploader onImageUpload={handleImageUpload} initialPreview={imageFile?.previewUrl} />
                     </div>
-                    
+
                     <div>
                         <h3 className="font-semibold text-lg text-white mb-4 text-center">2. Upload Your Logo (Optional)</h3>
-                         <div className="max-w-xs mx-auto">
-                            <ImageUploader 
-                                onImageUpload={handleLogoUpload} 
+                        <div className="max-w-xs mx-auto">
+                            <ImageUploader
+                                onImageUpload={handleLogoUpload}
                                 initialPreview={logoFile?.previewUrl}
                                 aspectRatio="aspect-square"
                                 title="UPLOAD LOGO"
@@ -382,7 +394,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             />
                         </div>
                     </div>
-                    
+
                     <div>
                         <label htmlFor="extra-details-textarea" className="font-semibold text-lg text-white mb-4 text-center block">
                             <h3>3. Add Extra Details (optional)</h3>
@@ -420,7 +432,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             </button>
                             {remainingCredits !== null && (
                                 <div className="mt-3 space-y-2">
-                                    <UnifiedCreditsSummaryBox 
+                                    <UnifiedCreditsSummaryBox
                                         totalCredits={totalCredits}
                                         usedPhotoshootCredits={usedPhotoshootCredits}
                                         usedMarketingCredits={usedMarketingCredits}

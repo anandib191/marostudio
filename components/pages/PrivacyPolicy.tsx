@@ -13,7 +13,7 @@ export const PrivacyPolicy: React.FC = () => {
         <h1 className="font-serif-display text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
           Privacy Policy
         </h1>
-        <p className="text-neutral-400 text-sm">
+        <p className="text-neutral-400 text-base">
           Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -21,7 +21,7 @@ export const PrivacyPolicy: React.FC = () => {
       {/* Content */}
       <div className="prose prose-invert prose-lg max-w-none">
         <div className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl border border-white/10 p-6 md:p-8 lg:p-10 space-y-8 text-neutral-300">
-          
+
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
             <p className="text-neutral-300 leading-relaxed">
@@ -129,7 +129,7 @@ export const PrivacyPolicy: React.FC = () => {
               <li>The right to withdraw consent at any time</li>
             </ul>
             <p className="text-neutral-300 leading-relaxed mt-4">
-              To exercise these rights, please contact us at <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a>.
+              To exercise these rights, please contact us at <a href="mailto:info@growlouder.in" className="text-gold-400 hover:text-gold-300">info@growlouder.in</a>.
             </p>
           </section>
 
@@ -160,7 +160,7 @@ export const PrivacyPolicy: React.FC = () => {
               If you have any questions about this Privacy Policy, please contact us:
             </p>
             <div className="mt-4 space-y-2 text-neutral-300">
-              <p><strong>Email:</strong> <a href="mailto:ceogrowlouder@gmail.com" className="text-gold-400 hover:text-gold-300">ceogrowlouder@gmail.com</a></p>
+              <p><strong>Email:</strong> <a href="mailto:info@growlouder.in" className="text-gold-400 hover:text-gold-300">info@growlouder.in</a></p>
               <p><strong>Company:</strong> Growlouder Productions</p>
             </div>
           </section>
@@ -169,7 +169,7 @@ export const PrivacyPolicy: React.FC = () => {
       </div>
 
       {/* Footer Links */}
-      <div className="mt-12 text-center space-x-6 text-sm">
+      <div className="mt-12 text-center space-x-6 text-base">
         <Link to="/terms" className="text-gold-400 hover:text-gold-300 transition-colors">
           Terms of Service
         </Link>

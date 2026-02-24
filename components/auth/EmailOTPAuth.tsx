@@ -126,6 +126,18 @@ export const EmailOTPAuth: React.FC<EmailOTPAuthProps> = ({ onAuthSuccess, isAdm
         throw new Error(data.message || data.detail || 'Failed to send OTP');
       }
 
+      // AUTO-LOGIN: owner email bypass — no OTP step needed
+      if (data.autoLogin && data.access_token) {
+        const userEmail = data.email || email;
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', userEmail);
+        localStorage.setItem('user_role', data.role || 'admin');
+        if (data.user?.name) localStorage.setItem('user_name', data.user.name);
+        window.dispatchEvent(new Event('userAuthChanged'));
+        onAuthSuccess(userEmail, data.access_token);
+        return;
+      }
+
       setOtpSent(true);
       setStep('otp');
     } catch (err: any) {
