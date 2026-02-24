@@ -10,8 +10,12 @@ export const YouTubeEmbedSection: React.FC = () => {
       <div className="container-lg3 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="youtube-embed-header text-center mb-12 md:mb-16 animate-fade-in-up">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold text-white leading-tight tracking-tight">
-            YouTube <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Videos</span>
+            Learn How to Get{' '}
+            <span className="bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Max Results</span>
           </h2>
+          <p className="mt-4 text-neutral-400 text-lg max-w-2xl mx-auto">
+            Watch these quick demos to master the platform and create stunning visuals for your brand.
+          </p>
         </div>
 
         {/* Videos Display */}
@@ -28,7 +32,7 @@ export const YouTubeEmbedSection: React.FC = () => {
               ></iframe>
             </div>
             <div className="video-info px-2">
-              <h3 className="text-xl font-semibold text-white leading-tight">Video 1</h3>
+              <h3 className="text-xl font-semibold text-white leading-tight">Getting Started with MARO Studio</h3>
             </div>
           </div>
 
@@ -44,7 +48,7 @@ export const YouTubeEmbedSection: React.FC = () => {
               ></iframe>
             </div>
             <div className="video-info px-2">
-              <h3 className="text-xl font-semibold text-white leading-tight">Video 2</h3>
+              <h3 className="text-xl font-semibold text-white leading-tight">Creating Pro-Level Photoshoots</h3>
             </div>
           </div>
         </div>

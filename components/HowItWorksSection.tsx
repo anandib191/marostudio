@@ -117,11 +117,10 @@ export const HowItWorksSection: React.FC = () => {
             </div>
             <div className="upload-area flex-1 flex items-center overflow-hidden">
               <div
-                className={`upload-box w-full h-full max-h-full rounded-xl border-2 border-dashed transition-all duration-500 flex items-center justify-center ${
-                  uploadedImage
-                    ? "border-green-500 bg-green-500/10 p-4"
-                    : "border-white/20 bg-neutral-900 p-8"
-                }`}
+                className={`upload-box w-full h-full max-h-full rounded-xl border-2 border-dashed transition-all duration-500 flex items-center justify-center ${uploadedImage
+                  ? "border-green-500 bg-green-500/10 p-4"
+                  : "border-white/20 bg-neutral-900 p-8"
+                  }`}
               >
                 {!uploadedImage ? (
                   <div className="upload-placeholder animate-fade-in text-center">
@@ -148,18 +147,17 @@ export const HowItWorksSection: React.FC = () => {
                 ) : (
                   <div className="uploaded-preview relative w-full max-w-sm h-full max-h-[420px] mx-auto rounded-lg overflow-hidden animate-fade-in-scale bg-neutral-800 shadow-xl">
                     <img
-                      src="/assets/images/flow/img_upload.jpg"
+                      src="/assets/images/flow/webp/img_upload.webp"
                       alt="Uploaded"
                       className="w-full h-full object-cover"
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        console.error(
-                          "Failed to load img_upload.jpg, trying .png",
-                        );
-                        e.currentTarget.src =
-                          "/assets/images/flow/img_upload.png";
-                        e.currentTarget.onerror = () => {
+                        const currentSrc = e.currentTarget.src;
+                        if (currentSrc.includes('/webp/')) {
+                          e.currentTarget.src = "/assets/images/flow/img_upload.jpg";
+                        } else if (currentSrc.endsWith('.jpg')) {
+                          e.currentTarget.src = "/assets/images/flow/img_upload.png";
                           console.error("All formats failed for img_upload");
                           e.currentTarget.src =
                             "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop";
@@ -205,11 +203,10 @@ export const HowItWorksSection: React.FC = () => {
                     e.preventDefault();
                     setSelectedButton(index);
                   }}
-                  className={`theme-button how-it-works-theme-box h-[60px] rounded-lg border-2 transition-all duration-300 cursor-pointer relative flex items-center justify-center font-semibold text-xs text-white ${
-                    selectedButton === index
-                      ? "how-it-works-theme-box-selected scale-105"
-                      : ""
-                  }`}
+                  className={`theme-button how-it-works-theme-box h-[60px] rounded-lg border-2 transition-all duration-300 cursor-pointer relative flex items-center justify-center font-semibold text-xs text-white ${selectedButton === index
+                    ? "how-it-works-theme-box-selected scale-105"
+                    : ""
+                    }`}
                   style={
                     selectedButton === index
                       ? { animation: "selectButton 0.4s ease-out" }
@@ -380,7 +377,7 @@ export const HowItWorksSection: React.FC = () => {
               </div>
               <div className="video-info px-2">
                 <h3 className="text-xl font-semibold text-white leading-tight">
-                  Video 1
+                  Getting Started with MARO Studio
                 </h3>
               </div>
             </div>
@@ -398,7 +395,7 @@ export const HowItWorksSection: React.FC = () => {
               </div>
               <div className="video-info px-2">
                 <h3 className="text-xl font-semibold text-white leading-tight">
-                  Video 2
+                  Creating Pro-Level Photoshoots
                 </h3>
               </div>
             </div>

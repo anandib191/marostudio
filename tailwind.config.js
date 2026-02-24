@@ -31,6 +31,7 @@ export default {
       animation: {
         "fade-in-up": "fadeInUp 0.6s ease-out",
         "fade-in": "fadeIn 0.4s ease-out",
+        "shake": "shake 0.5s ease-in-out",
       },
       keyframes: {
         fadeInUp: {
@@ -50,6 +51,15 @@ export default {
           "100%": {
             opacity: "1",
           },
+        },
+        shake: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "15%": { transform: "translateX(-4px)" },
+          "30%": { transform: "translateX(4px)" },
+          "45%": { transform: "translateX(-3px)" },
+          "60%": { transform: "translateX(3px)" },
+          "75%": { transform: "translateX(-1px)" },
+          "90%": { transform: "translateX(1px)" },
         },
       },
     },

@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import authTestRoutes from "./routes/auth-test.js";
 import adminRoutes from "./routes/admin.js";
 import paymentRoutes from "./routes/payment.js";
 import pricePlansRoutes from "./routes/pricePlans.js";
@@ -31,15 +32,24 @@ dotenv.config({ path: join(__dirname, ".env") });
 // Check if running on Vercel (serverless)
 const isVercel = process.env.VERCEL === "1";
 
+// Check test mode flag
+const isTestMode = process.env.TEST_MODE === "true";
+
 // Validate environment variables
-// Only validate if not on Vercel (Vercel has its own env management)
-if (!isVercel) {
+// Only validate if not on Vercel and not in test mode
+if (!isVercel && !isTestMode) {
   validateEnv();
 }
 
-// MongoDB connection - lazy load for serverless
+if (isTestMode) {
+  console.log("🧪 TEST MODE ENABLED — Using in-memory auth, no MongoDB required.");
+  console.log("   Any email works. OTP is always: 123456");
+}
+
+// MongoDB connection - lazy load for serverless (skipped in TEST_MODE)
 let dbConnected = false;
 const ensureDBConnection = async () => {
+  if (isTestMode) return; // Skip DB in test mode
   if (!dbConnected) {
     try {
       await connectDB();
@@ -83,30 +93,30 @@ app.use((req, res, next) => {
   res.setHeader(
     "Permissions-Policy",
     "accelerometer=(), " +
-      "ambient-light-sensor=(), " +
-      "autoplay=(), " +
-      "camera=(), " +
-      "cross-origin-isolated=(), " +
-      "display-capture=(), " +
-      "document-domain=(), " +
-      "encrypted-media=(), " +
-      "execution-while-not-rendered=(), " +
-      "execution-while-out-of-viewport=(), " +
-      "fullscreen=(self), " +
-      "geolocation=(), " +
-      "gyroscope=(), " +
-      "magnetometer=(), " +
-      "microphone=(), " +
-      "midi=(), " +
-      "navigation-override=(), " +
-      "payment=(self), " +
-      "picture-in-picture=(self), " +
-      "publickey-credentials-get=(), " +
-      "screen-wake-lock=(), " +
-      "sync-xhr=(), " +
-      "usb=(), " +
-      "web-share=(), " +
-      "xr-spatial-tracking=()",
+    "ambient-light-sensor=(), " +
+    "autoplay=(), " +
+    "camera=(), " +
+    "cross-origin-isolated=(), " +
+    "display-capture=(), " +
+    "document-domain=(), " +
+    "encrypted-media=(), " +
+    "execution-while-not-rendered=(), " +
+    "execution-while-out-of-viewport=(), " +
+    "fullscreen=(self), " +
+    "geolocation=(), " +
+    "gyroscope=(), " +
+    "magnetometer=(), " +
+    "microphone=(), " +
+    "midi=(), " +
+    "navigation-override=(), " +
+    "payment=(self), " +
+    "picture-in-picture=(self), " +
+    "publickey-credentials-get=(), " +
+    "screen-wake-lock=(), " +
+    "sync-xhr=(), " +
+    "usb=(), " +
+    "web-share=(), " +
+    "xr-spatial-tracking=()",
   );
   next();
 });
@@ -157,10 +167,10 @@ if (!isVercel) {
 }
 
 // Middleware to ensure DB connection before handling API requests
-// Skip DB check for health endpoint
+// Skip DB check for health endpoint and test mode
 app.use(async (req, res, next) => {
-  // Skip DB connection for health check
-  if (req.path === "/health" || req.path === "/") {
+  // Skip DB connection for health check or test mode
+  if (req.path === "/health" || req.path === "/" || isTestMode) {
     return next();
   }
 
@@ -177,10 +187,11 @@ app.use(async (req, res, next) => {
 
 // Routes (Bladdit image gen is called directly from frontend → https://api.bladdit.com/v1/generate, no backend proxy)
 // Apply authLimiter to auth routes (OTP has its own limiter within the route)
-if (!isVercel) {
+if (!isVercel && !isTestMode) {
   app.use("/api/auth", authLimiter);
 }
-app.use("/api/auth", authRoutes);
+// In TEST MODE: use in-memory auth routes (no DB, no email, OTP=123456)
+app.use("/api/auth", isTestMode ? authTestRoutes : authRoutes);
 // Admin routes: NO rate limiting at all (admin users can work freely)
 // Rate limiting is handled inside admin routes middleware (protect + admin)
 // Admin users skip rate limiting completely in rateLimiter middleware

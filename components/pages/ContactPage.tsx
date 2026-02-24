@@ -15,17 +15,17 @@ export const ContactPage: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const fullPhoneNumber = `${selectedCountry.code}${phoneNumber}`;
-        
+
         // Get WhatsApp number from environment variable
-        const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '919876543210';
-        
+        const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '919016758329';
+
         // Format message with prefix
         const messageText = `Query from MARO Studio\n\nName: ${fullName}\nEmail: ${email}\nCompany: ${companyName}\nPhone: ${fullPhoneNumber}\n\nMessage: ${message}`;
-        
+
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`;
         window.open(whatsappUrl, '_blank');
-        
+
         // Reset form fields after opening WhatsApp
         setFullName('');
         setCompanyName('');
@@ -51,25 +51,27 @@ export const ContactPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-20 items-start animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     {/* Left Column: Info */}
-                    <div className="space-y-8 text-center lg:text-left">
-                        <Logo />
-                        <p className="max-w-md text-neutral-500 font-light text-lg leading-relaxed mx-auto lg:mx-0">
+                    <div className="space-y-6 text-center lg:text-left flex flex-col justify-center">
+                        <div>
+                            <Logo />
+                        </div>
+                        <p className="max-w-sm text-neutral-400 font-light text-lg leading-relaxed mx-auto lg:mx-0">
                             The ultimate AI photography engine for modern brands. High-fidelity visuals without the studio logistics.
                         </p>
-                        <div className="pt-4 flex flex-col gap-4">
-                            <a href="mailto:ceogrowlouder@gmail.com" className="flex items-center gap-4 text-neutral-300 hover:text-gold-400 transition-colors group">
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-gold-500/10">
-                                    <EnvelopeIcon className="w-5 h-5" />
+                        <div className="pt-2 flex flex-col gap-5">
+                            <a href="mailto:info@growlouder.in" className="inline-flex items-center gap-4 text-neutral-300 hover:text-white transition-colors group w-fit mx-auto lg:mx-0">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-gold-500/20 group-hover:shadow-[0_0_15px_rgba(240,196,100,0.2)] transition-all duration-300">
+                                    <EnvelopeIcon className="w-5 h-5 text-gold-400" />
                                 </div>
-                                <span className="font-semibold tracking-wider text-sm">ceogrowlouder@gmail.com</span>
+                                <span className="font-medium tracking-wide text-lg">info@growlouder.in</span>
                             </a>
-                            <div className="flex items-center gap-4 text-neutral-300">
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="inline-flex items-center gap-4 text-neutral-300 w-fit mx-auto lg:mx-0">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </div>
-                                <span className="font-semibold tracking-wider text-sm">+91 9876543210</span>
+                                <span className="font-medium tracking-wide text-lg">+91 9016758329</span>
                             </div>
                         </div>
                     </div>
@@ -77,7 +79,7 @@ export const ContactPage: React.FC = () => {
                     {/* Right Column: Form */}
                     <div className="bg-neutral-900/40 p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl backdrop-blur-xl">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <input
                                     type="text"
                                     name="fullName"
@@ -85,7 +87,7 @@ export const ContactPage: React.FC = () => {
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-black/60 border border-white/5 rounded-xl py-4 px-6 text-white text-base focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 focus:shadow-[0_0_15px_rgba(240,196,100,0.15),inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-300 placeholder:text-neutral-600 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
                                 />
                                 <input
                                     type="email"
@@ -94,7 +96,7 @@ export const ContactPage: React.FC = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-black/60 border border-white/5 rounded-xl py-4 px-6 text-white text-base focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 focus:shadow-[0_0_15px_rgba(240,196,100,0.15),inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-300 placeholder:text-neutral-600 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
                                 />
                             </div>
                             <input
@@ -104,28 +106,30 @@ export const ContactPage: React.FC = () => {
                                 value={companyName}
                                 onChange={(e) => setCompanyName(e.target.value)}
                                 required
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700"
+                                className="w-full bg-black/60 border border-white/5 rounded-xl py-4 px-6 text-white text-base focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 focus:shadow-[0_0_15px_rgba(240,196,100,0.15),inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-300 placeholder:text-neutral-600 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
                             />
-                            <PhoneInput
-                                selectedCountry={selectedCountry}
-                                onCountryChange={setSelectedCountry}
-                                phoneNumber={phoneNumber}
-                                onPhoneNumberChange={setPhoneNumber}
-                            />
-                                <label htmlFor="message-textarea" className="sr-only">Message</label>
-                                <textarea
-                                    id="message-textarea"
-                                    name="message"
-                                    placeholder="How can we help your brand?"
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    rows={3}
-                                    required
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500 transition-all placeholder:text-neutral-700 resize-none"
+                            <div className="group">
+                                <PhoneInput
+                                    selectedCountry={selectedCountry}
+                                    onCountryChange={setSelectedCountry}
+                                    phoneNumber={phoneNumber}
+                                    onPhoneNumberChange={setPhoneNumber}
                                 />
+                            </div>
+                            <label htmlFor="message-textarea" className="sr-only">Message</label>
+                            <textarea
+                                id="message-textarea"
+                                name="message"
+                                placeholder="How can we help your brand?"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                rows={3}
+                                required
+                                className="w-full bg-black/60 border border-white/5 rounded-xl py-4 px-6 text-white text-base focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 focus:shadow-[0_0_15px_rgba(240,196,100,0.15),inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-300 placeholder:text-neutral-600 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)] resize-none"
+                            />
                             <button
                                 type="submit"
-                                className="btn-gradient-gold w-full text-[11px] uppercase tracking-[0.3em] py-5 rounded-xl active:scale-[0.98]"
+                                className="btn-gradient-gold w-full text-sm uppercase tracking-[0.2em] py-5 rounded-xl active:scale-[0.98]"
                             >
                                 Send Inquiry
                             </button>

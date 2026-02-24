@@ -25,13 +25,13 @@ export const GenerateContentSection: React.FC = () => {
 
   // Generate 3 images per category using new folder structure
   const generateImageArray = () => {
-    const images: Array<{ 
-      id: string; 
+    const images: Array<{
+      id: string;
       folder: string;
       category: string;
       imageNumber: number;
     }> = [];
-    
+
     categoryConfig.forEach((config) => {
       for (let i = 1; i <= 3; i++) {
         images.push({
@@ -42,7 +42,7 @@ export const GenerateContentSection: React.FC = () => {
         });
       }
     });
-    
+
     return images;
   };
 
@@ -80,13 +80,13 @@ export const GenerateContentSection: React.FC = () => {
     const categoryInterval = setInterval(() => {
       if (!isHovered) {
         setIsTransitioning(true);
-        
+
         setTimeout(() => {
           const currentIndex = categories.indexOf(activeCategory);
           const nextIndex = (currentIndex + 1) % categories.length;
           setActiveCategory(categories[nextIndex]);
           imageIndex = 0; // Reset image index for new category
-          
+
           // Reset swiper to first slide of new category
           setTimeout(() => {
             if (swiperRef.current && swiperRef.current.swiper) {
@@ -124,7 +124,7 @@ export const GenerateContentSection: React.FC = () => {
 
   const handleCategoryClick = (category: string) => {
     if (category === activeCategory) return;
-    
+
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveCategory(category);
@@ -144,7 +144,7 @@ export const GenerateContentSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-4xl font-bold text-white mb-4">
-          Turn Products into <span className="scroll-stoppers-gradient-text bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Scroll-Stoppers</span>
+            Turn Products into <span className="scroll-stoppers-gradient-text bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">Scroll-Stoppers</span>
           </h2>
           <p className="text-lg text-neutral-400">
             Create studio quality visuals with advanced AI that transforms your ideas into stunning photographs.
@@ -157,11 +157,10 @@ export const GenerateContentSection: React.FC = () => {
             <button
               key={category}
               onClick={() => handleCategoryClick(category)}
-              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden transform hover:scale-105 ${
-                activeCategory === category
-                  ? 'generate-active-cat-btn text-white shadow-lg shadow-gold-500/50 scale-105'
-                  : 'generate-inactive-cat-btn text-neutral-300 hover:bg-neutral-700/80 hover:shadow-md'
-              }`}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden transform hover:scale-105 ${activeCategory === category
+                ? 'generate-active-cat-btn text-white shadow-lg shadow-gold-500/50 scale-105'
+                : 'generate-inactive-cat-btn text-neutral-300 hover:bg-neutral-700/80 hover:shadow-md'
+                }`}
             >
               <span className="relative z-10">{category}</span>
               {activeCategory === category && (
@@ -176,10 +175,9 @@ export const GenerateContentSection: React.FC = () => {
       </div>
 
       {/* Carousel */}
-      <div 
-        className={`max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-300 flex justify-center ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
-        }`}
+      <div
+        className={`max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-300 flex justify-center ${isTransitioning ? 'opacity-0' : 'opacity-100'
+          }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -217,9 +215,8 @@ export const GenerateContentSection: React.FC = () => {
         >
           {filteredImages.map((image, index) => {
             const isLoaded = loadedImages.has(image.id);
-            const basePath = getImagePath(image.folder, image.imageNumber);
-            console.log(`Loading image: ${basePath}.png`);
-            
+            const webpPath = getWebPImagePath(image.folder, image.imageNumber);
+
             return (
               <SwiperSlide key={image.id}>
                 <div className="image-card group">
@@ -234,12 +231,12 @@ export const GenerateContentSection: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Actual Image with Lazy Loading - WebP with fallback */}
                     <picture>
                       <source srcSet={getWebPImagePath(image.folder, image.imageNumber)} type="image/webp" />
                       <img
-                        src={`${basePath}.png`}
+                        src={webpPath}
                         alt={`${image.category} - Image ${image.imageNumber}`}
                         className={`carousel-image ${isLoaded ? 'loaded' : 'loading'}`}
                         loading="lazy"
@@ -247,13 +244,12 @@ export const GenerateContentSection: React.FC = () => {
                         onLoad={() => handleImageLoad(image.id)}
                         onError={(e) => {
                           const currentSrc = e.currentTarget.src;
-                          console.error(`Failed to load: ${currentSrc}`);
-                          
-                          // Try different formats
-                          if (currentSrc.endsWith('.png')) {
+                          const basePath = getImagePath(image.folder, image.imageNumber);
+                          // Try different formats as fallback
+                          if (currentSrc.includes('/webp/')) {
+                            e.currentTarget.src = `${basePath}.png`;
+                          } else if (currentSrc.endsWith('.png')) {
                             e.currentTarget.src = `${basePath}.jpg`;
-                          } else if (currentSrc.endsWith('.jpg')) {
-                            e.currentTarget.src = `${basePath}.jpeg`;
                           } else {
                             // All failed, use fallback
                             e.currentTarget.src = 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=800&auto=format&fit=crop';

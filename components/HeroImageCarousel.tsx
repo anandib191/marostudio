@@ -24,11 +24,11 @@ export const HeroImageCarousel: React.FC = () => {
   // Preload current set of images
   const preloadVisibleImages = (mainIndex: number) => {
     const main = mainImages[mainIndex];
-    
+
     // Preload current main image (all 3 variations)
     main.variations.forEach((variation) => {
-      const imgPath = `/assets/images/hero-carousel/${main.id}/${variation}.png`;
-      
+      const imgPath = `/assets/images/hero-carousel/${main.id}/webp/${variation}.webp`;
+
       const img = new Image();
       img.src = imgPath;
       img.onload = () => {
@@ -62,19 +62,19 @@ export const HeroImageCarousel: React.FC = () => {
     const timer = setInterval(() => {
       setCurrentVariationIndex((prevVariation) => {
         const nextVariation = prevVariation + 1;
-        
+
         // If we've shown all 3 variations, move to next main image
         if (nextVariation >= 3) {
           // Preload next set of images
           const nextMain = (currentMainIndex + 1) % mainImages.length;
           preloadVisibleImages(nextMain);
-          
+
           // Change main image instantly
           setCurrentMainIndex(nextMain);
-          
+
           return 0; // Reset variation index
         }
-        
+
         return nextVariation;
       });
     }, 2000); // 2 seconds per variation
@@ -130,7 +130,7 @@ export const HeroImageCarousel: React.FC = () => {
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <img
               key={`before-${currentMainIndex}`}
-              src={getBeforeImagePath(currentMainIndex)}
+              src={getWebPBeforeImagePath(currentMainIndex)}
               alt={`Before - ${mainImages[currentMainIndex].id}`}
               className="card-image w-full h-full object-cover opacity-0 transition-opacity duration-300"
               loading="eager"
@@ -138,9 +138,13 @@ export const HeroImageCarousel: React.FC = () => {
                 e.currentTarget.style.opacity = '1';
               }}
               onError={(e) => {
-                console.error(`Failed to load: ${getBeforeImagePath(currentMainIndex)}`);
-                e.currentTarget.src = fallbackImage;
-                e.currentTarget.style.opacity = '1';
+                const currentSrc = e.currentTarget.src;
+                if (currentSrc.includes('/webp/')) {
+                  e.currentTarget.src = getBeforeImagePath(currentMainIndex);
+                } else {
+                  e.currentTarget.src = fallbackImage;
+                  e.currentTarget.style.opacity = '1';
+                }
               }}
             />
           </div>
@@ -181,11 +185,10 @@ export const HeroImageCarousel: React.FC = () => {
             {[0, 1, 2].map((idx) => (
               <span
                 key={idx}
-                className={`variation-dot w-2 h-2 rounded-full transition-all ${
-                  idx === currentVariationIndex 
-                    ? 'bg-gold-400 w-6 rounded-sm' 
+                className={`variation-dot w-2 h-2 rounded-full transition-all ${idx === currentVariationIndex
+                    ? 'bg-gold-400 w-6 rounded-sm'
                     : 'bg-white'
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -199,7 +202,7 @@ export const HeroImageCarousel: React.FC = () => {
           <div className="card-image-wrapper w-full h-full relative overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900">
             <img
               key={`before-mobile-${currentMainIndex}`}
-              src={getBeforeImagePath(currentMainIndex)}
+              src={getWebPBeforeImagePath(currentMainIndex)}
               alt={`Before - ${mainImages[currentMainIndex].id}`}
               className="card-image w-full h-full object-cover opacity-0 transition-opacity duration-300"
               loading="eager"
@@ -207,9 +210,13 @@ export const HeroImageCarousel: React.FC = () => {
                 e.currentTarget.style.opacity = '1';
               }}
               onError={(e) => {
-                console.error(`Failed to load: ${getBeforeImagePath(currentMainIndex)}`);
-                e.currentTarget.src = fallbackImage;
-                e.currentTarget.style.opacity = '1';
+                const currentSrc = e.currentTarget.src;
+                if (currentSrc.includes('/webp/')) {
+                  e.currentTarget.src = getBeforeImagePath(currentMainIndex);
+                } else {
+                  e.currentTarget.src = fallbackImage;
+                  e.currentTarget.style.opacity = '1';
+                }
               }}
             />
           </div>
@@ -250,11 +257,10 @@ export const HeroImageCarousel: React.FC = () => {
             {[0, 1, 2].map((idx) => (
               <span
                 key={idx}
-                className={`variation-dot w-2 h-2 rounded-full transition-all ${
-                  idx === currentVariationIndex 
-                    ? 'bg-gold-400 w-6 rounded-sm' 
+                className={`variation-dot w-2 h-2 rounded-full transition-all ${idx === currentVariationIndex
+                    ? 'bg-gold-400 w-6 rounded-sm'
                     : 'bg-white'
-                }`}
+                  }`}
               />
             ))}
           </div>

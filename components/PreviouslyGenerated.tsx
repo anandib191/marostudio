@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 import { toast } from 'react-toastify';
 import { getCachedItems, removeFromCache, clearCache, getCacheStats, type CachedItem } from '../utils/cacheManager';
+import { StudioSidebar } from './StudioSidebar';
 
 export const PreviouslyGenerated: React.FC = () => {
   const navigate = useNavigate();
@@ -16,19 +17,19 @@ export const PreviouslyGenerated: React.FC = () => {
 
   useEffect(() => {
     loadCachedItems();
-    
+
     // Reload when page becomes visible (user navigates back)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadCachedItems();
       }
     };
-    
+
     // Reload when window gets focus (user switches back to tab)
     const handleFocus = () => {
       loadCachedItems();
     };
-    
+
     // Listen for storage changes (cache updates from other tabs/components)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'generated_cache') {
@@ -36,18 +37,18 @@ export const PreviouslyGenerated: React.FC = () => {
         loadCachedItems();
       }
     };
-    
+
     // Listen for custom cache update events (same-tab updates)
     const handleCacheUpdate = () => {
       console.log('📦 Custom cache update event detected, reloading cache...');
       loadCachedItems();
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cacheUpdated', handleCacheUpdate);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
@@ -65,12 +66,12 @@ export const PreviouslyGenerated: React.FC = () => {
       // Sort by timestamp (newest first)
       const sortedItems = imageItems.sort((a, b) => b.timestamp - a.timestamp);
       setItems(sortedItems);
-      
+
       // Update cache stats
       try {
         const stats = await getCacheStats();
         setCacheStats(stats);
-        
+
         console.log('✅ Loaded cached images:', sortedItems.length);
         console.log('📋 Items breakdown:', {
           total: sortedItems.length,
@@ -171,23 +172,24 @@ export const PreviouslyGenerated: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
+    <div className="flex w-full bg-black text-white" style={{ minHeight: 'calc(100vh - 56px)' }}>
       {/* Background */}
       <div className="fixed inset-0 z-[-1]">
         <div className="absolute inset-0 bg-gradient-to-b from-gold-950/20 via-black to-black"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(230,183,30,0.08),transparent_50%)]"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" style={{ paddingTop: 0, marginTop: 0 }}>
+      <StudioSidebar
+        activeStudio={null}
+        currentStep={-1}
+        onSelectStudio={() => { }}
+        onJumpToStep={() => { }}
+        onExit={() => navigate('/studio')}
+      />
+
+      <main className="flex-1 min-w-0 overflow-x-hidden pt-8 px-4 sm:px-6 lg:px-14 pb-20">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/studio')}
-            className="flex items-center gap-2 text-neutral-300 hover:text-white transition-colors mb-6"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            <span>Back to Studio</span>
-          </button>
 
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -302,11 +304,10 @@ export const PreviouslyGenerated: React.FC = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      item.studioType === 'photo' 
-                        ? 'bg-gold-500/20 text-gold-300'
-                        : 'bg-amber-500/20 text-amber-300'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.studioType === 'photo'
+                      ? 'bg-gold-500/20 text-gold-300'
+                      : 'bg-amber-500/20 text-amber-300'
+                      }`}>
                       {item.studioType === 'photo' ? 'Photo Studio' : 'Marketing Studio'}
                     </span>
                     <button
@@ -331,7 +332,7 @@ export const PreviouslyGenerated: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Preview Modal - Blurred Overlay (Navbar Hidden) - Scrollable */}
       {selectedItem && (
@@ -373,7 +374,7 @@ export const PreviouslyGenerated: React.FC = () => {
 
             {/* Content Container - Responsive with proper spacing for close button */}
             <div className="flex flex-col items-center justify-center min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16 px-4 sm:px-6">
-              <div 
+              <div
                 className="relative max-w-6xl w-full flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()}
               >

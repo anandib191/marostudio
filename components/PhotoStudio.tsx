@@ -13,7 +13,7 @@ import { LoadingScreen } from './LoadingScreen';
 import { generateCatalogueImages, identifyProduct, generateOtherProductImages } from '../services/geminiServiceold';
 import { DYNAMIC_ORNAMENT_PROMPTS_CONFIG } from '../services/prompts/women';
 import { STYLE_OPTIONS } from '../services/styles';
-import { ImageFile, ProductType, Category, ApparelStyle, AspectRatio, BackgroundType } from '../types';
+import { ImageFile, ProductType, Category, ApparelStyle, AspectRatio, BackgroundType, ImageQuality } from '../types';
 import { GridIcon } from './icons/GridIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
 import { InfoIcon } from './icons/InfoIcon';
@@ -28,7 +28,7 @@ import { WatchIcon } from './icons/WatchIcon';
 import { BeltIcon } from './icons/BeltIcon';
 import { ToysIcon } from './icons/ToysIcon';
 import { GlassButton } from './ui/GlassButton';
-import { UploadStep } from './UploadStep';
+import { LimelightNav } from './ui/LimelightNav';
 import { EcomCrestIcon } from './icons/EcomCrestIcon';
 import { HomeAndKitchenIcon } from './icons/HomeAndKitchenIcon';
 import { ElectronicsIcon } from './icons/ElectronicsIcon';
@@ -201,21 +201,101 @@ const ASPECT_RATIOS: { id: AspectRatio; label: string; icon?: React.FC<{ classNa
 const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
     { id: 'studio', label: 'Neutral Studio' },
     { id: 'white', label: 'Solid White' },
-    { id: 'black', label: 'Deep Black' },
-    { id: 'transparent', label: 'Isolated (Cutout)' },
-    { id: 'workspace', label: 'Creative Workspace' },
-    { id: 'city', label: 'Urban / Cityscape' },
-    { id: 'historic', label: 'Historic Texture' },
-    { id: 'custom', label: 'Custom Prompt...' },
+    { id: 'black', label: 'Solid Black' },
+    { id: 'workspace', label: 'Lifestyle Workspace' },
+    { id: 'city', label: 'Urban / City' },
+    { id: 'historic', label: 'Historical / Heritage' },
+    { id: 'custom', label: 'Custom Prompt' },
+];
+
+const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
+    { id: 'hd', label: 'HD' },
+    { id: '2k', label: '2K' },
+    { id: '4k', label: '4K' },
 ];
 
 // --- Sub-Components ---
 
-const CategorySelection: React.FC<{ 
-    onSelectionComplete: (productTypes: ProductTypeOption[], promptCategory: Category) => void; 
+// Image sets for each category/subcategory card
+const CATEGORY_IMAGES: Record<string, string[]> = {
+    // Top-level categories
+    fashion: [
+        '/assets/images/image_carousel/fashion/webp/fashion-1.webp',
+        '/assets/images/image_carousel/fashion/webp/fashion-2.webp',
+        '/assets/images/image_carousel/fashion/webp/fashion-3.webp',
+    ],
+    accessories: [
+        '/assets/images/image_carousel/accessories/webp/accessories-1.webp',
+        '/assets/images/image_carousel/accessories/webp/accessories-2.webp',
+        '/assets/images/image_carousel/accessories/webp/accessories-3.webp',
+    ],
+    ecommerce: [
+        '/assets/images/image_carousel/product/webp/product-1.webp',
+        '/assets/images/image_carousel/product/webp/product-2.webp',
+        '/assets/images/image_carousel/product/webp/product-3.webp',
+    ],
+    // Fashion sub-categories - correct gender mapping
+    women: [
+        '/assets/images/image_carousel/fashion/webp/fashion-1.webp',
+        '/assets/images/hero-carousel/a4/webp/a4-1.webp',
+        '/assets/images/hero-carousel/a2/webp/a2-1.webp',
+    ],
+    men: [
+        '/assets/images/image_carousel/fashion/webp/fashion-2.webp',
+        '/assets/images/hero-carousel/a4/webp/a4-2.webp',
+        '/assets/images/hero-carousel/a4/webp/a4-3.webp',
+    ],
+    kids: [
+        '/assets/images/hero-carousel/a1/webp/a1-1.webp',
+        '/assets/images/hero-carousel/a3/webp/a3-1.webp',
+        '/assets/images/image_carousel/fashion/webp/fashion-3.webp',
+    ],
+    // Kids sub-categories
+    boy: [
+        '/assets/images/hero-carousel/a1/webp/a1-1.webp',
+        '/assets/images/hero-carousel/a1/webp/a1-2.webp',
+        '/assets/images/hero-carousel/a1/webp/a1-3.webp',
+    ],
+    girl: [
+        '/assets/images/hero-carousel/a3/webp/a3-1.webp',
+        '/assets/images/hero-carousel/a3/webp/a3-2.webp',
+        '/assets/images/image_carousel/fashion/webp/fashion-3.webp',
+    ],
+    // Deeper sub-categories
+    purse: [
+        '/assets/images/image_carousel/accessories/webp/accessories-1.webp',
+        '/assets/images/image_carousel/accessories/webp/accessories-2.webp',
+        '/assets/images/image_carousel/accessories/webp/accessories-3.webp',
+    ],
+    perfume: [
+        '/assets/images/hero-carousel/a5/webp/a5-1.webp',
+        '/assets/images/hero-carousel/a5/webp/a5-2.webp',
+        '/assets/images/hero-carousel/a5/webp/a5-3.webp',
+    ],
+    ornaments: [
+        '/assets/images/hero-carousel/a2/webp/a2-1.webp',
+        '/assets/images/hero-carousel/a2/webp/a2-2.webp',
+        '/assets/images/hero-carousel/a2/webp/a2-3.webp',
+    ],
+};
+
+// Shared hook for cycling images
+const useCycleIndex = (length: number, intervalMs = 2500) => {
+    const [index, setIndex] = useState(0);
+    useEffect(() => {
+        if (length <= 1) return;
+        const timer = setInterval(() => setIndex(prev => (prev + 1) % length), intervalMs);
+        return () => clearInterval(timer);
+    }, [length, intervalMs]);
+    return index;
+};
+
+const CategorySelection: React.FC<{
+    onSelectionComplete: (productTypes: ProductTypeOption[], promptCategory: Category) => void;
     onBack: () => void;
 }> = ({ onSelectionComplete, onBack }) => {
     const [path, setPath] = useState<string[]>([]);
+    const cycleIndex = useCycleIndex(3, 2500);
 
     const getCurrentNode = () => {
         let node: { subCategories?: Record<string, CategoryNode>; name: string } = { subCategories: CATEGORY_DATA, name: "Main" };
@@ -235,7 +315,7 @@ const CategorySelection: React.FC<{
         for (let i = 1; i < newPath.length; i++) {
             currentNode = currentNode?.subCategories?.[newPath[i]];
         }
-        
+
         if (currentNode?.productTypes && currentNode.promptCategory) {
             onSelectionComplete(currentNode.productTypes, currentNode.promptCategory);
         } else if (currentNode?.subCategories) {
@@ -253,13 +333,13 @@ const CategorySelection: React.FC<{
 
     const currentNode = getCurrentNode();
     const options = currentNode?.subCategories ? Object.entries(currentNode.subCategories) : [];
-    
+
     const title = path.length > 0 ? `${currentNode?.name}` : "Studio Setup";
     const subtitle = path.length === 0 ? "Select your production track" : `Select specialized category`;
 
     return (
         <div className="w-full max-w-6xl mx-auto animate-fade-in-up">
-            <div className="text-center relative mb-16 md:mb-24">
+            <div className="text-center relative mb-10 md:mb-16">
                 <button
                     onClick={goBack}
                     className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-500 hover:text-white transition-colors"
@@ -270,15 +350,41 @@ const CategorySelection: React.FC<{
                 <h2 className="font-serif-display text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tighter mb-4">{title}</h2>
                 <p className="text-neutral-500 font-light text-lg">{subtitle}</p>
             </div>
-            <div className={`w-full max-w-sm md:max-w-5xl mx-auto grid grid-cols-2 ${options.length > 2 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 md:gap-8`}>
-                {options.map(([key, node]) => (
-                    <GlassButton key={key} onClick={() => handleSelect(key)} className="group w-full aspect-square md:aspect-auto">
-                        <div className="px-6 py-10 md:py-16 flex flex-col w-full items-center justify-center gap-6">
-                            <node.icon className="w-10 h-10 md:w-16 md:h-16 text-gold-500/80 group-hover:text-gold-400 transition-all duration-500 group-hover:scale-110" />
-                            <h2 className="font-sans font-bold text-xs md:text-sm text-white uppercase tracking-[0.3em]">{node.name}</h2>
-                        </div>
-                    </GlassButton>
-                ))}
+            <div className={`w-full max-w-sm md:max-w-5xl mx-auto grid grid-cols-2 ${options.length > 2 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 md:gap-6`}>
+                {options.map(([key, node]) => {
+                    const images = CATEGORY_IMAGES[key];
+                    return (
+                        <GlassButton key={key} onClick={() => handleSelect(key)} className="group w-full">
+                            <div className="flex flex-col w-full items-center overflow-hidden rounded-xl">
+                                {/* Image area */}
+                                {images && images.length > 0 ? (
+                                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-neutral-900">
+                                        {images.map((src, i) => (
+                                            <img
+                                                key={src}
+                                                src={src}
+                                                alt={node.name}
+                                                loading="lazy"
+                                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out group-hover:scale-105 transition-transform duration-500"
+                                                style={{ opacity: cycleIndex === i ? 1 : 0 }}
+                                            />
+                                        ))}
+                                        {/* Gradient overlay at bottom */}
+                                        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/60 to-transparent" />
+                                    </div>
+                                ) : (
+                                    <div className="w-full py-8 flex items-center justify-center">
+                                        <node.icon className="w-12 h-12 md:w-16 md:h-16 text-gold-500/80 group-hover:text-gold-400 transition-all duration-500 group-hover:scale-110" />
+                                    </div>
+                                )}
+                                {/* Label below image */}
+                                <div className="w-full py-3 md:py-4 text-center">
+                                    <h2 className="font-sans font-bold text-xs md:text-sm text-white uppercase tracking-[0.3em]">{node.name}</h2>
+                                </div>
+                            </div>
+                        </GlassButton>
+                    );
+                })}
             </div>
         </div>
     );
@@ -287,6 +393,10 @@ const CategorySelection: React.FC<{
 interface DetailsStepProps {
     imageFiles: ImageFile[];
     productType: ProductType;
+    productTypes: { id: ProductType; name: string; icon: React.FC<{ className?: string }> }[];
+    onProductTypeChange: (productType: ProductType) => void;
+    apparelStyle: ApparelStyle;
+    onApparelStyleChange: (style: ApparelStyle) => void;
     productName: string;
     onProductNameChange: (name: string) => void;
     creatorName: string;
@@ -306,6 +416,8 @@ interface DetailsStepProps {
     onConsistentCharacterChange: (enabled: boolean) => void;
     background: BackgroundType;
     onBackgroundChange: (bg: BackgroundType) => void;
+    imageQuality: ImageQuality;
+    onImageQualityChange: (quality: ImageQuality) => void;
     customBackground: string;
     onCustomBackgroundChange: (val: string) => void;
     remainingCredits?: number | null;
@@ -314,11 +426,16 @@ interface DetailsStepProps {
     usedMarketingCredits?: number;
     navigate: ReturnType<typeof useNavigate>;
     isAuthenticated: boolean;
+    isPaidUser: boolean;
 }
 
 const DetailsStep: React.FC<DetailsStepProps> = ({
     imageFiles,
     productType,
+    productTypes,
+    onProductTypeChange,
+    apparelStyle,
+    onApparelStyleChange,
     productName,
     onProductNameChange,
     creatorName,
@@ -338,6 +455,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     onConsistentCharacterChange,
     background,
     onBackgroundChange,
+    imageQuality,
+    onImageQualityChange,
     customBackground,
     onCustomBackgroundChange,
     remainingCredits,
@@ -345,210 +464,362 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     usedPhotoshootCredits,
     usedMarketingCredits,
     navigate,
-    isAuthenticated
+    isAuthenticated,
+    isPaidUser
 }) => {
+    // PRO feature gating
+    const PRO_QUALITY_IDS = ['2k', '4k'];
+    const PRO_STYLE_IDS = ['cinematic', 'vintage'];
+    const PRO_BACKGROUND_IDS = ['workspace', 'city', 'historic', 'custom'];
+    const [shakeId, setShakeId] = useState<string | null>(null);
+    const [proToast, setProToast] = useState(false);
+
+    const triggerProLock = (id: string) => {
+        setShakeId(id);
+        setProToast(true);
+        setTimeout(() => setShakeId(null), 600);
+        setTimeout(() => setProToast(false), 2500);
+    };
     const isOtherOrnament = productType === 'other_ornament';
-    
+    const isApparel = productType === 'apparel';
+    const hasImage = imageFiles.some(f => f);
+
+    // Build nav items for product type selector
+    const navItems: import('./ui/LimelightNav').NavItem[] = productTypes.map(p => ({
+        id: p.id,
+        icon: <p.icon />,
+        label: p.name,
+    }));
+    const activeProductTypeIndex = productTypes.findIndex(p => p.id === productType);
+    const handleTabChange = (index: number) => {
+        const newPt = productTypes[index];
+        if (newPt) onProductTypeChange(newPt.id);
+    };
+
     return (
-        <div className="w-full max-w-7xl mx-auto animate-fade-in-up">
-            <h2 className="font-serif-display text-4xl sm:text-5xl text-center mb-16 text-white tracking-tighter">Production <span className="italic text-neutral-400">Specs</span></h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-                {/* Upload Section */}
-                <div className="lg:col-span-5 space-y-8">
-                    <div className="sticky top-32">
-                        {productType === 'apparel' ? (
-                            <div className="grid grid-cols-1 gap-6">
+        <div className="w-full max-w-7xl mx-auto animate-fade-in-up px-3 sm:px-4">
+            {/* Heading — smaller on mobile */}
+            <h2 className="font-serif-display text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-normal text-center mb-3 sm:mb-4">Bring Your Product to <span className="italic text-neutral-400">Life</span></h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                {/* ──── LEFT PANEL: Product Type + Upload ──── */}
+                <div className="space-y-2">
+                    {/* Product Type Selector */}
+                    {productTypes.length > 1 && (
+                        <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 px-3 py-2">
+                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-1.5 text-center">Product Type</p>
+                            <div className="flex justify-center">
+                                <LimelightNav
+                                    items={navItems}
+                                    defaultActiveIndex={activeProductTypeIndex}
+                                    onTabChange={handleTabChange}
+                                    className="bg-neutral-900/50 border-neutral-700/50"
+                                    iconClassName="w-5 h-5"
+                                    iconContainerClassName="px-3 py-2"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Apparel Style Toggle */}
+                    {isApparel && (
+                        <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 px-3 py-2 animate-fade-in">
+                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-1.5 text-center">Apparel Style</p>
+                            <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/50">
+                                <button
+                                    onClick={() => onApparelStyleChange('general')}
+                                    className={`w-full px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded transition-all duration-300 ${apparelStyle === 'general' ? 'bg-neutral-900 text-gold-400 shadow-sm' : 'text-neutral-300 hover:bg-neutral-700'}`}
+                                >
+                                    General
+                                </button>
+                                <button
+                                    onClick={() => onApparelStyleChange('professional')}
+                                    className={`w-full px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded transition-all duration-300 ${apparelStyle === 'professional' ? 'bg-neutral-900 text-gold-400 shadow-sm' : 'text-neutral-300 hover:bg-neutral-700'}`}
+                                >
+                                    Professional
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Image Upload Area */}
+                    <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 p-2.5 sm:p-3">
+                        {isApparel ? (
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 mb-3 ml-1">Hero Asset (Front)</p>
-                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} />
+                                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Front</p>
+                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 mb-3 ml-1">Reference Asset (Back)</p>
-                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 1)} initialPreview={imageFiles[1]?.previewUrl} enableAnimation={true} />
+                                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Back <span className="text-neutral-600">(Opt.)</span></p>
+                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 1)} initialPreview={imageFiles[1]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
                                 </div>
                             </div>
                         ) : (
                             <div>
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 mb-3 ml-1">Product Asset</p>
-                                <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} />
+                                <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Product Asset</p>
+                                <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/3]" />
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Form Section */}
-                <div className="lg:col-span-7 space-y-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <div>
-                            <label htmlFor="creator-name-input" className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Identity</label>
-                            <input
-                                id="creator-name-input"
-                                name="creatorName"
-                                type="text"
-                                value={creatorName}
-                                onChange={(e) => onCreatorNameChange(e.target.value)}
-                                placeholder="Brand / Label Name"
-                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor={isOtherOrnament ? "other-ornament-select" : "product-name-input"} className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Label</label>
-                             {isOtherOrnament ? (
-                                <select
-                                    id="other-ornament-select"
-                                    name="otherOrnamentType"
-                                    value={otherOrnamentType}
-                                    onChange={(e) => onOtherOrnamentTypeChange(e.target.value)}
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none appearance-none"
-                                >
-                                    {OTHER_ORNAMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                </select>
-                            ) : (
-                                <input
-                                    id="product-name-input"
-                                    name="productName"
-                                    type="text"
-                                    value={productName}
-                                    onChange={(e) => onProductNameChange(e.target.value)}
-                                    placeholder="Product Name"
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <div>
-                            <label htmlFor="aspect-ratio-select" className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Canvas Ratio</label>
-                            <div className="relative">
-                                <select
-                                    id="aspect-ratio-select"
-                                    name="aspectRatio"
-                                    value={aspectRatio}
-                                    onChange={(e) => onAspectRatioChange(e.target.value as AspectRatio)}
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none appearance-none"
-                                >
-                                    {ASPECT_RATIOS.map((ratio) => (
-                                        <option key={ratio.id} value={ratio.id}>{ratio.label}</option>
-                                    ))}
-                                </select>
-                                <ChevronDownIcon className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 pointer-events-none" />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Engine Control</label>
-                            <button
-                                onClick={() => onConsistentCharacterChange(!consistentCharacter)}
-                                className={`w-full flex items-center justify-between px-6 py-4 rounded-xl border transition-all duration-300 ${
-                                    consistentCharacter ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-neutral-900/50 border-white/5 text-neutral-500'
-                                }`}
-                            >
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Locked Persona</span>
-                                <div className={`w-10 h-5 rounded-full relative ${consistentCharacter ? 'bg-gold-600' : 'bg-neutral-700'}`}>
-                                    <div className={`absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform ${consistentCharacter ? 'translate-x-5' : 'translate-x-0'}`} />
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="background-select" className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Environment</label>
-                        <div className="relative">
-                            <select
-                                id="background-select"
-                                name="background"
-                                value={background}
-                                onChange={(e) => onBackgroundChange(e.target.value as BackgroundType)}
-                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none appearance-none"
-                            >
-                                {BACKGROUND_OPTIONS.map((opt) => (
-                                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                                ))}
-                            </select>
-                            <ChevronDownIcon className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    {background === 'custom' && (
-                        <div className="animate-fade-in">
-                            <label htmlFor="custom-background-input" className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-3 block">Custom Background Description</label>
-                            <input
-                                id="custom-background-input"
-                                name="customBackground"
-                                type="text"
-                                value={customBackground}
-                                onChange={(e) => onCustomBackgroundChange(e.target.value)}
-                                placeholder="Describe the neural background..."
-                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl py-4 px-6 text-white focus:outline-none"
-                            />
+                {/* ──── RIGHT PANEL: Production Details ──── */}
+                <div className={`transition-all duration-500 ${hasImage ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'}`}>
+                    {!hasImage && (
+                        <div className="text-center py-1.5 sm:py-2 mb-2 rounded-lg bg-gold-500/5 border border-gold-500/10">
+                            <p className="text-xs sm:text-sm text-gold-400/80 font-medium"><span className="lg:hidden">↑</span><span className="hidden lg:inline">←</span> Upload a photo to unlock details</p>
                         </div>
                     )}
 
-                    <div>
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-4 block">Aesthetic Direction</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {STYLE_OPTIONS.map((style) => (
-                                <button
-                                    key={style.id}
-                                    onClick={() => onStyleChange(style.id)}
-                                    className={`py-3 px-4 rounded-lg text-[9px] uppercase tracking-widest font-bold border transition-all ${
-                                        selectedStyle === style.id ? 'bg-gold-600 text-white border-gold-500 shadow-lg shadow-gold-900/20' : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
-                                    }`}
-                                >
-                                    {style.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="pt-10">
-                        {!isAuthenticated ? (
-                            <button
-                                onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
-                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-6 px-12 rounded-xl shadow-2xl shadow-orange-950/40 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                LOG IN TO GENERATE
-                            </button>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={onGenerate}
-                                    disabled={!creatorName || isLoading || (remainingCredits !== null && remainingCredits < 20)}
-                                    className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-6 px-12 rounded-xl shadow-2xl shadow-gold-950/40 transition-all transform hover:-translate-y-1 disabled:transform-none"
-                                >
-                                    {isLoading ? 'Processing Neural Sequence...' : 'Generate Photoshoot'}
-                                </button>
-                                {totalCredits !== null && (
-                                    <div className="mt-3 space-y-2">
-                                        <UnifiedCreditsSummaryBox 
-                                            totalCredits={totalCredits}
-                                            usedPhotoshootCredits={usedPhotoshootCredits}
-                                            usedMarketingCredits={usedMarketingCredits}
-                                        />
-                                        {remainingCredits < 20 && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    navigate('/pricing');
-                                                }}
-                                                className="w-full text-[11px] uppercase tracking-[0.3em] text-white bg-gradient-to-r from-gold-600 to-gold-600 hover:from-gold-500 hover:to-gold-500 font-bold py-4 px-8 rounded-xl shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                </svg>
-                                                Purchase Plan to Get Credits
-                                            </button>
-                                        )}
-                                    </div>
+                    <div className="space-y-2.5 sm:space-y-3">
+                        {/* Identity + Label */}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div>
+                                <label htmlFor="creator-name-input" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Identity</label>
+                                <input
+                                    id="creator-name-input"
+                                    name="creatorName"
+                                    type="text"
+                                    value={creatorName}
+                                    onChange={(e) => onCreatorNameChange(e.target.value)}
+                                    placeholder="Brand / Label"
+                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor={isOtherOrnament ? "other-ornament-select" : "product-name-input"} className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Label</label>
+                                {isOtherOrnament ? (
+                                    <select
+                                        id="other-ornament-select"
+                                        name="otherOrnamentType"
+                                        value={otherOrnamentType}
+                                        onChange={(e) => onOtherOrnamentTypeChange(e.target.value)}
+                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    >
+                                        {OTHER_ORNAMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                ) : (
+                                    <input
+                                        id="product-name-input"
+                                        name="productName"
+                                        type="text"
+                                        value={productName}
+                                        onChange={(e) => onProductNameChange(e.target.value)}
+                                        placeholder="Product Name"
+                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
+                                    />
                                 )}
-                            </>
+                            </div>
+                        </div>
+
+                        {/* Canvas + Environment */}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div>
+                                <label htmlFor="aspect-ratio-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Canvas</label>
+                                <div className="relative">
+                                    <select
+                                        id="aspect-ratio-select"
+                                        name="aspectRatio"
+                                        value={aspectRatio}
+                                        onChange={(e) => onAspectRatioChange(e.target.value as AspectRatio)}
+                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    >
+                                        {ASPECT_RATIOS.map((ratio) => (
+                                            <option key={ratio.id} value={ratio.id}>{ratio.label}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="background-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Environment</label>
+                                <div className="relative">
+                                    <select
+                                        id="background-select"
+                                        name="background"
+                                        value={background}
+                                        onChange={(e) => {
+                                            const val = e.target.value as BackgroundType;
+                                            if (PRO_BACKGROUND_IDS.includes(val) && !isPaidUser) {
+                                                e.target.value = background; // reset
+                                                triggerProLock(`bg-${val}`);
+                                                return;
+                                            }
+                                            onBackgroundChange(val);
+                                        }}
+                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    >
+                                        {BACKGROUND_OPTIONS.map((opt) => {
+                                            const isProLocked = PRO_BACKGROUND_IDS.includes(opt.id) && !isPaidUser;
+                                            return (
+                                                <option key={opt.id} value={opt.id}>
+                                                    {opt.label}{isProLocked ? ' ✦ PRO' : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Image Quality + Persona */}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div>
+                                <label htmlFor="image-quality-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Image Quality</label>
+                                <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/50">
+                                    {IMAGE_QUALITY_OPTIONS.map((opt) => {
+                                        const isProLocked = PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser;
+                                        const isActive = imageQuality === opt.id;
+                                        return (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => {
+                                                    if (isProLocked) { triggerProLock(`quality-${opt.id}`); return; }
+                                                    onImageQualityChange(opt.id as ImageQuality);
+                                                }}
+                                                className={`relative w-full px-2 py-1.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all duration-300 flex items-center justify-center gap-1 ${isActive && !isProLocked
+                                                        ? 'bg-neutral-900 text-gold-400 shadow-sm'
+                                                        : isProLocked
+                                                            ? 'text-neutral-600 cursor-not-allowed'
+                                                            : 'text-neutral-300 hover:bg-neutral-700'
+                                                    } ${shakeId === `quality-${opt.id}` ? 'animate-shake' : ''}`}
+                                            >
+                                                {opt.label}
+                                                {PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser && (
+                                                    <span className="text-[7px] font-black tracking-wider text-amber-500/80 bg-amber-500/10 px-1 py-px rounded">PRO</span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Persona</label>
+                                <button
+                                    onClick={() => onConsistentCharacterChange(!consistentCharacter)}
+                                    className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${consistentCharacter ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-neutral-900/50 border-white/5 text-neutral-500'}`}
+                                >
+                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">Lock</span>
+                                    <div className={`w-7 h-3.5 sm:w-8 sm:h-4 rounded-full relative flex-shrink-0 ${consistentCharacter ? 'bg-gold-600' : 'bg-neutral-700'}`}>
+                                        <div className={`absolute top-0.5 left-0.5 bg-white w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-transform ${consistentCharacter ? 'translate-x-3.5 sm:translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {background === 'custom' && (
+                            <div className="animate-fade-in">
+                                <label htmlFor="custom-background-input" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Custom Background</label>
+                                <input
+                                    id="custom-background-input"
+                                    name="customBackground"
+                                    type="text"
+                                    value={customBackground}
+                                    onChange={(e) => onCustomBackgroundChange(e.target.value)}
+                                    placeholder="Describe the background..."
+                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none"
+                                />
+                            </div>
                         )}
+
+                        {/* Aesthetic Direction */}
+                        <div>
+                            <label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Aesthetic Direction</label>
+                            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                {STYLE_OPTIONS.map((style) => {
+                                    const isProLocked = PRO_STYLE_IDS.includes(style.id) && !isPaidUser;
+                                    const isActive = selectedStyle === style.id;
+                                    return (
+                                        <button
+                                            key={style.id}
+                                            onClick={() => {
+                                                if (isProLocked) { triggerProLock(`style-${style.id}`); return; }
+                                                onStyleChange(style.id);
+                                            }}
+                                            className={`relative py-1.5 sm:py-2 px-2 sm:px-3 rounded text-[9px] sm:text-[10px] uppercase tracking-wider font-bold border transition-all flex items-center justify-center gap-1.5 ${isActive && !isProLocked
+                                                    ? 'bg-gold-600 text-white border-gold-500 shadow-sm shadow-gold-900/20'
+                                                    : isProLocked
+                                                        ? 'bg-neutral-900/50 text-neutral-600 border-white/5 cursor-not-allowed'
+                                                        : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
+                                                } ${shakeId === `style-${style.id}` ? 'animate-shake' : ''}`}
+                                        >
+                                            {style.name}
+                                            {isProLocked && (
+                                                <span className="text-[7px] font-black tracking-wider text-amber-500/80 bg-amber-500/10 px-1 py-px rounded">PRO</span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* PRO Toast Notification */}
+                        {proToast && (
+                            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
+                                <div className="bg-neutral-900/95 backdrop-blur-md border border-amber-500/30 rounded-lg px-5 py-3 shadow-xl shadow-black/40 flex items-center gap-3">
+                                    <span className="text-[9px] font-black tracking-wider text-amber-500 bg-amber-500/15 px-1.5 py-0.5 rounded">PRO</span>
+                                    <span className="text-sm text-neutral-300">Upgrade your plan to unlock this feature</span>
+                                    <button
+                                        onClick={() => navigate('/pricing')}
+                                        className="text-[9px] font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors ml-2"
+                                    >
+                                        View Plans →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Generate Button */}
+                        <div className="pt-0.5 sm:pt-1">
+                            {!isAuthenticated ? (
+                                <button
+                                    onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                                    className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-orange-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 sm:gap-2"
+                                >
+                                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    LOG IN TO GENERATE
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={onGenerate}
+                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < 20)}
+                                        className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 disabled:transform-none"
+                                    >
+                                        {isLoading ? 'Processing...' : 'Generate Photoshoot'}
+                                    </button>
+                                    {totalCredits !== null && (
+                                        <div className="mt-2 space-y-1.5">
+                                            <UnifiedCreditsSummaryBox
+                                                totalCredits={totalCredits}
+                                                usedPhotoshootCredits={usedPhotoshootCredits}
+                                                usedMarketingCredits={usedMarketingCredits}
+                                            />
+                                            {remainingCredits < 20 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        navigate('/pricing');
+                                                    }}
+                                                    className="w-full text-[8px] sm:text-[9px] uppercase tracking-[0.15em] text-white bg-gradient-to-r from-gold-600 to-gold-600 hover:from-gold-500 hover:to-gold-500 font-bold py-2 sm:py-2.5 px-3 sm:px-4 rounded-md shadow-sm shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5"
+                                                >
+                                                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    </svg>
+                                                    Get More Credits
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -556,7 +827,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     );
 };
 
-export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; }> = ({ onExit, onContentGenerated }) => {
+export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; onPhaseChange?: (phase: string) => void; onJumpToPhaseRef?: (fn: (phase: string) => void) => void; }> = ({ onExit, onContentGenerated, onPhaseChange, onJumpToPhaseRef }) => {
     const navigate = useNavigate();
     const [totalCredits, setTotalCredits] = useState<number | null>(null);
     const [usedPhotoshootCredits, setUsedPhotoshootCredits] = useState<number>(0);
@@ -596,7 +867,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         // Check authentication status
         const token = localStorage.getItem('access_token');
         setIsAuthenticated(!!token);
-        
+
         if (token) {
             fetchCredits();
             // Refresh credits every 5 seconds to catch payment/admin updates (reduced to avoid rate limits)
@@ -605,6 +876,20 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         }
     }, [fetchCredits]);
     const [phase, setPhase] = useState<StudioPhase>('category');
+
+    // Notify parent of phase changes so sidebar can update step indicator
+    useEffect(() => {
+        onPhaseChange?.(phase);
+    }, [phase, onPhaseChange]);
+
+    // Register jump function so parent/sidebar can navigate to any phase
+    useEffect(() => {
+        onJumpToPhaseRef?.((targetPhase: string) => {
+            setPhase(targetPhase as StudioPhase);
+        });
+    }, [onJumpToPhaseRef]);
+
+
     const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);
     const [coverImage, setCoverImage] = useState<string | null>(null);
     const [modelImages, setModelImages] = useState<string[]>([]);
@@ -613,7 +898,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('gallery');
     const catalogueRef = useRef<HTMLDivElement>(null);
-    
+
     const [promptCategory, setPromptCategory] = useState<Category | null>(null);
     const [currentProductTypes, setCurrentProductTypes] = useState<ProductTypeOption[]>([]);
     const [productType, setProductType] = useState<ProductType>('jewelry');
@@ -628,11 +913,17 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
     const [consistentCharacter, setConsistentCharacter] = useState<boolean>(false);
     const [background, setBackground] = useState<BackgroundType>('studio');
+    const [imageQuality, setImageQuality] = useState<ImageQuality>('hd');
     const [customBackground, setCustomBackground] = useState<string>('');
 
     const [identificationStatus, setIdentificationStatus] = useState<IdentificationStatus>('idle');
     const [identifiedProductName, setIdentifiedProductName] = useState<string>('');
     const [manualProductName, setManualProductName] = useState<string>('');
+
+    // Notify parent about phase changes for sidebar tracking
+    useEffect(() => {
+        onPhaseChange?.(phase);
+    }, [phase, onPhaseChange]);
 
     useEffect(() => {
         if (phase === 'identification' && imageFiles.length > 0 && identificationStatus === 'idle') {
@@ -654,26 +945,26 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             identify();
         }
     }, [phase, imageFiles, identificationStatus]);
-    
+
     const handleSelectionComplete = (productTypes: ProductTypeOption[], category: Category) => {
         setPromptCategory(category);
         setCurrentProductTypes(productTypes);
         if (productTypes.length > 0) {
             setProductType(productTypes[0].id);
         }
-        setPhase('upload');
+        setPhase('details');
     };
 
     const handleImageUpload = (file: ImageFile, index: number) => {
         const newFiles = [...imageFiles];
         newFiles[index] = file;
         if (productType !== 'apparel') {
-          setImageFiles([file]);
+            setImageFiles([file]);
         } else {
-          setImageFiles(newFiles);
+            setImageFiles(newFiles);
         }
     };
-    
+
     const handleProceedToDetails = () => {
         if (imageFiles.some(f => f)) {
             setModelImages([]);
@@ -693,7 +984,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setError('Asset or Category missing.');
             return;
         }
-        
+
         if (productType !== 'other' && !creatorName) {
             setError('Identity is required.');
             return;
@@ -713,7 +1004,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     body: JSON.stringify({ type: 'photoshoot' }),
                 });
                 const checkData = await checkRes.json();
-                
+
                 if (!checkData.success || !checkData.hasCredits) {
                     const errorMsg = checkData.message || 'You have no photoshoot credits remaining.';
                     setError(errorMsg);
@@ -766,13 +1057,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             // Convert remote URLs to data URLs for persistence in localStorage
             try {
                 console.log('🔄 Starting cache process for PhotoStudio images...');
-                
+
                 // Helper function to convert URL to data URL
                 const convertUrlToDataUrl = async (url: string): Promise<string> => {
                     if (url.startsWith('data:')) {
                         return url; // Already a data URL
                     }
-                    
+
                     try {
                         console.log('🔄 Converting remote URL to data URL:', url.substring(0, 100));
                         const response = await fetch(url, { mode: 'cors', cache: 'no-cache' });
@@ -804,7 +1095,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         return url;
                     }
                 };
-                
+
                 // Cache cover image
                 if (result.coverImage) {
                     const cachePrompt = `${promptCategory} photoshoot - ${selectedStyle || 'Standard'} style`;
@@ -812,7 +1103,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     await addToCache(coverDataUrl, 'photo', cachePrompt);
                     console.log('✅ Cover image cached');
                 }
-                
+
                 // Cache model images
                 if (result.modelImages && result.modelImages.length > 0) {
                     for (let idx = 0; idx < result.modelImages.length; idx++) {
@@ -823,9 +1114,9 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         console.log(`✅ Model image ${idx + 1} cached`);
                     }
                 }
-                
+
                 console.log('✅ All PhotoStudio images added to cache successfully');
-                
+
                 // Verify cache
                 setTimeout(async () => {
                     const photoItems = (await getCachedItems()).filter((item: any) => item.studioType === 'photo');
@@ -848,7 +1139,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         },
                         body: JSON.stringify({ type: 'photoshoot' }),
                     });
-                    
+
                     // Update credits immediately after successful deduction
                     if (deductRes.ok) {
                         const deductData = await deductRes.json();
@@ -873,14 +1164,14 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Generation failed.');
-            setPhase('details'); 
+            setPhase('details');
         } finally {
             setIsLoading(false);
             setLoadingImages([]);
             setLoadingMessage("");
         }
     }, [imageFiles, creatorName, promptCategory, productType, selectedStyle, apparelStyle, identifiedProductName, otherOrnamentType, onContentGenerated, extraPrompt, productName, aspectRatio, consistentCharacter, background, customBackground, fetchCredits]);
-    
+
     const handleDownloadPdf = async () => {
         if (!catalogueRef.current) return;
         setDownloadingType('pdf');
@@ -892,11 +1183,11 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 setDownloadingType(null);
                 return;
             }
-            
+
             const pdf = new jsPDF({
                 orientation: 'portrait', unit: 'mm', format: 'a4', hotfixes: ['px_scaling'],
             });
-            
+
             // Helper function to convert oklch colors to rgb
             const oklchToRgb = (oklchStr: string): string => {
                 // Simple oklch to hex conversion for common colors
@@ -905,14 +1196,14 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     'oklch(0.486 0.153 265.76)': '#ae820d', // gold-700
                     'oklch(0.544 0.135 265.76)': '#e6b71e', // gold-500 lighter
                 };
-                
+
                 // Check if it's a known oklch color
                 for (const [oklch, rgb] of Object.entries(oklchMap)) {
                     if (oklchStr.includes(oklch.split('(')[1].split(')')[0])) {
                         return rgb;
                     }
                 }
-                
+
                 // Fallback: extract oklch values and approximate
                 const match = oklchStr.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/);
                 if (match) {
@@ -920,13 +1211,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 }
                 return oklchStr;
             };
-            
+
             for (let i = 0; i < pages.length; i++) {
                 try {
                     // Clone the page while keeping styles
                     const pageElement = pages[i] as HTMLElement;
                     const clonedPage = pageElement.cloneNode(true) as HTMLElement;
-                    
+
                     // Convert oklch colors in style tags to rgb
                     const styleTags = clonedPage.querySelectorAll('style');
                     styleTags.forEach(styleTag => {
@@ -943,7 +1234,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             );
                         }
                     });
-                    
+
                     // Also handle inline styles with oklch
                     const allElements = clonedPage.querySelectorAll('*');
                     allElements.forEach(el => {
@@ -960,7 +1251,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             el.setAttribute('style', newStyle);
                         }
                     });
-                    
+
                     // Create temporary container for html2canvas
                     const tempContainer = document.createElement('div');
                     tempContainer.style.position = 'fixed';
@@ -970,9 +1261,9 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     tempContainer.style.height = '297mm';
                     tempContainer.appendChild(clonedPage);
                     document.body.appendChild(tempContainer);
-                    
-                    const pageCanvas = await html2canvas(clonedPage, { 
-                        scale: 2, 
+
+                    const pageCanvas = await html2canvas(clonedPage, {
+                        scale: 2,
                         useCORS: true,
                         allowTaint: true,
                         backgroundColor: '#ffffff',
@@ -995,13 +1286,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             });
                         }
                     });
-                    
+
                     document.body.removeChild(tempContainer);
-                    
+
                     if (i > 0) {
                         pdf.addPage('a4', 'portrait');
                     }
-                    
+
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
                     const imgData = pageCanvas.toDataURL('image/png');
@@ -1010,10 +1301,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     console.error(`Failed to capture page ${i}:`, pageError);
                 }
             }
-            
+
             // Get PDF as blob
             const pdfBlob = pdf.output('blob');
-            
+
             // Download the PDF
             const link = document.createElement('a');
             link.href = URL.createObjectURL(pdfBlob);
@@ -1029,7 +1320,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setDownloadingType(null);
         }
     };
-    
+
     const handleDownloadZip = async () => {
         if (!coverImage || modelImages.length === 0) return;
         setDownloadingType('zip');
@@ -1052,10 +1343,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         } catch (e) {
             setError("ZIP Export failed.");
         } finally {
-          setDownloadingType(null);
+            setDownloadingType(null);
         }
-      };
-    
+    };
+
     const renderIdentificationStep = () => {
         if (!imageFiles[0]) return null;
         return (
@@ -1063,21 +1354,21 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 <h2 className="font-serif-display text-4xl text-center mb-16 text-white tracking-tighter">Object <span className="italic text-neutral-400">Detection</span></h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center">
                     <div className="w-full aspect-square rounded-[32px] overflow-hidden border border-white/5 bg-neutral-900/30 p-6">
-                         <img src={imageFiles[0].previewUrl} alt="Asset" className="w-full h-full object-contain rounded-2xl" />
+                        <img src={imageFiles[0].previewUrl} alt="Asset" className="w-full h-full object-contain rounded-2xl" />
                     </div>
                     <div className="flex items-center justify-center p-12 bg-neutral-900/20 rounded-[32px] border border-white/5">
                         {identificationStatus === 'identifying' ? (
-                             <div className="flex flex-col items-center gap-6">
+                            <div className="flex flex-col items-center gap-6">
                                 <Loader size="lg" />
                                 <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-neutral-500">Scanning...</p>
                             </div>
                         ) : identificationStatus === 'confirming' ? (
-                             <div className="text-center">
+                            <div className="text-center">
                                 <p className="text-[10px] uppercase tracking-widest font-bold text-gold-400 mb-2">Match found</p>
                                 <p className="text-4xl font-bold font-serif-display text-white mb-10 capitalize">"{identifiedProductName}"</p>
                                 <div className="flex flex-col gap-4">
                                     {!isAuthenticated ? (
-                                        <button 
+                                        <button
                                             onClick={() => navigate('/signin')}
                                             className="text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
                                         >
@@ -1087,8 +1378,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                             LOG IN TO GENERATE
                                         </button>
                                     ) : (
-                                        <button 
-                                            onClick={() => handleGeneration(identifiedProductName)} 
+                                        <button
+                                            onClick={() => handleGeneration(identifiedProductName)}
                                             disabled={remainingCredits !== null && remainingCredits <= 0}
                                             className="text-[10px] uppercase tracking-widest text-white bg-gold-600 hover:bg-gold-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full transition-all"
                                         >
@@ -1097,11 +1388,11 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                     )}
                                     {remainingCredits !== null && (
                                         <div className="space-y-2">
-                                            <UnifiedCreditsSummaryBox 
-                                            totalCredits={totalCredits}
-                                            usedPhotoshootCredits={usedPhotoshootCredits}
-                                            usedMarketingCredits={usedMarketingCredits}
-                                        />
+                                            <UnifiedCreditsSummaryBox
+                                                totalCredits={totalCredits}
+                                                usedPhotoshootCredits={usedPhotoshootCredits}
+                                                usedMarketingCredits={usedMarketingCredits}
+                                            />
                                             {remainingCredits < 20 && (
                                                 <button
                                                     type="button"
@@ -1135,7 +1426,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-4 px-6 text-white text-center focus:outline-none"
                                 />
                                 {!isAuthenticated ? (
-                                    <button 
+                                    <button
                                         onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
                                         className="w-full text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-4 px-12 rounded-full transition-all flex items-center justify-center gap-2"
                                     >
@@ -1145,8 +1436,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                         LOG IN TO GENERATE
                                     </button>
                                 ) : (
-                                    <button 
-                                        onClick={() => handleGeneration(manualProductName)} 
+                                    <button
+                                        onClick={() => handleGeneration(manualProductName)}
                                         disabled={!manualProductName || (remainingCredits !== null && remainingCredits < 20)}
                                         className="w-full text-[10px] uppercase tracking-widest text-white bg-gold-600 hover:bg-gold-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-4 px-12 rounded-full"
                                     >
@@ -1155,8 +1446,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 )}
                                 {remainingCredits !== null && (
                                     <div className="mt-2 space-y-2">
-                                        <UnifiedCreditsSummaryBox 
-                                            credits={remainingCredits} 
+                                        <UnifiedCreditsSummaryBox
+                                            credits={remainingCredits}
                                             creditType="photoshoot"
                                         />
                                         {remainingCredits < 20 && (
@@ -1187,32 +1478,23 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
 
     const renderPhaseContent = () => {
         if (phase === 'generating' || isLoading) {
-          return <LoadingScreen mode={'image'} imageUrl={imageFiles[0]?.previewUrl} generatedImages={loadingImages} message={loadingMessage} />;
+            return <LoadingScreen mode={'image'} imageUrl={imageFiles[0]?.previewUrl} generatedImages={loadingImages} message={loadingMessage} />;
         }
-        
+
         switch (phase) {
             case 'category':
                 return <CategorySelection onSelectionComplete={handleSelectionComplete} onBack={onExit} />;
-            case 'upload':
-                 return (
-                    <UploadStep
-                        productTypes={currentProductTypes}
-                        activeProductType={productType}
-                        onProductTypeChange={setProductType}
-                        onImageUpload={handleImageUpload}
-                        onProceed={handleProceedToDetails}
-                        imageFiles={imageFiles}
-                        apparelStyle={apparelStyle}
-                        onApparelStyleChange={setApparelStyle}
-                    />
-                );
-             case 'identification':
+            case 'identification':
                 return renderIdentificationStep();
-             case 'details':
-                 return (
+            case 'details':
+                return (
                     <DetailsStep
                         imageFiles={imageFiles}
                         productType={productType}
+                        productTypes={currentProductTypes}
+                        onProductTypeChange={setProductType}
+                        apparelStyle={apparelStyle}
+                        onApparelStyleChange={setApparelStyle}
                         productName={productName}
                         onProductNameChange={setProductName}
                         creatorName={creatorName}
@@ -1237,46 +1519,49 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         onConsistentCharacterChange={setConsistentCharacter}
                         background={background}
                         onBackgroundChange={setBackground}
+                        imageQuality={imageQuality}
+                        onImageQualityChange={setImageQuality}
                         customBackground={customBackground}
                         onCustomBackgroundChange={setCustomBackground}
                         isAuthenticated={isAuthenticated}
+                        isPaidUser={isPaidUser}
                     />
                 );
             case 'results':
                 return (
                     <div className="animate-fade-in-up">
                         <h2 className="font-serif-display text-5xl text-center mb-16 text-white tracking-tighter">Studio <span className="italic text-neutral-400">Deliverables</span></h2>
-                        
+
                         <div className="flex flex-col items-center gap-10 mb-20 w-full">
                             <div className="flex bg-neutral-900/50 p-1.5 rounded-full border border-white/5 w-fit">
                                 <button
                                     onClick={() => setViewMode('gallery')}
                                     className={`flex items-center gap-2 px-8 py-3 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${viewMode === 'gallery' ? 'bg-white text-black' : 'text-neutral-500 hover:text-white'}`}
                                 >
-                                <GridIcon /> Gallery
+                                    <GridIcon /> Gallery
                                 </button>
                                 <button
                                     onClick={() => setViewMode('catalogue')}
                                     className={`flex items-center gap-2 px-8 py-3 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${viewMode === 'catalogue' ? 'bg-white text-black' : 'text-neutral-500 hover:text-white'}`}
                                 >
-                                <BookOpenIcon /> Lookbook
+                                    <BookOpenIcon /> Lookbook
                                 </button>
                             </div>
 
 
                             <div className="flex flex-wrap justify-center items-center gap-4">
-                                <button 
-                                    onClick={handleDownloadZip} 
-                                    disabled={!!downloadingType} 
+                                <button
+                                    onClick={handleDownloadZip}
+                                    disabled={!!downloadingType}
                                     className="text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white border border-white/10 hover:border-white/20 font-bold py-3 px-8 rounded-full transition-all flex items-center gap-3"
                                 >
                                     {downloadingType === 'zip' ? <Loader size="sm" /> : <DownloadIcon />}
                                     ZIP Export
                                 </button>
 
-                                <button 
-                                    onClick={handleDownloadPdf} 
-                                    disabled={!!downloadingType} 
+                                <button
+                                    onClick={handleDownloadPdf}
+                                    disabled={!!downloadingType}
                                     className="text-[10px] uppercase tracking-widest text-white bg-gold-700 hover:bg-gold-600 font-bold py-3 px-10 rounded-full transition-all flex items-center gap-3"
                                 >
                                     {downloadingType === 'pdf' ? <Loader size="sm" /> : <DownloadIcon />}
@@ -1286,20 +1571,20 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         </div>
 
                         <div className="animate-fade-in">
-                        {viewMode === 'gallery' ? (
-                            <GeneratedImageGallery images={[coverImage!, ...modelImages]} hideWatermark={isPaidUser} />
-                        ) : (
-                            <CatalogueViewer
-                                coverImage={coverImage!}
-                                generatedImages={modelImages}
-                                catalogueRef={catalogueRef}
-                                productName={productName}
-                                creatorName={creatorName}
-                                hideBrand={isPaidUser}
-                            />
-                        )}
+                            {viewMode === 'gallery' ? (
+                                <GeneratedImageGallery images={[coverImage!, ...modelImages]} hideWatermark={isPaidUser} />
+                            ) : (
+                                <CatalogueViewer
+                                    coverImage={coverImage!}
+                                    generatedImages={modelImages}
+                                    catalogueRef={catalogueRef}
+                                    productName={productName}
+                                    creatorName={creatorName}
+                                    hideBrand={isPaidUser}
+                                />
+                            )}
                         </div>
-                    </div> 
+                    </div>
                 );
             default: return null;
         }
