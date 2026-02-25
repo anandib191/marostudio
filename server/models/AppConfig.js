@@ -24,7 +24,7 @@ const appConfigSchema = new mongoose.Schema(
     },
     creditsPerPhotoshoot4KGeneration: {
       type: Number,
-      default: 40,
+      default: 60,
       min: 1,
     },
     creditsPerMarketingGeneration: {
@@ -64,7 +64,7 @@ appConfigSchema.statics.getConfig = async function () {
       freeTierPhotoshootCredits: 3,
       freeTierMarketingPosterCredits: 5,
       creditsPerPhotoshootGeneration: 20,
-      creditsPerPhotoshoot4KGeneration: 40,
+      creditsPerPhotoshoot4KGeneration: 60,
       creditsPerMarketingGeneration: 5,
       statistics: {
         categories: "4+",
@@ -90,7 +90,7 @@ appConfigSchema.statics.getConfig = async function () {
     config.creditsPerPhotoshootGeneration = 20;
   }
   if (config.creditsPerPhotoshoot4KGeneration === undefined) {
-    config.creditsPerPhotoshoot4KGeneration = 40;
+    config.creditsPerPhotoshoot4KGeneration = 60;
   }
   if (config.creditsPerMarketingGeneration === undefined) {
     config.creditsPerMarketingGeneration = 5;
