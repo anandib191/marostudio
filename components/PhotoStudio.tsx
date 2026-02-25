@@ -210,7 +210,6 @@ const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
 
 const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
     { id: 'hd', label: 'HD' },
-    { id: '2k', label: '2K' },
     { id: '4k', label: '4K' },
 ];
 
@@ -468,7 +467,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     isPaidUser
 }) => {
     // PRO feature gating
-    const PRO_QUALITY_IDS = ['2k', '4k'];
+    const PRO_QUALITY_IDS = ['4k'];
     const PRO_STYLE_IDS = ['cinematic', 'vintage'];
     const PRO_BACKGROUND_IDS = ['workspace', 'city', 'historic', 'custom'];
     const [shakeId, setShakeId] = useState<string | null>(null);
@@ -680,10 +679,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                     onImageQualityChange(opt.id as ImageQuality);
                                                 }}
                                                 className={`relative w-full px-2 py-1.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all duration-300 flex items-center justify-center gap-1 ${isActive && !isProLocked
-                                                        ? 'bg-neutral-900 text-gold-400 shadow-sm'
-                                                        : isProLocked
-                                                            ? 'text-neutral-600 cursor-not-allowed'
-                                                            : 'text-neutral-300 hover:bg-neutral-700'
+                                                    ? 'bg-neutral-900 text-gold-400 shadow-sm'
+                                                    : isProLocked
+                                                        ? 'text-neutral-600 cursor-not-allowed'
+                                                        : 'text-neutral-300 hover:bg-neutral-700'
                                                     } ${shakeId === `quality-${opt.id}` ? 'animate-shake' : ''}`}
                                             >
                                                 {opt.label}
@@ -739,10 +738,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                 onStyleChange(style.id);
                                             }}
                                             className={`relative py-1.5 sm:py-2 px-2 sm:px-3 rounded text-[9px] sm:text-[10px] uppercase tracking-wider font-bold border transition-all flex items-center justify-center gap-1.5 ${isActive && !isProLocked
-                                                    ? 'bg-gold-600 text-white border-gold-500 shadow-sm shadow-gold-900/20'
-                                                    : isProLocked
-                                                        ? 'bg-neutral-900/50 text-neutral-600 border-white/5 cursor-not-allowed'
-                                                        : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
+                                                ? 'bg-gold-600 text-white border-gold-500 shadow-sm shadow-gold-900/20'
+                                                : isProLocked
+                                                    ? 'bg-neutral-900/50 text-neutral-600 border-white/5 cursor-not-allowed'
+                                                    : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
                                                 } ${shakeId === `style-${style.id}` ? 'animate-shake' : ''}`}
                                         >
                                             {style.name}
@@ -787,7 +786,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                 <>
                                     <button
                                         onClick={onGenerate}
-                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < 20)}
+                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < (imageQuality === '4k' ? 40 : 20))}
                                         className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 disabled:transform-none"
                                     >
                                         {isLoading ? 'Processing...' : 'Generate Photoshoot'}
@@ -1001,7 +1000,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ type: 'photoshoot' }),
+                    body: JSON.stringify({ type: 'photoshoot', imageQuality }),
                 });
                 const checkData = await checkRes.json();
 
@@ -1039,13 +1038,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 const finalCreatorName = creatorName || 'Indie Brand';
                 setProductName(nameToUse);
                 setCreatorName(finalCreatorName);
-                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, undefined, extraPrompt, aspectRatio, consistentCharacter, background, customBackground);
+                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, undefined, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
             } else if (productType === 'other_ornament') {
                 const nameToUse = otherOrnamentType;
                 setProductName(nameToUse);
-                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, DYNAMIC_ORNAMENT_PROMPTS_CONFIG, extraPrompt, aspectRatio, consistentCharacter, background, customBackground);
+                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, DYNAMIC_ORNAMENT_PROMPTS_CONFIG, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
             } else {
-                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground);
+                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
             }
 
             setCoverImage(result.coverImage);
@@ -1137,7 +1136,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`,
                         },
-                        body: JSON.stringify({ type: 'photoshoot' }),
+                        body: JSON.stringify({ type: 'photoshoot', imageQuality }),
                     });
 
                     // Update credits immediately after successful deduction
@@ -1170,7 +1169,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setLoadingImages([]);
             setLoadingMessage("");
         }
-    }, [imageFiles, creatorName, promptCategory, productType, selectedStyle, apparelStyle, identifiedProductName, otherOrnamentType, onContentGenerated, extraPrompt, productName, aspectRatio, consistentCharacter, background, customBackground, fetchCredits]);
+    }, [imageFiles, creatorName, promptCategory, productType, selectedStyle, apparelStyle, identifiedProductName, otherOrnamentType, onContentGenerated, extraPrompt, productName, aspectRatio, consistentCharacter, background, customBackground, imageQuality, fetchCredits]);
 
     const handleDownloadPdf = async () => {
         if (!catalogueRef.current) return;

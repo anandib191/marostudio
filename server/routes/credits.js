@@ -104,14 +104,18 @@ router.get("/history", protect, async (req, res) => {
  */
 router.post("/check", protect, async (req, res) => {
   try {
-    const { type } = req.body; // 'photoshoot' or 'marketing'
+    const { type, imageQuality } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k'
 
     // Get configurable credits per generation
     const config = await AppConfig.getConfig();
-    const CREDITS_PER_GENERATION =
-      type === "marketing"
-        ? config.creditsPerMarketingGeneration
-        : config.creditsPerPhotoshootGeneration;
+    let CREDITS_PER_GENERATION;
+    if (type === "marketing") {
+      CREDITS_PER_GENERATION = config.creditsPerMarketingGeneration;
+    } else if (imageQuality === '4k') {
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration;
+    } else {
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration;
+    }
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -167,14 +171,18 @@ router.post("/check", protect, async (req, res) => {
  */
 router.post("/deduct", protect, async (req, res) => {
   try {
-    const { type } = req.body; // 'photoshoot' or 'marketing'
+    const { type, imageQuality } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k'
 
     // Get configurable credits per generation
     const config = await AppConfig.getConfig();
-    const CREDITS_PER_GENERATION =
-      type === "marketing"
-        ? config.creditsPerMarketingGeneration
-        : config.creditsPerPhotoshootGeneration;
+    let CREDITS_PER_GENERATION;
+    if (type === "marketing") {
+      CREDITS_PER_GENERATION = config.creditsPerMarketingGeneration;
+    } else if (imageQuality === '4k') {
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration;
+    } else {
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration;
+    }
 
     const user = await User.findById(req.user._id);
     if (!user) {

@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { ImageFile, ProductType, Category, AspectRatio, BackgroundType } from '../types';
+import { ImageFile, ProductType, Category, AspectRatio, BackgroundType, ImageQuality } from '../types';
 import { WOMEN_PROMPTS } from './prompts/women';
 import { MEN_PROMPTS } from './prompts/men';
 import { KIDS_PROMPTS } from './prompts/kids';
@@ -70,10 +70,51 @@ const toBladditAspectRatio = (ar: AspectRatio | string): string =>
     BLADDIT_ASPECT_RATIOS.includes(ar as typeof BLADDIT_ASPECT_RATIOS[number]) ? ar : 'match_input_image';
 
 /**
- * Generates an image: direct fetch to Bladdit (POST https://api.bladdit.com/v1/generate).
+ * Generates a 4K image using the Joingy API
+ */
+const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio): Promise<string> => {
+    const formData = new FormData();
+
+    const mainBlob = await getBlobFromSource(imageFile.base64, imageFile.mimeType);
+    formData.append('images', mainBlob, 'input_image.png');
+
+    formData.append('prompt', prompt);
+    formData.append('image_size', '4K');
+
+    let apiAspectRatio = "16:9";
+    if (['1:1', '16:9', '9:16', '4:5', '3:2'].includes(aspectRatio)) {
+        apiAspectRatio = aspectRatio;
+    }
+    formData.append('aspect_ratio', apiAspectRatio);
+
+    const response = await fetch('https://api.joingy.site/', {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (!response.ok) {
+        throw new Error(`4K Generation API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.output && data.output.length > 0) {
+        return data.output[0];
+    }
+
+    throw new Error('4K Image generation failed: ' + (data.message || 'Unknown API error'));
+}
+
+/**
+ * Generates an image: direct fetch to Bladdit or Joingy (4K).
  * Params: image, prompt, model=nanobananapro, aspect_ratio. No backend proxy, no CORS workaround.
  */
-const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string): Promise<string> => {
+const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'hd'): Promise<string> => {
+    // Route to 4K API if quality is 4k
+    if (imageQuality === '4k') {
+        return generate4KImage(imageFile, prompt, aspectRatio);
+    }
+
     const formData = new FormData();
 
     const mainBlob = await getBlobFromSource(imageFile.base64, imageFile.mimeType);
@@ -101,7 +142,7 @@ const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectR
     const data = await response.json();
 
     if (data.success && data.output && data.output.length > 0) {
-        return data.output[0]; // Returns the URL of the generated image
+        return data.output[0];
     }
 
     throw new Error('Image generation failed: ' + (data.message || 'Unknown API error'));
@@ -131,7 +172,8 @@ export const generateCatalogueImages = async (
     aspectRatio: AspectRatio = '1:1',
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
-    customBackgroundPrompt?: string
+    customBackgroundPrompt?: string,
+    imageQuality: ImageQuality = 'hd'
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
         const frontImage = imageFiles.find((_f, i) => i === 0 && _f);
@@ -182,7 +224,7 @@ export const generateCatalogueImages = async (
                 const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
                 try {
-                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined);
+                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
                     onImageGenerated(image, index);
                     generatedImages.push(image);
 
@@ -203,7 +245,7 @@ export const generateCatalogueImages = async (
                 const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
                 try {
-                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio);
+                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio, undefined, imageQuality);
                     onImageGenerated(image, index);
                     return image;
                 } catch (err) {
@@ -240,7 +282,8 @@ export const generateOtherProductImages = async (
     aspectRatio: AspectRatio = '1:1',
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
-    customBackgroundPrompt?: string
+    customBackgroundPrompt?: string,
+    imageQuality: ImageQuality = 'hd'
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     const config = promptsConfig || ECOMMERCE_PROMPTS.other;
     if (!config) throw new Error('Prompts for this product category not found.');
@@ -265,7 +308,7 @@ export const generateOtherProductImages = async (
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
-                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined);
+                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
                 onImageGenerated(image, index);
                 generatedImages.push(image);
 
@@ -281,7 +324,7 @@ export const generateOtherProductImages = async (
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
-                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio);
+                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio, undefined, imageQuality);
                 onImageGenerated(image, index);
                 return image;
             } catch (err) {
