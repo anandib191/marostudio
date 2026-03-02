@@ -88,7 +88,7 @@ export const Dashboard: React.FC = () => {
   // Credit deduction configuration state
   const [creditDeductions, setCreditDeductions] = useState({
     creditsPerPhotoshootGeneration: 20,
-    creditsPerMarketingGeneration: 5,
+    creditsPerMarketingGeneration: 20,
   });
   const [loadingCreditDeductions, setLoadingCreditDeductions] = useState(false);
   const [savingCreditDeductions, setSavingCreditDeductions] = useState(false);
@@ -165,7 +165,7 @@ export const Dashboard: React.FC = () => {
     } else {
       setRefreshingPlans(true); // Show subtle loading overlay for refresh
     }
-    
+
     try {
       const res = await fetch(`${API_URL}/api/admin/price-plans`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -220,7 +220,7 @@ export const Dashboard: React.FC = () => {
       if (res.ok && data.success) {
         setCreditDeductions({
           creditsPerPhotoshootGeneration: data.creditsPerPhotoshootGeneration || 20,
-          creditsPerMarketingGeneration: data.creditsPerMarketingGeneration || 5,
+          creditsPerMarketingGeneration: data.creditsPerMarketingGeneration || 20,
         });
       } else {
         toast.error(data.message || 'Failed to load credit deduction settings', { position: "top-right", autoClose: 3000 });
@@ -285,7 +285,7 @@ export const Dashboard: React.FC = () => {
     if (!hasExistingUsers) {
       setLoadingUsers(true);
     }
-    
+
     try {
       const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -346,7 +346,7 @@ export const Dashboard: React.FC = () => {
     if (!hasExistingAdmins) {
       setLoadingAdmins(true);
     }
-    
+
     try {
       const res = await fetch(`${API_URL}/api/admin/users?role=admin&page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -375,25 +375,25 @@ export const Dashboard: React.FC = () => {
     try {
       // Use provided plans or current state
       const plansToProcess = plansToSave || plans;
-      
+
       // Filter out blank features from all plans before saving
       // Also ensure only one plan is popular
       // Clean features array without auto-adding credit features
       const cleanedPlans = plansToProcess.map(plan => {
         const filteredFeatures = (plan.features || []).filter((f: string) => f && f.trim().length > 0);
-        
+
         // Only remove old credit features, don't add new ones automatically
-        const nonCreditFeatures = filteredFeatures.filter(f => 
-          !f.toLowerCase().includes('photoshoot generation') && 
+        const nonCreditFeatures = filteredFeatures.filter(f =>
+          !f.toLowerCase().includes('photoshoot generation') &&
           !f.toLowerCase().includes('marketing poster generation')
         );
-        
+
         return {
           ...plan,
           features: nonCreditFeatures
         };
       });
-      
+
       // Ensure only one plan is popular (keep the first one found as popular)
       let foundPopular = false;
       const finalPlans = cleanedPlans.map(plan => {
@@ -409,7 +409,7 @@ export const Dashboard: React.FC = () => {
       });
 
       console.log('Sending to backend:', { plans: finalPlans });
-      
+
       const res = await fetch(`${API_URL}/api/admin/price-plans`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -433,15 +433,15 @@ export const Dashboard: React.FC = () => {
   const handlePreviewSync = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) return;
-    
+
     setLoadingPreview(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/sync-credits/preview`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         setSyncPreview(data.preview);
         setShowSyncPreview(true);
@@ -459,7 +459,7 @@ export const Dashboard: React.FC = () => {
   const handleSyncCredits = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) return;
-    
+
     setSyncingCredits(true);
     setShowSyncPreview(false);
     try {
@@ -467,14 +467,14 @@ export const Dashboard: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         const stats = data.stats || {};
         const message = `Credits synced successfully! Updated: ${stats.updated || 0}, Skipped: ${stats.skipped || 0}, Expired Reset: ${stats.expiredReset || 0}`;
         toast.success(message, { position: "top-right", autoClose: 5000 });
-        
+
         // Refresh users list to show updated credits
         if (section === 'users') {
           await loadUsers(token, usersPage);
@@ -611,10 +611,10 @@ export const Dashboard: React.FC = () => {
       const next = prev.map((p, i) => {
         if (i === index) {
           const updatedPlan = { ...p, [field]: value };
-          
+
           // Don't automatically sync features when credits are updated
           // Features should be managed independently
-          
+
           return updatedPlan;
         } else {
           // If another plan is being set as popular, unset this one
@@ -680,7 +680,7 @@ export const Dashboard: React.FC = () => {
   const setPlanAsPopular = async (index: number) => {
     const token = localStorage.getItem('admin_token');
     if (!token) return;
-    
+
     setSavingPlans(true);
     try {
       const currentPlan = plans[index];
@@ -692,7 +692,7 @@ export const Dashboard: React.FC = () => {
 
       const isCurrentlyPopular = currentPlan.isPopular;
       const newPopularStatus = !isCurrentlyPopular;
-      
+
       // Update the plan's popular status
       const res = await fetch(`${API_URL}/api/admin/price-plans/${currentPlan._id}`, {
         method: 'PUT',
@@ -723,10 +723,10 @@ export const Dashboard: React.FC = () => {
 
   const confirmDeletePlan = async () => {
     if (planToDeleteIndex === null || plans.length <= 1) return;
-    
+
     const token = localStorage.getItem('admin_token');
     if (!token) return;
-    
+
     const planToDelete = plans[planToDeleteIndex];
     if (!planToDelete._id) {
       toast.error('Cannot delete plan without ID', { position: "top-right", autoClose: 3000 });
@@ -752,7 +752,7 @@ export const Dashboard: React.FC = () => {
     } catch (e) {
       toast.error('Failed to delete plan', { position: "top-right", autoClose: 3000 });
     }
-    
+
     setShowDeletePlanModal(false);
     setPlanToDeleteIndex(null);
   };
@@ -885,9 +885,8 @@ export const Dashboard: React.FC = () => {
             setSection('price-plans');
             setSidebarOpen(false);
           }}
-          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'price-plans' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
-          }`}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'price-plans' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
         >
           Price Plans
         </button>
@@ -896,9 +895,8 @@ export const Dashboard: React.FC = () => {
             setSection('users');
             setSidebarOpen(false);
           }}
-          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'users' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
-          }`}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'users' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
         >
           Users
         </button>
@@ -907,9 +905,8 @@ export const Dashboard: React.FC = () => {
             setSection('admins');
             setSidebarOpen(false);
           }}
-          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'admins' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
-          }`}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'admins' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
         >
           Admins
         </button>
@@ -918,9 +915,8 @@ export const Dashboard: React.FC = () => {
             setSection('credits');
             setSidebarOpen(false);
           }}
-          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'credits' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
-          }`}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'credits' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
         >
           Credits
         </button>
@@ -929,9 +925,8 @@ export const Dashboard: React.FC = () => {
             setSection('statistics');
             setSidebarOpen(false);
           }}
-          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            section === 'statistics' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
-          }`}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'statistics' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
         >
           Statistics
         </button>
@@ -985,900 +980,896 @@ export const Dashboard: React.FC = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 md:p-8">
 
-          {section === 'price-plans' && (
-            <div className="w-full">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <h2 className="text-2xl font-bold font-serif-display">Price Plans</h2>
-                <div className="flex gap-3">
-                  {refreshingPlans && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-gold-500/10 border border-gold-500/30 rounded-lg">
-                      <div className="sparkle-loader">
-                        <div className="sparkle"></div>
-                        <div className="sparkle"></div>
-                        <div className="sparkle"></div>
-                      </div>
-                      <span className="text-xs text-gold-400 font-medium">Refreshing...</span>
-                    </div>
-                  )}
-                  <button
-                    onClick={addPlan}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    Add Plan
-                  </button>
-                </div>
-              </div>
-
-              {loadingPlans ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
-                  {plans.map((plan, i) => (
-                    <div
-                      key={i}
-                      className={`relative rounded-2xl p-4 sm:p-6 md:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out ${
-                        plan.isPopular 
-                          ? 'bg-neutral-900 border-2 border-gold-500 shadow-2xl shadow-gold-900/40 z-10' 
-                          : 'bg-neutral-950/50 border border-neutral-800'
-                      }`}
-                    >
-                      {/* Edit, Popular, and Delete Icons */}
-                      <div className="absolute top-4 right-4 flex gap-2 z-10">
-                        <button
-                          onClick={() => handleEditPlan(i)}
-                          className="p-2 bg-black/60 hover:bg-gold-600/80 rounded-lg text-gold-400 hover:text-white transition-colors"
-                          title="Edit Plan"
-                          aria-label="Edit Plan"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => setPlanAsPopular(i)}
-                          disabled={savingPlans}
-                          className={`p-2 bg-black/60 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                            plan.isPopular
-                              ? 'bg-gold-500/80 hover:bg-gold-600/80 text-white'
-                              : 'hover:bg-yellow-600/80 text-yellow-400 hover:text-white'
-                          }`}
-                          title={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
-                          aria-label={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
-                        >
-                          <StarIcon className={`w-4 h-4 ${plan.isPopular ? 'fill-current' : ''}`} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setPlanToDeleteIndex(i);
-                            setShowDeletePlanModal(true);
-                          }}
-                          disabled={plans.length <= 1}
-                          className="p-2 bg-black/60 hover:bg-red-600/80 rounded-lg text-red-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          title="Delete Plan"
-                          aria-label="Delete Plan"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-
-                      {plan.isPopular && (
-                        <div 
-                          key={`badge-${plan._id || i}-${plan.isPopular}`}
-                          className="absolute top-0 right-6 -translate-y-1/2 bg-gold-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider"
-                        >
-                          <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
-                          Most Popular
+            {section === 'price-plans' && (
+              <div className="w-full">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <h2 className="text-2xl font-bold font-serif-display">Price Plans</h2>
+                  <div className="flex gap-3">
+                    {refreshingPlans && (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gold-500/10 border border-gold-500/30 rounded-lg">
+                        <div className="sparkle-loader">
+                          <div className="sparkle"></div>
+                          <div className="sparkle"></div>
+                          <div className="sparkle"></div>
                         </div>
-                      )}
-
-                      <div className="flex-1 flex flex-col">
-                        <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                        <div className="mt-4 flex items-baseline justify-center gap-x-2">
-                          <span className="text-5xl font-bold tracking-tight text-white">
-                            ₹{plan.price}
-                          </span>
-                          <span className="text-sm font-semibold leading-6 tracking-wide text-neutral-400">/ month</span>
-                        </div>
-                        <p className="mt-1 text-xs leading-5 text-neutral-500">billed monthly</p>
-                        <p className="mt-1 text-xs leading-5 text-neutral-500">₹{plan.yearlyPrice}/mo billed annually</p>
-
-                        <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
-                          {(plan.features || []).map((feature, idx) => (
-                            <li key={idx} className="flex gap-x-3">
-                              <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        <div className="mt-auto pt-8">
-                          <p className="text-xs leading-5 text-neutral-500 h-8">{plan.description || 'No description'}</p>
-                        </div>
+                        <span className="text-xs text-gold-400 font-medium">Refreshing...</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {section === 'users' && (
-            <div className="w-full max-w-6xl">
-              <h2 className="text-xl sm:text-2xl font-bold font-serif-display mb-4 sm:mb-6">Users</h2>
-              
-              {/* User Statistics Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {/* Total Users Card */}
-                <div className="bg-gradient-to-br from-gold-900/30 to-gold-800/20 border border-gold-500/30 rounded-xl p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Total Users</p>
-                      {loadingUserStats ? (
-                        <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
-                      ) : (
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white">{usersTotal.toLocaleString()}</h3>
-                      )}
-                    </div>
-                    <div className="bg-gold-500/20 p-3 rounded-lg">
-                      <svg className="w-6 h-6 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Active Subscriptions Card */}
-                <div className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-xl p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Active Subscriptions</p>
-                      {loadingUserStats ? (
-                        <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
-                      ) : (
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white">{activeSubscriptions.toLocaleString()}</h3>
-                      )}
-                      <p className="text-xs text-neutral-500 mt-1">Currently active plans</p>
-                    </div>
-                    <div className="bg-green-500/20 p-3 rounded-lg">
-                      <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {loadingUsers ? (
-                <div className="flex items-center justify-center py-12 sm:py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-gold-500 border-t-transparent" />
-                </div>
-              ) : (
-                <>
-                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[900px] sm:min-w-[1200px]">
-                        <thead className="bg-neutral-800/50">
-                          <tr>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Credits (Used/Total)</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Purchase Date</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Created</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Last Login</th>
-                            <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {users && users.length > 0 ? users.map((user) => (
-                            <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30">
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm text-white">
-                                <div className="max-w-[120px] xs:max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm">
-                                <div className="flex flex-col gap-0.5 xs:gap-1">
-                                  <span className={`inline-block px-1.5 xs:px-2 py-0.5 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${
-                                    user?.planName === 'Free' 
-                                      ? 'bg-neutral-500/20 text-neutral-300' 
-                                      : user?.planName === 'Gold'
-                                      ? 'bg-yellow-500/20 text-yellow-300'
-                                      : user?.planName === 'Platinum'
-                                      ? 'bg-gold-500/20 text-gold-300'
-                                      : 'bg-blue-500/20 text-blue-300'
-                                  }`}>
-                                    {user?.planName || 'Free'}
-                                  </span>
-                                  {user?.isActive !== undefined && (
-                                    <span className={`text-[8px] xs:text-[9px] ${user.isActive ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {user.isActive ? '● Active' : '● Expired'}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
-                                <span className={`inline-block px-1.5 xs:px-2 py-0.5 xs:py-1 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${
-                                  user?.isVerified ? 'bg-emerald-500/20 text-emerald-300' : 'bg-yellow-500/20 text-yellow-300'
-                                }`}>
-                                  {user?.isVerified ? 'Verified' : 'Unverified'}
-                                </span>
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400">
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="whitespace-nowrap">
-                                    Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}
-                                    {user?.photoshootGenerationsUsed !== undefined && (
-                                      <span className="text-neutral-500 ml-1">({user.photoshootGenerationsUsed} gen)</span>
-                                    )}
-                                  </span>
-                                  <span className="whitespace-nowrap">
-                                    Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}
-                                    {user?.marketingGenerationsUsed !== undefined && (
-                                      <span className="text-neutral-500 ml-1">({user.marketingGenerationsUsed} gen)</span>
-                                    )}
-                                  </span>
-                                  {(user?.photoshootGenerationsRemaining !== undefined || user?.marketingGenerationsRemaining !== undefined) && (
-                                    <div className="mt-1 pt-1 border-t border-white/5">
-                                      <span className="text-[8px] text-emerald-400">
-                                        Remaining: Photo {user?.photoshootGenerationsRemaining ?? 0} | Marketing {user?.marketingGenerationsRemaining ?? 0}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">
-                                {user?.subscriptionPurchasedAt ? (
-                                  <div className="flex flex-col">
-                                    <span>{formatDate(user.subscriptionPurchasedAt)}</span>
-                                    <span className="text-[8px] text-neutral-500">{formatDateTime(user.subscriptionPurchasedAt)}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-neutral-600">N/A</span>
-                                )}
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                {user?.subscriptionExpiresAt ? (
-                                  <div className="flex flex-col">
-                                    <span className={user?.isActive ? 'text-emerald-400' : 'text-red-400'}>
-                                      {formatDate(user.subscriptionExpiresAt)}
-                                    </span>
-                                    <span className={`text-[8px] ${user?.isActive ? 'text-emerald-500' : 'text-red-500'}`}>
-                                      {formatDateTime(user.subscriptionExpiresAt)}
-                                    </span>
-                                    {user?.isActive && (
-                                      <span className="text-[8px] text-neutral-500 mt-0.5">
-                                        {getDaysUntilExpiry(user.subscriptionExpiresAt)} days left
-                                      </span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <span className="text-neutral-600">N/A</span>
-                                )}
-                              </td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.createdAt)}</td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.lastLogin)}</td>
-                              <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
-                                {user?._id && (
-                                  <button
-                                    onClick={() => {
-                                      setDeleteUserId(user._id);
-                                      setShowDeleteUserModal(true);
-                                    }}
-                                    className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
-                                    title="Delete user"
-                                    aria-label="Delete user"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          )) : (
-                            <tr>
-                              <td colSpan={9} className="px-4 py-8 text-center text-neutral-400 text-sm">
-                                No users found
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  {usersPages > 1 && (
-                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                      <button
-                        onClick={() => setUsersPage((p) => Math.max(1, p - 1))}
-                        disabled={usersPage === 1}
-                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
-                      >
-                        Previous
-                      </button>
-                      <span className="text-xs sm:text-sm text-neutral-400 text-center">
-                        Page {usersPage} of {usersPages} ({usersTotal} total)
-                      </span>
-                      <button
-                        onClick={() => setUsersPage((p) => Math.min(usersPages, p + 1))}
-                        disabled={usersPage === usersPages}
-                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {section === 'admins' && (
-            <div className="w-full max-w-6xl">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold font-serif-display">Admins</h2>
-              </div>
-
-              {/* Add Admin Form */}
-              <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Add New Admin</h3>
-                {addAdminStep === 'email' ? (
-                  <form onSubmit={handleSendAdminOTP} className="space-y-4">
-                    <div>
-                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
-                      <input
-                        type="email"
-                        value={addAdminEmail}
-                        onChange={(e) => setAddAdminEmail(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        placeholder="admin@example.com"
-                      />
-                    </div>
-                    {addAdminError && (
-                      <div className="text-sm text-red-400">{addAdminError}</div>
                     )}
                     <button
-                      type="submit"
-                      disabled={addAdminLoading}
-                      className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      onClick={addPlan}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      {addAdminLoading ? 'Sending...' : 'Send OTP'}
+                      Add Plan
                     </button>
-                  </form>
+                  </div>
+                </div>
+
+                {loadingPlans ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
                 ) : (
-                  <form onSubmit={handleVerifyAdminOTP} className="space-y-4">
-                    <div>
-                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
-                      <input
-                        type="email"
-                        value={addAdminEmail}
-                        disabled
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-neutral-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">OTP</label>
-                      <input
-                        type="text"
-                        value={addAdminOTP}
-                        onChange={(e) => setAddAdminOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        required
-                        maxLength={6}
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-center text-xl sm:text-2xl tracking-widest focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        placeholder="000000"
-                      />
-                    </div>
-                    {addAdminError && (
-                      <div className="text-sm text-red-400">{addAdminError}</div>
-                    )}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="submit"
-                        disabled={addAdminLoading || addAdminOTP.length !== 6}
-                        className="flex-1 sm:flex-none px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className={`relative rounded-2xl p-4 sm:p-6 md:p-8 text-center flex flex-col h-full transition-all duration-500 ease-out ${plan.isPopular
+                          ? 'bg-neutral-900 border-2 border-gold-500 shadow-2xl shadow-gold-900/40 z-10'
+                          : 'bg-neutral-950/50 border border-neutral-800'
+                          }`}
                       >
-                        {addAdminLoading ? 'Verifying...' : 'Verify & Add Admin'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAddAdminStep('email');
-                          setAddAdminOTP('');
-                          setAddAdminError('');
-                        }}
-                        className="flex-1 sm:flex-none px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        Change Email
-                      </button>
-                    </div>
-                  </form>
+                        {/* Edit, Popular, and Delete Icons */}
+                        <div className="absolute top-4 right-4 flex gap-2 z-10">
+                          <button
+                            onClick={() => handleEditPlan(i)}
+                            className="p-2 bg-black/60 hover:bg-gold-600/80 rounded-lg text-gold-400 hover:text-white transition-colors"
+                            title="Edit Plan"
+                            aria-label="Edit Plan"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => setPlanAsPopular(i)}
+                            disabled={savingPlans}
+                            className={`p-2 bg-black/60 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${plan.isPopular
+                              ? 'bg-gold-500/80 hover:bg-gold-600/80 text-white'
+                              : 'hover:bg-yellow-600/80 text-yellow-400 hover:text-white'
+                              }`}
+                            title={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
+                            aria-label={plan.isPopular ? 'Remove Popular' : 'Set as Popular'}
+                          >
+                            <StarIcon className={`w-4 h-4 ${plan.isPopular ? 'fill-current' : ''}`} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPlanToDeleteIndex(i);
+                              setShowDeletePlanModal(true);
+                            }}
+                            disabled={plans.length <= 1}
+                            className="p-2 bg-black/60 hover:bg-red-600/80 rounded-lg text-red-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Delete Plan"
+                            aria-label="Delete Plan"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {plan.isPopular && (
+                          <div
+                            key={`badge-${plan._id || i}-${plan.isPopular}`}
+                            className="absolute top-0 right-6 -translate-y-1/2 bg-gold-500 py-1 px-3 rounded-full flex items-center text-xs font-semibold text-white uppercase tracking-wider"
+                          >
+                            <StarIcon className="w-4 h-4 mr-1.5 fill-current" />
+                            Most Popular
+                          </div>
+                        )}
+
+                        <div className="flex-1 flex flex-col">
+                          <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                          <div className="mt-4 flex items-baseline justify-center gap-x-2">
+                            <span className="text-5xl font-bold tracking-tight text-white">
+                              ₹{plan.price}
+                            </span>
+                            <span className="text-sm font-semibold leading-6 tracking-wide text-neutral-400">/ month</span>
+                          </div>
+                          <p className="mt-1 text-xs leading-5 text-neutral-500">billed monthly</p>
+                          <p className="mt-1 text-xs leading-5 text-neutral-500">₹{plan.yearlyPrice}/mo billed annually</p>
+
+                          <ul className="mt-8 flex-1 space-y-3 text-sm leading-6 text-neutral-300 text-left">
+                            {(plan.features || []).map((feature, idx) => (
+                              <li key={idx} className="flex gap-x-3">
+                                <CheckIcon className="h-6 w-6 flex-none text-gold-500" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+
+                          <div className="mt-auto pt-8">
+                            <p className="text-xs leading-5 text-neutral-500 h-8">{plan.description || 'No description'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+            )}
 
-              {/* Admins List */}
-              {loadingAdmins ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
-                </div>
-              ) : (
-                <>
-                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[600px]">
-                        <thead className="bg-neutral-800/50">
-                          <tr>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Created</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Login</th>
-                            <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {admins.map((admin) => (
-                            <tr key={admin._id} className="hover:bg-neutral-800/30">
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white">
-                                <div className="max-w-[200px] sm:max-w-none truncate" title={admin.email}>{admin.email}</div>
-                              </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
-                                <span className="inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium bg-gold-500/20 text-gold-300">
-                                  Admin
-                                </span>
-                              </td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden sm:table-cell">{formatDate(admin.createdAt)}</td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden lg:table-cell">{formatDate(admin.lastLogin)}</td>
-                              <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
-                                {admin.email.toLowerCase() !== userEmail.toLowerCase() && (
-                                  <button
-                                    onClick={() => {
-                                      setDeleteAdminId(admin._id);
-                                      setShowDeleteAdminModal(true);
-                                    }}
-                                    className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
-                                    title="Remove admin privileges"
-                                    aria-label="Delete admin"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  {adminsPages > 1 && (
-                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                      <button
-                        onClick={() => setAdminsPage((p) => Math.max(1, p - 1))}
-                        disabled={adminsPage === 1}
-                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
-                      >
-                        Previous
-                      </button>
-                      <span className="text-xs sm:text-sm text-neutral-400 text-center">
-                        Page {adminsPage} of {adminsPages} ({adminsTotal} total)
-                      </span>
-                      <button
-                        onClick={() => setAdminsPage((p) => Math.min(adminsPages, p + 1))}
-                        disabled={adminsPage === adminsPages}
-                        className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+            {section === 'users' && (
+              <div className="w-full max-w-6xl">
+                <h2 className="text-xl sm:text-2xl font-bold font-serif-display mb-4 sm:mb-6">Users</h2>
 
-          {section === 'credits' && (
-            <div className="w-full">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold font-serif-display">Credits Management</h2>
-                <p className="text-sm text-neutral-400">Configure credits for each pricing plan</p>
-              </div>
-
-              {loadingPlans ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Free Tier Credits Section */}
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
+                {/* User Statistics Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  {/* Total Users Card */}
+                  <div className="bg-gradient-to-br from-gold-900/30 to-gold-800/20 border border-gold-500/30 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-xl font-semibold text-white">Free Tier Credits</h3>
-                        <p className="text-xs text-neutral-400 mt-1">Credits for users without a subscription plan</p>
-                      </div>
-                      <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
-                        Default Plan
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-6 mb-4">
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Total Credits (Unified System)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={freeTierCredits.totalCredits}
-                          onChange={(e) => setFreeTierCredits(prev => ({
-                            ...prev,
-                            totalCredits: parseInt(e.target.value) || 0
-                          }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-neutral-500 mt-2">
-                          Users can use these credits for both photoshoot (20 credits each) and marketing poster (5 credits each) generation
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end pt-4 border-t border-white/10">
-                      <button
-                        onClick={async () => {
-                          const token = localStorage.getItem('admin_token');
-                          if (!token) {
-                            toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
-                            return;
-                          }
-                          
-                          setSavingFreeTier(true);
-                          try {
-                            const res = await fetch(`${API_URL}/api/admin/free-tier-credits`, {
-                              method: 'PUT',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`,
-                              },
-                              body: JSON.stringify({
-                                freeTierTotalCredits: freeTierCredits.totalCredits,
-                              }),
-                            });
-                            const data = await res.json();
-                            if (res.ok && data.success) {
-                              toast.success('Free tier credits updated successfully!', { position: "top-right", autoClose: 3000 });
-                            } else {
-                              toast.error(data.message || 'Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
-                            }
-                          } catch (e) {
-                            toast.error('Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
-                          } finally {
-                            setSavingFreeTier(false);
-                          }
-                        }}
-                        disabled={savingFreeTier}
-                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        {savingFreeTier ? 'Saving...' : 'Save Free Tier Credits'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Credit Deduction Per Generation Section */}
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-white">Credit Deduction per Generation</h3>
-                        <p className="text-xs text-neutral-400 mt-1">Configure how many credits are deducted for each generation</p>
-                      </div>
-                      <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
-                        Per Generation
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Photoshoot Credits (per generation)
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={creditDeductions.creditsPerPhotoshootGeneration}
-                          onChange={(e) => setCreditDeductions(prev => ({
-                            ...prev,
-                            creditsPerPhotoshootGeneration: parseInt(e.target.value) || 1
-                          }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Marketing Poster Credits (per generation)
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={creditDeductions.creditsPerMarketingGeneration}
-                          onChange={(e) => setCreditDeductions(prev => ({
-                            ...prev,
-                            creditsPerMarketingGeneration: parseInt(e.target.value) || 1
-                          }))}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end pt-4 border-t border-white/10">
-                      <button
-                        onClick={async () => {
-                          const token = localStorage.getItem('admin_token');
-                          if (!token) {
-                            toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
-                            return;
-                          }
-                          
-                          setSavingCreditDeductions(true);
-                          try {
-                            const res = await fetch(`${API_URL}/api/admin/credit-deductions`, {
-                              method: 'PUT',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`,
-                              },
-                              body: JSON.stringify({
-                                creditsPerPhotoshootGeneration: creditDeductions.creditsPerPhotoshootGeneration,
-                                creditsPerMarketingGeneration: creditDeductions.creditsPerMarketingGeneration,
-                              }),
-                            });
-                            const data = await res.json();
-                            if (res.ok && data.success) {
-                              toast.success('Credit deduction settings updated successfully!', { position: "top-right", autoClose: 3000 });
-                            } else {
-                              toast.error(data.message || 'Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
-                            }
-                          } catch (e) {
-                            toast.error('Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
-                          } finally {
-                            setSavingCreditDeductions(false);
-                          }
-                        }}
-                        disabled={savingCreditDeductions}
-                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        {savingCreditDeductions ? 'Saving...' : 'Save Credit Deductions'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Paid Plans Section */}
-                  <div className="pt-4">
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Paid Plans</h3>
-                    <div className="text-xs text-neutral-400 mb-2">
-                      Debug: Plans count = {plans.length}, First plan = {plans[0] ? JSON.stringify(plans[0]) : 'No plans'}
-                    </div>
-                  </div>
-                  {plans.map((plan, i) => (
-                    <div
-                      key={i}
-                      className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-                        {plan.isPopular && (
-                          <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
-                            Most Popular
-                          </span>
+                        <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Total Users</p>
+                        {loadingUserStats ? (
+                          <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
+                        ) : (
+                          <h3 className="text-2xl sm:text-3xl font-bold text-white">{usersTotal.toLocaleString()}</h3>
                         )}
                       </div>
-                      
-                      <div className="grid grid-cols-1 gap-6">
+                      <div className="bg-gold-500/20 p-3 rounded-lg">
+                        <svg className="w-6 h-6 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Subscriptions Card */}
+                  <div className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-neutral-400 font-medium mb-1">Active Subscriptions</p>
+                        {loadingUserStats ? (
+                          <div className="animate-pulse h-8 w-16 bg-neutral-700 rounded"></div>
+                        ) : (
+                          <h3 className="text-2xl sm:text-3xl font-bold text-white">{activeSubscriptions.toLocaleString()}</h3>
+                        )}
+                        <p className="text-xs text-neutral-500 mt-1">Currently active plans</p>
+                      </div>
+                      <div className="bg-green-500/20 p-3 rounded-lg">
+                        <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {loadingUsers ? (
+                  <div className="flex items-center justify-center py-12 sm:py-16">
+                    <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] sm:min-w-[1200px]">
+                          <thead className="bg-neutral-800/50">
+                            <tr>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Credits (Used/Total)</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Purchase Date</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Created</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Last Login</th>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {users && users.length > 0 ? users.map((user) => (
+                              <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30">
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm text-white">
+                                  <div className="max-w-[120px] xs:max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm">
+                                  <div className="flex flex-col gap-0.5 xs:gap-1">
+                                    <span className={`inline-block px-1.5 xs:px-2 py-0.5 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${user?.planName === 'Free'
+                                      ? 'bg-neutral-500/20 text-neutral-300'
+                                      : user?.planName === 'Gold'
+                                        ? 'bg-yellow-500/20 text-yellow-300'
+                                        : user?.planName === 'Platinum'
+                                          ? 'bg-gold-500/20 text-gold-300'
+                                          : 'bg-blue-500/20 text-blue-300'
+                                      }`}>
+                                      {user?.planName || 'Free'}
+                                    </span>
+                                    {user?.isActive !== undefined && (
+                                      <span className={`text-[8px] xs:text-[9px] ${user.isActive ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {user.isActive ? '● Active' : '● Expired'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
+                                  <span className={`inline-block px-1.5 xs:px-2 py-0.5 xs:py-1 rounded text-[9px] xs:text-[10px] sm:text-xs font-medium ${user?.isVerified ? 'bg-emerald-500/20 text-emerald-300' : 'bg-yellow-500/20 text-yellow-300'
+                                    }`}>
+                                    {user?.isVerified ? 'Verified' : 'Unverified'}
+                                  </span>
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="whitespace-nowrap">
+                                      Photo: {user?.usedPhotoshootCredits ?? 0}/{user?.totalPhotoshootCredits ?? 0}
+                                      {user?.photoshootGenerationsUsed !== undefined && (
+                                        <span className="text-neutral-500 ml-1">({user.photoshootGenerationsUsed} gen)</span>
+                                      )}
+                                    </span>
+                                    <span className="whitespace-nowrap">
+                                      Marketing: {user?.usedMarketingCredits ?? 0}/{user?.totalMarketingCredits ?? 0}
+                                      {user?.marketingGenerationsUsed !== undefined && (
+                                        <span className="text-neutral-500 ml-1">({user.marketingGenerationsUsed} gen)</span>
+                                      )}
+                                    </span>
+                                    {(user?.photoshootGenerationsRemaining !== undefined || user?.marketingGenerationsRemaining !== undefined) && (
+                                      <div className="mt-1 pt-1 border-t border-white/5">
+                                        <span className="text-[8px] text-emerald-400">
+                                          Remaining: Photo {user?.photoshootGenerationsRemaining ?? 0} | Marketing {user?.marketingGenerationsRemaining ?? 0}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">
+                                  {user?.subscriptionPurchasedAt ? (
+                                    <div className="flex flex-col">
+                                      <span>{formatDate(user.subscriptionPurchasedAt)}</span>
+                                      <span className="text-[8px] text-neutral-500">{formatDateTime(user.subscriptionPurchasedAt)}</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-neutral-600">N/A</span>
+                                  )}
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                  {user?.subscriptionExpiresAt ? (
+                                    <div className="flex flex-col">
+                                      <span className={user?.isActive ? 'text-emerald-400' : 'text-red-400'}>
+                                        {formatDate(user.subscriptionExpiresAt)}
+                                      </span>
+                                      <span className={`text-[8px] ${user?.isActive ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {formatDateTime(user.subscriptionExpiresAt)}
+                                      </span>
+                                      {user?.isActive && (
+                                        <span className="text-[8px] text-neutral-500 mt-0.5">
+                                          {getDaysUntilExpiry(user.subscriptionExpiresAt)} days left
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-neutral-600">N/A</span>
+                                  )}
+                                </td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.createdAt)}</td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.lastLogin)}</td>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
+                                  {user?._id && (
+                                    <button
+                                      onClick={() => {
+                                        setDeleteUserId(user._id);
+                                        setShowDeleteUserModal(true);
+                                      }}
+                                      className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                      title="Delete user"
+                                      aria-label="Delete user"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            )) : (
+                              <tr>
+                                <td colSpan={9} className="px-4 py-8 text-center text-neutral-400 text-sm">
+                                  No users found
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    {usersPages > 1 && (
+                      <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <button
+                          onClick={() => setUsersPage((p) => Math.max(1, p - 1))}
+                          disabled={usersPage === 1}
+                          className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs sm:text-sm text-neutral-400 text-center">
+                          Page {usersPage} of {usersPages} ({usersTotal} total)
+                        </span>
+                        <button
+                          onClick={() => setUsersPage((p) => Math.min(usersPages, p + 1))}
+                          disabled={usersPage === usersPages}
+                          className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {section === 'admins' && (
+              <div className="w-full max-w-6xl">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif-display">Admins</h2>
+                </div>
+
+                {/* Add Admin Form */}
+                <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Add New Admin</h3>
+                  {addAdminStep === 'email' ? (
+                    <form onSubmit={handleSendAdminOTP} className="space-y-4">
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
+                        <input
+                          type="email"
+                          value={addAdminEmail}
+                          onChange={(e) => setAddAdminEmail(e.target.value)}
+                          required
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          placeholder="admin@example.com"
+                        />
+                      </div>
+                      {addAdminError && (
+                        <div className="text-sm text-red-400">{addAdminError}</div>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={addAdminLoading}
+                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {addAdminLoading ? 'Sending...' : 'Send OTP'}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleVerifyAdminOTP} className="space-y-4">
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Email</label>
+                        <input
+                          type="email"
+                          value={addAdminEmail}
+                          disabled
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-neutral-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">OTP</label>
+                        <input
+                          type="text"
+                          value={addAdminOTP}
+                          onChange={(e) => setAddAdminOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          required
+                          maxLength={6}
+                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-center text-xl sm:text-2xl tracking-widest focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          placeholder="000000"
+                        />
+                      </div>
+                      {addAdminError && (
+                        <div className="text-sm text-red-400">{addAdminError}</div>
+                      )}
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                          type="submit"
+                          disabled={addAdminLoading || addAdminOTP.length !== 6}
+                          className="flex-1 sm:flex-none px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          {addAdminLoading ? 'Verifying...' : 'Verify & Add Admin'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddAdminStep('email');
+                            setAddAdminOTP('');
+                            setAddAdminError('');
+                          }}
+                          className="flex-1 sm:flex-none px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Change Email
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+
+                {/* Admins List */}
+                {loadingAdmins ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[600px]">
+                          <thead className="bg-neutral-800/50">
+                            <tr>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Created</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Login</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {admins.map((admin) => (
+                              <tr key={admin._id} className="hover:bg-neutral-800/30">
+                                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white">
+                                  <div className="max-w-[200px] sm:max-w-none truncate" title={admin.email}>{admin.email}</div>
+                                </td>
+                                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                  <span className="inline-block px-2 py-1 rounded text-[10px] sm:text-xs font-medium bg-gold-500/20 text-gold-300">
+                                    Admin
+                                  </span>
+                                </td>
+                                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden sm:table-cell">{formatDate(admin.createdAt)}</td>
+                                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap hidden lg:table-cell">{formatDate(admin.lastLogin)}</td>
+                                <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                  {admin.email.toLowerCase() !== userEmail.toLowerCase() && (
+                                    <button
+                                      onClick={() => {
+                                        setDeleteAdminId(admin._id);
+                                        setShowDeleteAdminModal(true);
+                                      }}
+                                      className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                      title="Remove admin privileges"
+                                      aria-label="Delete admin"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    {adminsPages > 1 && (
+                      <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <button
+                          onClick={() => setAdminsPage((p) => Math.max(1, p - 1))}
+                          disabled={adminsPage === 1}
+                          className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs sm:text-sm text-neutral-400 text-center">
+                          Page {adminsPage} of {adminsPages} ({adminsTotal} total)
+                        </span>
+                        <button
+                          onClick={() => setAdminsPage((p) => Math.min(adminsPages, p + 1))}
+                          disabled={adminsPage === adminsPages}
+                          className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/15 disabled:opacity-30 text-white text-sm rounded-lg transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {section === 'credits' && (
+              <div className="w-full">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold font-serif-display">Credits Management</h2>
+                  <p className="text-sm text-neutral-400">Configure credits for each pricing plan</p>
+                </div>
+
+                {loadingPlans ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Free Tier Credits Section */}
+                    <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-white">Free Tier Credits</h3>
+                          <p className="text-xs text-neutral-400 mt-1">Credits for users without a subscription plan</p>
+                        </div>
+                        <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
+                          Default Plan
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 mb-4">
                         <div>
                           <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                            Total Credits (per month) - Unified System
+                            Total Credits (Unified System)
                           </label>
                           <input
                             type="number"
                             min="0"
-                            value={plan.totalCredits || 0}
-                            onChange={(e) => updatePlan(i, 'totalCredits', parseInt(e.target.value) || 0)}
+                            value={freeTierCredits.totalCredits}
+                            onChange={(e) => setFreeTierCredits(prev => ({
+                              ...prev,
+                              totalCredits: parseInt(e.target.value) || 0
+                            }))}
                             className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                           />
                           <p className="text-xs text-neutral-500 mt-2">
-                            Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                            Users can use these credits for both photoshoot (20 credits each) and marketing poster (20 credits each) generation
                           </p>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  <div className="flex justify-end gap-3 pt-4">
-                    <button
-                      onClick={handlePreviewSync}
-                      disabled={loadingPreview || syncingCredits || savingPlans}
-                      className="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-                      title="Preview credit changes before syncing"
-                    >
-                      {loadingPreview ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          Preview Changes
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={handleSyncCredits}
-                      disabled={syncingCredits || savingPlans}
-                      className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-                      title="Sync credits for all users based on their subscription plans"
-                    >
-                      {syncingCredits ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Sync Credits
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={async () => {
-                        alert('Save Plans button clicked!');
-                        const token = localStorage.getItem('admin_token');
-                        if (!token) return;
-                        
-                        setSavingPlans(true);
-                        try {
-                          // Save complete plan data, not just credits
-                          await handleSavePlans(plans);
-                          toast.success('Price plans saved successfully!', { position: "top-right", autoClose: 3000 });
-                        } catch (e) {
-                          toast.error('Failed to save price plans', { position: "top-right", autoClose: 3000 });
-                        } finally {
-                          setSavingPlans(false);
-                        }
-                      }}
-                      disabled={savingPlans || syncingCredits}
-                      className="px-6 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      {savingPlans ? 'Saving...' : 'Save Plans'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
-          {section === 'statistics' && (
-            <div className="w-full">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold font-serif-display">Statistics Management</h2>
-                <p className="text-sm text-neutral-400">Update statistics displayed on the landing page</p>
-              </div>
+                      <div className="flex justify-end pt-4 border-t border-white/10">
+                        <button
+                          onClick={async () => {
+                            const token = localStorage.getItem('admin_token');
+                            if (!token) {
+                              toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                              return;
+                            }
 
-              {loadingStatistics ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Categories
-                        </label>
-                        <input
-                          type="text"
-                          value={statistics.categories}
-                          onChange={(e) => setStatistics(prev => ({ ...prev, categories: e.target.value }))}
-                          placeholder="e.g., 4+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.categories} Categories"</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Active Users
-                        </label>
-                        <input
-                          type="text"
-                          value={statistics.activeUsers}
-                          onChange={(e) => setStatistics(prev => ({ ...prev, activeUsers: e.target.value }))}
-                          placeholder="e.g., 10k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeUsers} Active Users"</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Image Generated
-                        </label>
-                        <input
-                          type="text"
-                          value={statistics.imageGenerated}
-                          onChange={(e) => setStatistics(prev => ({ ...prev, imageGenerated: e.target.value }))}
-                          placeholder="e.g., 50k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.imageGenerated} Image Generated"</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                          Active Subscription
-                        </label>
-                        <input
-                          type="text"
-                          value={statistics.activeSubscription}
-                          onChange={(e) => setStatistics(prev => ({ ...prev, activeSubscription: e.target.value }))}
-                          placeholder="e.g., 1k+"
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeSubscription} Active Subscription"</p>
+                            setSavingFreeTier(true);
+                            try {
+                              const res = await fetch(`${API_URL}/api/admin/free-tier-credits`, {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({
+                                  freeTierTotalCredits: freeTierCredits.totalCredits,
+                                }),
+                              });
+                              const data = await res.json();
+                              if (res.ok && data.success) {
+                                toast.success('Free tier credits updated successfully!', { position: "top-right", autoClose: 3000 });
+                              } else {
+                                toast.error(data.message || 'Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
+                              }
+                            } catch (e) {
+                              toast.error('Failed to save free tier credits', { position: "top-right", autoClose: 3000 });
+                            } finally {
+                              setSavingFreeTier(false);
+                            }
+                          }}
+                          disabled={savingFreeTier}
+                          className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          {savingFreeTier ? 'Saving...' : 'Save Free Tier Credits'}
+                        </button>
                       </div>
                     </div>
-                    
-                    <div className="flex justify-end pt-4 border-t border-white/10">
-                      <button
-                        onClick={saveStatistics}
-                        disabled={savingStatistics}
-                        className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+
+                    {/* Credit Deduction Per Generation Section */}
+                    <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-white">Credit Deduction per Generation</h3>
+                          <p className="text-xs text-neutral-400 mt-1">Configure how many credits are deducted for each generation</p>
+                        </div>
+                        <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
+                          Per Generation
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Photoshoot Credits (per generation)
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={creditDeductions.creditsPerPhotoshootGeneration}
+                            onChange={(e) => setCreditDeductions(prev => ({
+                              ...prev,
+                              creditsPerPhotoshootGeneration: parseInt(e.target.value) || 1
+                            }))}
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Marketing Poster Credits (per generation)
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={creditDeductions.creditsPerMarketingGeneration}
+                            onChange={(e) => setCreditDeductions(prev => ({
+                              ...prev,
+                              creditsPerMarketingGeneration: parseInt(e.target.value) || 1
+                            }))}
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-4 border-t border-white/10">
+                        <button
+                          onClick={async () => {
+                            const token = localStorage.getItem('admin_token');
+                            if (!token) {
+                              toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
+                              return;
+                            }
+
+                            setSavingCreditDeductions(true);
+                            try {
+                              const res = await fetch(`${API_URL}/api/admin/credit-deductions`, {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({
+                                  creditsPerPhotoshootGeneration: creditDeductions.creditsPerPhotoshootGeneration,
+                                  creditsPerMarketingGeneration: creditDeductions.creditsPerMarketingGeneration,
+                                }),
+                              });
+                              const data = await res.json();
+                              if (res.ok && data.success) {
+                                toast.success('Credit deduction settings updated successfully!', { position: "top-right", autoClose: 3000 });
+                              } else {
+                                toast.error(data.message || 'Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
+                              }
+                            } catch (e) {
+                              toast.error('Failed to save credit deduction settings', { position: "top-right", autoClose: 3000 });
+                            } finally {
+                              setSavingCreditDeductions(false);
+                            }
+                          }}
+                          disabled={savingCreditDeductions}
+                          className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          {savingCreditDeductions ? 'Saving...' : 'Save Credit Deductions'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Paid Plans Section */}
+                    <div className="pt-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Paid Plans</h3>
+                      <div className="text-xs text-neutral-400 mb-2">
+                        Debug: Plans count = {plans.length}, First plan = {plans[0] ? JSON.stringify(plans[0]) : 'No plans'}
+                      </div>
+                    </div>
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className="bg-neutral-900/50 border border-white/10 rounded-xl p-4 sm:p-6 mb-4"
                       >
-                        {savingStatistics ? 'Saving...' : 'Save Statistics'}
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
+                          {plan.isPopular && (
+                            <span className="px-3 py-1 bg-gold-500/20 text-gold-400 text-xs font-semibold rounded-full">
+                              Most Popular
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6">
+                          <div>
+                            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                              Total Credits (per month) - Unified System
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={plan.totalCredits || 0}
+                              onChange={(e) => updatePlan(i, 'totalCredits', parseInt(e.target.value) || 0)}
+                              className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                            />
+                            <p className="text-xs text-neutral-500 mt-2">
+                              Users can use these credits for both photoshoot (20 each) and marketing poster (20 each) generation
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="flex justify-end gap-3 pt-4">
+                      <button
+                        onClick={handlePreviewSync}
+                        disabled={loadingPreview || syncingCredits || savingPlans}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                        title="Preview credit changes before syncing"
+                      >
+                        {loadingPreview ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Preview Changes
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={handleSyncCredits}
+                        disabled={syncingCredits || savingPlans}
+                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                        title="Sync credits for all users based on their subscription plans"
+                      >
+                        {syncingCredits ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                            Syncing...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Sync Credits
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          alert('Save Plans button clicked!');
+                          const token = localStorage.getItem('admin_token');
+                          if (!token) return;
+
+                          setSavingPlans(true);
+                          try {
+                            // Save complete plan data, not just credits
+                            await handleSavePlans(plans);
+                            toast.success('Price plans saved successfully!', { position: "top-right", autoClose: 3000 });
+                          } catch (e) {
+                            toast.error('Failed to save price plans', { position: "top-right", autoClose: 3000 });
+                          } finally {
+                            setSavingPlans(false);
+                          }
+                        }}
+                        disabled={savingPlans || syncingCredits}
+                        className="px-6 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        {savingPlans ? 'Saving...' : 'Save Plans'}
                       </button>
                     </div>
                   </div>
+                )}
+              </div>
+            )}
 
-                  {/* Preview Section */}
-                  <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
-                          {statistics.categories}
-                        </h3>
-                        <p className="text-sm text-neutral-400">Categories</p>
+            {section === 'statistics' && (
+              <div className="w-full">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold font-serif-display">Statistics Management</h2>
+                  <p className="text-sm text-neutral-400">Update statistics displayed on the landing page</p>
+                </div>
+
+                {loadingStatistics ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-br from-neutral-900/80 to-neutral-800/50 border-2 border-gold-500/30 rounded-xl p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Categories
+                          </label>
+                          <input
+                            type="text"
+                            value={statistics.categories}
+                            onChange={(e) => setStatistics(prev => ({ ...prev, categories: e.target.value }))}
+                            placeholder="e.g., 4+"
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.categories} Categories"</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Active Users
+                          </label>
+                          <input
+                            type="text"
+                            value={statistics.activeUsers}
+                            onChange={(e) => setStatistics(prev => ({ ...prev, activeUsers: e.target.value }))}
+                            placeholder="e.g., 10k+"
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeUsers} Active Users"</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Image Generated
+                          </label>
+                          <input
+                            type="text"
+                            value={statistics.imageGenerated}
+                            onChange={(e) => setStatistics(prev => ({ ...prev, imageGenerated: e.target.value }))}
+                            placeholder="e.g., 50k+"
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.imageGenerated} Image Generated"</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                            Active Subscription
+                          </label>
+                          <input
+                            type="text"
+                            value={statistics.activeSubscription}
+                            onChange={(e) => setStatistics(prev => ({ ...prev, activeSubscription: e.target.value }))}
+                            placeholder="e.g., 1k+"
+                            className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-neutral-500 mt-1">Displayed as: "{statistics.activeSubscription} Active Subscription"</p>
+                        </div>
                       </div>
-                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
-                          {statistics.activeUsers}
-                        </h3>
-                        <p className="text-sm text-neutral-400">Active Users</p>
+
+                      <div className="flex justify-end pt-4 border-t border-white/10">
+                        <button
+                          onClick={saveStatistics}
+                          disabled={savingStatistics}
+                          className="px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          {savingStatistics ? 'Saving...' : 'Save Statistics'}
+                        </button>
                       </div>
-                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
-                          {statistics.imageGenerated}
-                        </h3>
-                        <p className="text-sm text-neutral-400">Image Generated</p>
-                      </div>
-                      <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
-                        <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
-                          {statistics.activeSubscription}
-                        </h3>
-                        <p className="text-sm text-neutral-400">Active Subscription</p>
+                    </div>
+
+                    {/* Preview Section */}
+                    <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                          <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
+                            {statistics.categories}
+                          </h3>
+                          <p className="text-sm text-neutral-400">Categories</p>
+                        </div>
+                        <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                          <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
+                            {statistics.activeUsers}
+                          </h3>
+                          <p className="text-sm text-neutral-400">Active Users</p>
+                        </div>
+                        <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                          <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
+                            {statistics.imageGenerated}
+                          </h3>
+                          <p className="text-sm text-neutral-400">Image Generated</p>
+                        </div>
+                        <div className="bg-black p-4 rounded-xl border border-white/10 text-center">
+                          <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-500 bg-clip-text text-transparent">
+                            {statistics.activeSubscription}
+                          </h3>
+                          <p className="text-sm text-neutral-400">Active Subscription</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1989,7 +1980,7 @@ export const Dashboard: React.FC = () => {
                     className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                   />
                   <p className="text-xs text-neutral-500 mt-2">
-                    Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                    Users can use these credits for both photoshoot (20 each) and marketing poster (20 each) generation
                   </p>
                 </div>
                 <div className="sm:col-span-2 flex items-center gap-2">
@@ -2068,14 +2059,14 @@ export const Dashboard: React.FC = () => {
                       toast.error('Authentication required', { position: "top-right", autoClose: 3000 });
                       return;
                     }
-                    
+
                     setSavingPlans(true);
                     try {
-                    // Filter blank features
-                    const cleanedFeatures = (newPlan.features || []).filter((f: string) => f && f.trim().length > 0);
+                      // Filter blank features
+                      const cleanedFeatures = (newPlan.features || []).filter((f: string) => f && f.trim().length > 0);
 
-                    // Create new plan via POST
-                    const res = await fetch(`${API_URL}/api/admin/price-plans`, {
+                      // Create new plan via POST
+                      const res = await fetch(`${API_URL}/api/admin/price-plans`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                         body: JSON.stringify({
@@ -2168,7 +2159,7 @@ export const Dashboard: React.FC = () => {
                       className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
                     />
                     <p className="text-xs text-neutral-500 mt-2">
-                      Users can use these credits for both photoshoot (20 each) and marketing poster (5 each) generation
+                      Users can use these credits for both photoshoot (20 each) and marketing poster (20 each) generation
                     </p>
                   </div>
                   <div className="sm:col-span-2 flex items-center gap-2">
@@ -2229,7 +2220,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     onClick={async () => {
                       if (editingPlanIndex === null) return;
-                      
+
                       const planToEdit = plans[editingPlanIndex];
                       if (!planToEdit._id) {
                         toast.error('Cannot edit plan without ID', { position: "top-right", autoClose: 3000 });
@@ -2246,7 +2237,7 @@ export const Dashboard: React.FC = () => {
                       try {
                         // Filter blank features
                         const filteredFeatures = (planToEdit.features || []).filter((f: string) => f && f.trim().length > 0);
-                        
+
                         // Auto-update features array to include credits if credit fields are set
                         const creditFeatures: string[] = [];
                         if (planToEdit.photoshootCredits !== undefined && planToEdit.photoshootCredits !== null) {
@@ -2255,13 +2246,13 @@ export const Dashboard: React.FC = () => {
                         if (planToEdit.marketingPosterCredits !== undefined && planToEdit.marketingPosterCredits !== null) {
                           creditFeatures.push(`${planToEdit.marketingPosterCredits.toLocaleString()} Marketing poster generation`);
                         }
-                        
+
                         // Remove old credit features and add new ones
-                        const nonCreditFeatures = filteredFeatures.filter(f => 
-                          !f.toLowerCase().includes('photoshoot generation') && 
+                        const nonCreditFeatures = filteredFeatures.filter(f =>
+                          !f.toLowerCase().includes('photoshoot generation') &&
                           !f.toLowerCase().includes('marketing poster generation')
                         );
-                        
+
                         const cleanedFeatures = [...creditFeatures, ...nonCreditFeatures];
 
                         // Update plan via PUT
@@ -2305,7 +2296,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Sync Credits Preview Modal */}
       {showSyncPreview && syncPreview && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -2326,7 +2317,7 @@ export const Dashboard: React.FC = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-neutral-800/50 rounded-lg p-4 border border-white/10">
@@ -2342,7 +2333,7 @@ export const Dashboard: React.FC = () => {
                   <div className="text-2xl font-bold text-red-400">{syncPreview.usersWithDecrease}</div>
                 </div>
               </div>
-              
+
               {syncPreview.changes && syncPreview.changes.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-white mb-3">Affected Users ({syncPreview.affectedUsers})</h3>
@@ -2409,7 +2400,7 @@ export const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="p-6 border-t border-white/10 flex gap-3">
               <button
                 onClick={() => setShowSyncPreview(false)}

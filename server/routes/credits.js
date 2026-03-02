@@ -100,11 +100,12 @@ router.get("/history", protect, async (req, res) => {
  * @route   POST /api/credits/check
  * @desc    Check if user has enough credits for generation (photoshoot or marketing)
  * @access  Private
- * @note    Uses unified credit system - photoshoot costs 20, marketing costs 5
+ * @note    Uses unified credit system - photoshoot costs 20, marketing costs 20
  */
 router.post("/check", protect, async (req, res) => {
   try {
-    const { type, imageQuality } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k'
+    const { type, imageQuality, numberOfImages: rawNumImages } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k', numberOfImages: 2|4|6
+    const numberOfImages = Math.max(1, parseInt(rawNumImages) || 1);
 
     // Get configurable credits per generation
     const config = await AppConfig.getConfig();
@@ -112,9 +113,9 @@ router.post("/check", protect, async (req, res) => {
     if (type === "marketing") {
       CREDITS_PER_GENERATION = config.creditsPerMarketingGeneration;
     } else if (imageQuality === '4k') {
-      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration;
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration * numberOfImages;
     } else {
-      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration;
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration * numberOfImages;
     }
 
     const user = await User.findById(req.user._id);
@@ -167,11 +168,12 @@ router.post("/check", protect, async (req, res) => {
  * @route   POST /api/credits/deduct
  * @desc    Deduct credits after generation (photoshoot or marketing poster)
  * @access  Private
- * @note    Uses unified credit system - photoshoot costs 20, marketing costs 5
+ * @note    Uses unified credit system - photoshoot costs 20, marketing costs 20
  */
 router.post("/deduct", protect, async (req, res) => {
   try {
-    const { type, imageQuality } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k'
+    const { type, imageQuality, numberOfImages: rawNumImages } = req.body; // 'photoshoot' or 'marketing', imageQuality: 'hd' | '4k', numberOfImages: 2|4|6
+    const numberOfImages = Math.max(1, parseInt(rawNumImages) || 1);
 
     // Get configurable credits per generation
     const config = await AppConfig.getConfig();
@@ -179,9 +181,9 @@ router.post("/deduct", protect, async (req, res) => {
     if (type === "marketing") {
       CREDITS_PER_GENERATION = config.creditsPerMarketingGeneration;
     } else if (imageQuality === '4k') {
-      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration;
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshoot4KGeneration * numberOfImages;
     } else {
-      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration;
+      CREDITS_PER_GENERATION = config.creditsPerPhotoshootGeneration * numberOfImages;
     }
 
     const user = await User.findById(req.user._id);

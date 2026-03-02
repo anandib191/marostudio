@@ -424,7 +424,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         <>
                             <button
                                 onClick={handleGenerate}
-                                disabled={!imageFile || isLoading || (remainingCredits !== null && remainingCredits < 5)}
+                                disabled={!imageFile || isLoading || (remainingCredits !== null && remainingCredits < 20)}
                                 className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                             >
                                 <SparklesIcon className="w-5 h-5" />
@@ -437,7 +437,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                                         usedPhotoshootCredits={usedPhotoshootCredits}
                                         usedMarketingCredits={usedMarketingCredits}
                                     />
-                                    {remainingCredits < 5 && (
+                                    {remainingCredits < 20 && (
                                         <button
                                             type="button"
                                             onClick={(e) => {

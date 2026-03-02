@@ -14,7 +14,7 @@ const appConfigSchema = new mongoose.Schema(
     },
     freeTierMarketingPosterCredits: {
       type: Number,
-      default: 5,
+      default: 20,
       min: 0,
     },
     creditsPerPhotoshootGeneration: {
@@ -24,12 +24,12 @@ const appConfigSchema = new mongoose.Schema(
     },
     creditsPerPhotoshoot4KGeneration: {
       type: Number,
-      default: 60,
+      default: 40,
       min: 1,
     },
     creditsPerMarketingGeneration: {
       type: Number,
-      default: 5,
+      default: 20,
       min: 1,
     },
     statistics: {
@@ -62,10 +62,10 @@ appConfigSchema.statics.getConfig = async function () {
   if (!config) {
     config = new this({
       freeTierPhotoshootCredits: 3,
-      freeTierMarketingPosterCredits: 5,
+      freeTierMarketingPosterCredits: 20,
       creditsPerPhotoshootGeneration: 20,
-      creditsPerPhotoshoot4KGeneration: 60,
-      creditsPerMarketingGeneration: 5,
+      creditsPerPhotoshoot4KGeneration: 40,
+      creditsPerMarketingGeneration: 20,
       statistics: {
         categories: "4+",
         activeUsers: "10k+",
@@ -90,10 +90,24 @@ appConfigSchema.statics.getConfig = async function () {
     config.creditsPerPhotoshootGeneration = 20;
   }
   if (config.creditsPerPhotoshoot4KGeneration === undefined) {
-    config.creditsPerPhotoshoot4KGeneration = 60;
+    config.creditsPerPhotoshoot4KGeneration = 40;
   }
   if (config.creditsPerMarketingGeneration === undefined) {
-    config.creditsPerMarketingGeneration = 5;
+    config.creditsPerMarketingGeneration = 20;
+  }
+
+  // Migrate marketing credits from old value (5) to new value (20)
+  let needsSave = false;
+  if (config.creditsPerMarketingGeneration === 5) {
+    config.creditsPerMarketingGeneration = 20;
+    needsSave = true;
+  }
+  if (config.freeTierMarketingPosterCredits === 5) {
+    config.freeTierMarketingPosterCredits = 20;
+    needsSave = true;
+  }
+  if (needsSave) {
+    await config.save();
   }
 
   return config;

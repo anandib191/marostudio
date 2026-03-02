@@ -12,13 +12,13 @@ interface ImageUploaderProps {
   subtitle?: string;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ 
-    onImageUpload, 
-    initialPreview = null, 
-    enableAnimation = false,
-    aspectRatio = 'aspect-[4/3]',
-    title = 'UPLOAD PHOTO',
-    subtitle = 'Drag & drop or click to select a file'
+export const ImageUploader: React.FC<ImageUploaderProps> = ({
+  onImageUpload,
+  initialPreview = null,
+  enableAnimation = false,
+  aspectRatio = 'aspect-[4/3]',
+  title = 'UPLOAD PHOTO',
+  subtitle = 'Drag & drop or click to select a file'
 }) => {
   const [preview, setPreview] = useState<string | null>(initialPreview);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +27,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setPreview(initialPreview);
   }, [initialPreview]);
 
+  const MAX_FILE_SIZE_MB = 5;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -34,6 +37,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         toast.error('Please select an image file.', {
           position: "top-right",
           autoClose: 3000,
+        });
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        toast.error(`File size (${fileSizeMB}MB) exceeds the ${MAX_FILE_SIZE_MB}MB limit. Please upload a smaller image.`, {
+          position: "top-right",
+          autoClose: 4000,
         });
         return;
       }
@@ -53,7 +64,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleAreaClick = () => {
     fileInputRef.current?.click();
   };
-  
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -71,28 +82,28 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       aria-label="Upload product image"
     >
       <div className={`relative w-full h-full rounded-lg bg-neutral-800/50 border-2 border-dashed border-neutral-700 group-hover:border-gold-500 flex flex-col items-center justify-center text-center p-4 transition-all duration-300 ${preview && enableAnimation ? 'animate-pulse-preview' : ''}`}>
-          <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/png, image/jpeg, image/webp"
-              aria-hidden="true"
-          />
-          {preview ? (
-              <div className="w-full h-full rounded-md overflow-hidden relative">
-                  <img src={preview} alt="Product preview" className="w-full h-full object-contain" />
-                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-sm text-white font-semibold">Click or press Enter to change image</p>
-                  </div>
-              </div>
-          ) : (
-              <div className="flex flex-col items-center justify-center space-y-3 text-neutral-400">
-                  <CameraIcon className="w-10 h-10 text-neutral-500 group-hover:text-gold-500 transition-colors" />
-                  <p className="font-semibold text-lg text-neutral-200">{title}</p>
-                  <p className="text-xs">{subtitle}</p>
-              </div>
-          )}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/png, image/jpeg, image/webp"
+          aria-hidden="true"
+        />
+        {preview ? (
+          <div className="w-full h-full rounded-md overflow-hidden relative">
+            <img src={preview} alt="Product preview" className="w-full h-full object-contain" />
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-sm text-white font-semibold">Click or press Enter to change image</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center space-y-3 text-neutral-400">
+            <CameraIcon className="w-10 h-10 text-neutral-500 group-hover:text-gold-500 transition-colors" />
+            <p className="font-semibold text-lg text-neutral-200">{title}</p>
+            <p className="text-xs">{subtitle}</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -417,6 +417,8 @@ interface DetailsStepProps {
     onBackgroundChange: (bg: BackgroundType) => void;
     imageQuality: ImageQuality;
     onImageQualityChange: (quality: ImageQuality) => void;
+    numberOfImages: number;
+    onNumberOfImagesChange: (count: number) => void;
     customBackground: string;
     onCustomBackgroundChange: (val: string) => void;
     remainingCredits?: number | null;
@@ -456,6 +458,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     onBackgroundChange,
     imageQuality,
     onImageQualityChange,
+    numberOfImages,
+    onNumberOfImagesChange,
     customBackground,
     onCustomBackgroundChange,
     remainingCredits,
@@ -708,6 +712,28 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             </div>
                         </div>
 
+                        {/* Number of Images */}
+                        <div>
+                            <label htmlFor="number-of-images-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Number of Images</label>
+                            <div className="relative">
+                                <select
+                                    id="number-of-images-select"
+                                    name="numberOfImages"
+                                    value={numberOfImages}
+                                    onChange={(e) => onNumberOfImagesChange(Number(e.target.value))}
+                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                >
+                                    <option value={2}>2 Images</option>
+                                    <option value={4}>4 Images</option>
+                                    <option value={6}>6 Images</option>
+                                </select>
+                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                            </div>
+                            <p className="mt-1.5 text-[9px] sm:text-[10px] text-gold-400/80 font-medium tracking-wide">
+                                This will use <span className="text-gold-400 font-bold">{numberOfImages * (imageQuality === '4K' ? 40 : 20)}</span> Credits
+                            </p>
+                        </div>
+
                         {background === 'custom' && (
                             <div className="animate-fade-in">
                                 <label htmlFor="custom-background-input" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Custom Background</label>
@@ -786,7 +812,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                 <>
                                     <button
                                         onClick={onGenerate}
-                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < (imageQuality === '4k' ? 40 : 20))}
+                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < (numberOfImages * (imageQuality === '4K' ? 40 : 20)))}
                                         className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 disabled:transform-none"
                                     >
                                         {isLoading ? 'Processing...' : 'Generate Photoshoot'}
@@ -912,7 +938,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
     const [consistentCharacter, setConsistentCharacter] = useState<boolean>(false);
     const [background, setBackground] = useState<BackgroundType>('studio');
-    const [imageQuality, setImageQuality] = useState<ImageQuality>('hd');
+    const [imageQuality, setImageQuality] = useState<ImageQuality>('HD');
+    const [numberOfImages, setNumberOfImages] = useState<number>(2);
     const [customBackground, setCustomBackground] = useState<string>('');
 
     const [identificationStatus, setIdentificationStatus] = useState<IdentificationStatus>('idle');
@@ -1000,7 +1027,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ type: 'photoshoot', imageQuality }),
+                    body: JSON.stringify({ type: 'photoshoot', imageQuality, numberOfImages }),
                 });
                 const checkData = await checkRes.json();
 
@@ -1038,13 +1065,13 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 const finalCreatorName = creatorName || 'Indie Brand';
                 setProductName(nameToUse);
                 setCreatorName(finalCreatorName);
-                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, undefined, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
+                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, undefined, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages);
             } else if (productType === 'other_ornament') {
                 const nameToUse = otherOrnamentType;
                 setProductName(nameToUse);
-                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, DYNAMIC_ORNAMENT_PROMPTS_CONFIG, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
+                result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, DYNAMIC_ORNAMENT_PROMPTS_CONFIG, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages);
             } else {
-                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality);
+                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages);
             }
 
             setCoverImage(result.coverImage);
@@ -1136,7 +1163,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`,
                         },
-                        body: JSON.stringify({ type: 'photoshoot', imageQuality }),
+                        body: JSON.stringify({ type: 'photoshoot', imageQuality, numberOfImages }),
                     });
 
                     // Update credits immediately after successful deduction
@@ -1169,7 +1196,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setLoadingImages([]);
             setLoadingMessage("");
         }
-    }, [imageFiles, creatorName, promptCategory, productType, selectedStyle, apparelStyle, identifiedProductName, otherOrnamentType, onContentGenerated, extraPrompt, productName, aspectRatio, consistentCharacter, background, customBackground, imageQuality, fetchCredits]);
+    }, [imageFiles, creatorName, promptCategory, productType, selectedStyle, apparelStyle, identifiedProductName, otherOrnamentType, onContentGenerated, extraPrompt, productName, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages, fetchCredits]);
 
     const handleDownloadPdf = async () => {
         if (!catalogueRef.current) return;
@@ -1520,6 +1547,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         onBackgroundChange={setBackground}
                         imageQuality={imageQuality}
                         onImageQualityChange={setImageQuality}
+                        numberOfImages={numberOfImages}
+                        onNumberOfImagesChange={setNumberOfImages}
                         customBackground={customBackground}
                         onCustomBackgroundChange={setCustomBackground}
                         isAuthenticated={isAuthenticated}

@@ -64,11 +64,6 @@ const getBackgroundInstruction = (bg: BackgroundType, customPrompt?: string) => 
     }
 }
 
-/** Bladdit API: image, prompt, model, aspect_ratio. aspect_ratio: 1:1|16:9|9:16|4:5|3:2|match_input_image */
-const BLADDIT_ASPECT_RATIOS = ['1:1', '16:9', '9:16', '4:5', '3:2'] as const;
-const toBladditAspectRatio = (ar: AspectRatio | string): string =>
-    BLADDIT_ASPECT_RATIOS.includes(ar as typeof BLADDIT_ASPECT_RATIOS[number]) ? ar : 'match_input_image';
-
 /**
  * Generates a 4K image using the Joingy API
  */
@@ -106,32 +101,35 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
 }
 
 /**
- * Generates an image: direct fetch to Bladdit or Joingy (4K).
- * Params: image, prompt, model=nanobananapro, aspect_ratio. No backend proxy, no CORS workaround.
+ * Generates an image using the Joingy API, with 4K or HD quality
  */
-const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'hd'): Promise<string> => {
-    // Route to 4K API if quality is 4k
-    if (imageQuality === '4k') {
+const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'HD'): Promise<string> => {
+    // Route to 4K API if quality is 4K
+    if (imageQuality === '4K') {
         return generate4KImage(imageFile, prompt, aspectRatio);
     }
 
     const formData = new FormData();
 
     const mainBlob = await getBlobFromSource(imageFile.base64, imageFile.mimeType);
-    formData.append('image', mainBlob, 'input_image.png');
+    formData.append('images', mainBlob, 'input_image.png');
 
     if (referenceImageSource) {
         const refBlob = await getBlobFromSource(referenceImageSource, 'image/png');
-        formData.append('image', refBlob, 'reference_image.png');
+        formData.append('images', refBlob, 'reference_image.png');
     }
 
     formData.append('prompt', prompt);
-    formData.append('model', 'nanobananapro');
-    formData.append('aspect_ratio', toBladditAspectRatio(aspectRatio));
+    formData.append('image_size', 'HD');
 
-    const response = await fetch('https://api.bladdit.com/v1/generate', {
+    let apiAspectRatio = "16:9";
+    if (['1:1', '16:9', '9:16', '4:5', '3:2'].includes(aspectRatio)) {
+        apiAspectRatio = aspectRatio;
+    }
+    formData.append('aspect_ratio', apiAspectRatio);
+
+    const response = await fetch('https://api.joingy.site/', {
         method: 'POST',
-        headers: { 'accept': 'application/json' },
         body: formData,
     });
 
@@ -173,7 +171,8 @@ export const generateCatalogueImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'hd'
+    imageQuality: ImageQuality = 'HD',
+    numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
         const frontImage = imageFiles.find((_f, i) => i === 0 && _f);
@@ -209,15 +208,23 @@ export const generateCatalogueImages = async (
         }
 
         const allPrompts = [coverPrompt, ...activePhotoPrompts];
+
+        // Build the final prompt list: generate exactly numberOfImages images,
+        // cycling through available prompts if numberOfImages > allPrompts.length
+        const finalPromptList: string[] = [];
+        for (let i = 0; i < numberOfImages; i++) {
+            finalPromptList.push(allPrompts[i % allPrompts.length]);
+        }
+
         const generatedImages: string[] = [];
         let referenceImageForConsistency: string | undefined = undefined;
 
         if (consistentCharacter) {
-            for (let index = 0; index < allPrompts.length; index++) {
-                const prompt = allPrompts[index];
+            for (let index = 0; index < finalPromptList.length; index++) {
+                const prompt = finalPromptList[index];
                 let imageToUse = primaryImage;
 
-                if (backImage && isBackViewOptional && index === allPrompts.length - 1) {
+                if (backImage && isBackViewOptional && index === finalPromptList.length - 1) {
                     imageToUse = backImage;
                 }
 
@@ -236,9 +243,9 @@ export const generateCatalogueImages = async (
                 }
             }
         } else {
-            const promises = allPrompts.map(async (prompt, index) => {
+            const promises = finalPromptList.map(async (prompt, index) => {
                 let imageToUse = primaryImage;
-                if (backImage && isBackViewOptional && index === allPrompts.length - 1) {
+                if (backImage && isBackViewOptional && index === finalPromptList.length - 1) {
                     imageToUse = backImage;
                 }
 
@@ -283,7 +290,8 @@ export const generateOtherProductImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'hd'
+    imageQuality: ImageQuality = 'HD',
+    numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     const config = promptsConfig || ECOMMERCE_PROMPTS.other;
     if (!config) throw new Error('Prompts for this product category not found.');
@@ -299,12 +307,18 @@ export const generateOtherProductImages = async (
         ...photoPromptsFns.map(fn => fn(productName))
     ];
 
+    // Build the final prompt list: generate exactly numberOfImages images
+    const finalPromptList: string[] = [];
+    for (let i = 0; i < numberOfImages; i++) {
+        finalPromptList.push(allPrompts[i % allPrompts.length]);
+    }
+
     const generatedImages: string[] = [];
     let referenceImageForConsistency: string | undefined = undefined;
 
     if (consistentCharacter) {
-        for (let index = 0; index < allPrompts.length; index++) {
-            const prompt = allPrompts[index];
+        for (let index = 0; index < finalPromptList.length; index++) {
+            const prompt = finalPromptList[index];
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
@@ -320,7 +334,7 @@ export const generateOtherProductImages = async (
             }
         }
     } else {
-        const promises = allPrompts.map(async (prompt, index) => {
+        const promises = finalPromptList.map(async (prompt, index) => {
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
@@ -368,7 +382,7 @@ export const identifyProduct = async (imageFile: ImageFile): Promise<string> => 
 };
 
 /**
- * Generates a marketing poster: direct fetch to Bladdit (https://api.bladdit.com/v1/generate). No backend proxy.
+ * Generates a marketing poster using the Joingy API
  */
 export const generateMarketingPoster = async (
     imageFile: ImageFile,
@@ -376,9 +390,9 @@ export const generateMarketingPoster = async (
     logoFile: ImageFile | null
 ): Promise<string> => {
     const formData = new FormData();
-    formData.append('image', await getBlobFromSource(imageFile.base64, imageFile.mimeType), 'product.png');
+    formData.append('images', await getBlobFromSource(imageFile.base64, imageFile.mimeType), 'product.png');
     if (logoFile) {
-        formData.append('image', await getBlobFromSource(logoFile.base64, logoFile.mimeType), 'logo.png');
+        formData.append('images', await getBlobFromSource(logoFile.base64, logoFile.mimeType), 'logo.png');
     }
 
     const prompt = `TASK: Design a professional marketing poster for the product in the first image.
@@ -387,12 +401,11 @@ ${extraDetails ? `CAMPAIGN DETAILS/TEXT: ${extraDetails}` : ''}
 ${logoFile ? 'INSTRUCTION: Use the logo provided in the second image. Place it elegantly in the design.' : ''}`;
 
     formData.append('prompt', prompt);
-    formData.append('model', 'nanobananapro');
-    formData.append('aspect_ratio', toBladditAspectRatio('4:5'));
+    formData.append('image_size', 'HD');
+    formData.append('aspect_ratio', '4:5');
 
-    const response = await fetch('https://api.bladdit.com/v1/generate', {
+    const response = await fetch('https://api.joingy.site/', {
         method: 'POST',
-        headers: { 'accept': 'application/json' },
         body: formData,
     });
 

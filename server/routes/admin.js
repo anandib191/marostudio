@@ -112,7 +112,7 @@ router.get("/users", protect, admin, async (req, res) => {
 
       // Calculate generations used (for display)
       const CREDITS_PER_PHOTOSHOOT = 20;
-      const CREDITS_PER_MARKETING = 5;
+      const CREDITS_PER_MARKETING = 20;
       const photoshootGenerationsUsed = Math.floor(
         usedPhotoshootCredits / CREDITS_PER_PHOTOSHOOT,
       );
@@ -1284,7 +1284,7 @@ router.get("/credit-deductions", protect, admin, async (req, res) => {
       success: true,
       creditsPerPhotoshootGeneration:
         config.creditsPerPhotoshootGeneration || 20,
-      creditsPerMarketingGeneration: config.creditsPerMarketingGeneration || 5,
+      creditsPerMarketingGeneration: config.creditsPerMarketingGeneration || 20,
     });
   } catch (error) {
     logger.error("Get credit deductions error:", error);
