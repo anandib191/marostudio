@@ -209,8 +209,8 @@ const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
 ];
 
 const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
-    { id: 'hd', label: 'HD' },
-    { id: '4k', label: '4K' },
+    { id: 'HD', label: 'HD' },
+    { id: '4K', label: '4K' },
 ];
 
 // --- Sub-Components ---
