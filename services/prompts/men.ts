@@ -255,6 +255,86 @@ const WATCH_PHOTO_PROMPTS = [
   MODEL & STYLE: A stylish man in a leather jacket and jeans, leaning against a city wall. The watch is a key accessory to his cool, effortless look.
   BACKGROUND & ATMOSPHERE: A chic urban environment with interesting textures (brick, concrete). Clear, natural daylight.
   OUTPUT SPECIFICATIONS: High-resolution, fashionable, and candid.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, luxury sailing photo of a man on a yacht, with the provided watch prominently visible.
+  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. Do not alter any aspect of it.
+  MODEL & STYLE: A confident, athletic man in a white polo shirt and navy shorts, gripping a yacht's helm. His wrist is raised, clearly showcasing the watch as he steers. His hair is windswept and skin sun-kissed.
+  BACKGROUND & ATMOSPHERE: Open ocean with deep blue water, a clear sky, and the yacht's rigging visible. Bright, vivid natural daylight with reflections sparkling on the water.
+  OUTPUT SPECIFICATIONS: High-resolution, aspirational, nautical luxury.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, athletic lifestyle photo of a man working out in a premium gym, wearing the provided watch.
+  CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
+  MODEL & STYLE: A fit, muscular man in a fitted performance tank top, completing a set of kettlebell swings or resting between sets. The watch is clearly visible on his wrist, showing durability and sporty elegance. His expression shows focus and determination.
+  BACKGROUND & ATMOSPHERE: A modern, high-end gym with clean lines, dark tones, and dramatic overhead lighting. The background is slightly blurred.
+  OUTPUT SPECIFICATIONS: High-resolution, athletic, powerful, and motivational.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic travel lifestyle photo of a well-dressed man at an international airport, with the provided watch visible.
+  CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**. Its original design and details must be perfectly preserved.
+  MODEL & STYLE: A sophisticated man in a tailored overcoat and turtleneck sweater, walking through a modern airport terminal. He checks his watch as he walks. A leather carry-on bag is in his other hand.
+  BACKGROUND & ATMOSPHERE: A bright, modern terminal with large glass windows and natural light. The background is softly blurred to keep focus on the man and his watch.
+  OUTPUT SPECIFICATIONS: High-resolution, jet-setter lifestyle, polished and global.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, extreme close-up product shot of the provided watch resting on a mountaineering surface.
+  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw it.
+  SCENE & STYLE: The watch sits on a cracked, weathered piece of ice or a frost-covered rock at high altitude. Tiny ice crystals and snowflakes are visible around it. The focus is razor-sharp on the watch face and bracelet.
+  LIGHTING & ATMOSPHERE: Cool, high-altitude blue-toned lighting with crisp, clear shadows. The scene conveys extreme durability and adventure.
+  OUTPUT SPECIFICATIONS: High-resolution, rugged, adventurous, and product-focused.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, black-tie gala portrait of a man wearing the provided watch with formal attire.
+  CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. Do not change its design or details.
+  MODEL & STYLE: A distinguished man in a perfectly tailored black tuxedo with a white pocket square, adjusting his cufflink. The watch peeks elegantly from under his shirt cuff. His expression is suave and sophisticated.
+  BACKGROUND & ATMOSPHERE: A grand ballroom or opera house foyer with crystal chandeliers, marble floors, and warm, golden lighting.
+  OUTPUT SPECIFICATIONS: High-resolution, elegant, James Bond-level sophistication.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, artisan workshop photo with the provided watch placed on a craftsman's workbench.
+  CRITICAL RULE: The watch from the user's image must be used **WITHOUT ANY MODIFICATION**. It is a fixed, unchangeable element.
+  SCENE & STYLE: The watch is placed on a worn, wooden artisan workbench alongside traditional watchmaker's tools — tiny screwdrivers, a loupe, brass gears. The scene suggests fine craftsmanship and heritage.
+  LIGHTING & ATMOSPHERE: Warm, directional light from a workshop desk lamp. Rich textures of wood, metal, and leather fill the frame. The mood is nostalgic, artisanal, and respectful of craft.
+  OUTPUT SPECIFICATIONS: High-resolution, detail-rich, heritage craftsmanship aesthetic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, luxury poolside photo of a man relaxing with the provided watch visible.
+  CRITICAL RULE: The watch must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
+  MODEL & STYLE: A relaxed, well-groomed man in swim trunks and an open linen shirt, lounging on a daybed by an infinity pool. His arm rests on the daybed's armrest, clearly displaying the watch. He holds a drink in his other hand.
+  BACKGROUND & ATMOSPHERE: A luxury resort with an infinity pool overlooking a tropical ocean. Warm, bright sunlight and vivid blues and whites dominate the scene.
+  OUTPUT SPECIFICATIONS: High-resolution, relaxed luxury, vacation-aspirational.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, corporate boardroom close-up of a man gesturing during a presentation, with the provided watch in focus.
+  CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**. Its design and materials must be perfectly preserved.
+  MODEL & STYLE: A powerful man in a navy pinstripe suit and French cuff shirt. The shot focuses on his hand and wrist as he makes a decisive gesture during a boardroom presentation. The watch is the sharpest element in the frame.
+  BACKGROUND & ATMOSPHERE: A modern, glass-walled boardroom with soft, even lighting. Other attendees are softly blurred in the background, creating a sense of importance.
+  OUTPUT SPECIFICATIONS: High-resolution, authoritative, corporate power.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, motorcycle adventure photo of a man wearing the provided watch.
+  CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. It is a fixed, unchangeable element.
+  MODEL & STYLE: A rugged man in a vintage leather motorcycle jacket and aviator sunglasses, gripping the handlebar of a classic motorcycle. The shot focuses on his gloved hand and wrist — the glove is short enough to reveal the watch clearly.
+  BACKGROUND & ATMOSPHERE: A wide, open road stretching into arid hills or canyons. The lighting is warm afternoon light with a slight dusty haze in the air.
+  OUTPUT SPECIFICATIONS: High-resolution, rebellious, adventurous, and cinematic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, culinary lifestyle photo of a man cooking in a premium kitchen, with the provided watch visible on his wrist.
+  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. Do not modify it.
+  MODEL & STYLE: A stylish man in a casual henley shirt with rolled-up sleeves, chopping fresh herbs on a wooden cutting board in a beautifully designed modern kitchen. The watch is clearly visible on his wrist as he works with his hands.
+  BACKGROUND & ATMOSPHERE: A bright, modern kitchen with marble countertops, copper accents, and fresh ingredients arranged aesthetically. Warm, natural light from a window.
+  OUTPUT SPECIFICATIONS: High-resolution, lifestyle-driven, modern masculinity, and aspirational.
   `
 ];
 
@@ -303,6 +383,86 @@ const PERFUME_PHOTO_PROMPTS = [
   SCENE: A striking, fashion-forward couple stands in a sleek mirrored elevator. The man wears a perfectly tailored black tuxedo with a crisp white shirt and untied bow tie, leaning slightly toward the woman with one hand resting on the wall behind her and the other lightly at her waist. The woman, in a fitted black tuxedo jacket with a daring deep neckline, tilts her face up toward him, one hand placed gently on his chest and the other brushing his lapel. Their pose radiates intimacy and confidence. The perfume bottle is displayed on a glossy reflective surface in the foreground, perfectly centered and sharply detailed.
   LIGHTING & BACKGROUND: Moody, cinematic lighting with soft golden highlights on their faces and dramatic shadows on the dark metallic elevator panels. Subtle reflections add depth and a sense of luxury.
   OUTPUT SPECIFICATIONS: Ultra-realistic, elegant, and sensuous. Every detail—from clothing texture to reflections on the elevator walls—must convey premium sophistication and timeless allure.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, luxury penthouse balcony photo featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter it in any way.
+  SCENE: The bottle sits on the glass railing of a penthouse balcony, with a breathtaking nighttime city skyline glittering behind it. A man's hand in a tailored suit sleeve reaches to pick it up.
+  LIGHTING & ATMOSPHERE: Cool, ambient city glow mixed with warm interior light from behind. The bottle is sharply lit, creating beautiful glass reflections.
+  OUTPUT SPECIFICATIONS: High-resolution, aspirational, urban luxury.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, cigar lounge lifestyle photo featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED** — shape, label, and liquid color must stay exactly as provided.
+  SCENE: The bottle is placed on a rich leather armrest beside a crystal tumbler of whiskey and an unlit cigar in an ashtray. A man's hand in a crisp shirt cuff is visible nearby. The setting is an exclusive private members' club.
+  LIGHTING & ATMOSPHERE: Warm, amber-toned lighting with deep shadows. The mood is exclusive, distinguished, and unhurried.
+  OUTPUT SPECIFICATIONS: High-resolution, rich, masculine luxury lifestyle.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, rugged outdoor photo of the provided perfume bottle in a forest setting.
+  CRITICAL RULE: You **MUST** use the perfume bottle from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
+  SCENE: The bottle sits on a moss-covered fallen tree trunk in a dense, misty forest. Ferns and wildflowers surround it. Morning dew droplets cling to the bottle's surface, connecting it to the raw natural environment.
+  LIGHTING & ATMOSPHERE: Soft, diffused early morning forest light filtering through the canopy. The mood is fresh, earthy, and primal.
+  OUTPUT SPECIFICATIONS: High-resolution, nature-inspired, rugged yet refined.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, rain-soaked street editorial photo featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. Do not alter its shape, label, or cap.
+  SCENE: A man in a dark overcoat walks on a rain-soaked city street at night. He holds the bottle close to his neck as if applying the fragrance. Neon lights from surrounding shops reflect in the wet pavement.
+  LIGHTING & ATMOSPHERE: Dramatic, cinematic night lighting with vivid neon reflections and rain drops. The mood is mysterious, urban, and intensely atmospheric.
+  OUTPUT SPECIFICATIONS: High-resolution, cinematic, moody street fashion.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, athletic lifestyle photo featuring the provided perfume bottle after a workout.
+  CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED** in any way.
+  SCENE: A fit man in a fitted grey T-shirt, towel around his neck, holds the perfume bottle in one hand in a modern locker room. His skin has a light sheen of sweat. The bottle is positioned as a post-workout ritual.
+  LIGHTING & ATMOSPHERE: Clean, bright fluorescent lighting mixed with natural light from a window. The mood is fresh, energetic, and youthful.
+  OUTPUT SPECIFICATIONS: High-resolution, sporty, fresh, and energetic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, vintage car product photo featuring the provided perfume bottle.
+  CRITICAL RULE: You **MUST** use the perfume bottle from the user's image with **ZERO ALTERATIONS**. It is a fixed, unchangeable element.
+  SCENE: The bottle sits elegantly on the polished leather dashboard or open glove compartment of a classic vintage car (such as a 1960s Aston Martin or Jaguar). The car's interior textures — stitched leather, chrome dials, wood trim — frame the bottle beautifully.
+  LIGHTING & ATMOSPHERE: Warm, golden afternoon light streaming through the windshield. The mood is timeless, masculine, and refined.
+  OUTPUT SPECIFICATIONS: High-resolution, vintage luxury, product-focused.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, rooftop silhouette photo of a man with the provided perfume bottle at sunset.
+  CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. Do not modify it.
+  SCENE: A man stands on the edge of a city rooftop at sunset, his silhouette dark against the vivid sky. He holds the perfume bottle up at arm's length, and the setting sun backlights it, making the liquid inside glow. The composition is dramatic and iconic.
+  LIGHTING & ATMOSPHERE: Intense golden-hour backlighting with a vivid orange and purple sky. High contrast between the dark silhouette and the luminous sky and bottle.
+  OUTPUT SPECIFICATIONS: High-resolution, iconic, cinematic, poster-worthy.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, ski lodge luxury photo featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED**. Its shape, label, and details must remain exactly as provided.
+  SCENE: The bottle sits on a rustic wooden table beside a steaming cup of hot chocolate and a pair of ski goggles. Through a large window behind, snow-covered mountains and pine trees are visible. A man's hand in a cable-knit sweater sleeve reaches for the bottle.
+  LIGHTING & ATMOSPHERE: Warm, cozy interior firelight mixed with cool blue winter light from outside. The mood is adventurous yet comfortable.
+  OUTPUT SPECIFICATIONS: High-resolution, cozy, winter-luxury lifestyle.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, music studio lifestyle photo featuring the provided perfume bottle.
+  CRITICAL RULE: You **MUST** use the perfume bottle from the user's image with **ZERO ALTERATIONS**.
+  SCENE: The bottle sits on a mixing console in a professional recording studio. A pair of premium headphones, a notepad with lyrics, and a microphone are visible nearby. A man's hands rest on the console controls.
+  LIGHTING & ATMOSPHERE: Moody, low ambient lighting with colored LED strips (purple, blue) creating a creative, artistic atmosphere.
+  OUTPUT SPECIFICATIONS: High-resolution, creative, artistic, and coolly masculine.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, ancient ruins product photo featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. Do not alter its design.
+  SCENE: The bottle is placed on a weathered stone column fragment amid ancient Greek or Roman ruins. Wildflowers grow between the cracked stones. Behind the bottle, grand crumbling arches and columns stretch into the distance under a clear Mediterranean sky.
+  LIGHTING & ATMOSPHERE: Clear, bright sunlight casting strong shadows from the ruins. The mood is timeless, historic, and mythic.
+  OUTPUT SPECIFICATIONS: High-resolution, epic, heritage-inspired product photography.
   `
 
 
@@ -355,6 +515,86 @@ const BELT_PHOTO_PROMPTS = [
   BACKGROUND & ATMOSPHERE: A sophisticated and slightly out-of-focus background with a chair and warm ambient light. The depth of field should be shallow, keeping the focus entirely on the action of putting on the belt.
   LIGHTING & REALISM: The lighting should be clear and natural, as if from a window. It must create clear highlights on the buckle as it moves and cast soft shadows from his hands onto the belt and trousers, ensuring the components look integrated and not flat.
   OUTPUT: Candid, intimate, and highly realistic, focusing on the tactile quality of the product.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, equestrian lifestyle photo of a man wearing the provided belt.
+  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
+  MODEL & STYLE: A well-built man in jodhpurs, riding boots, and a fitted polo shirt, standing next to a horse and stroking its mane. The belt is clearly visible, cinching his waist. The mood is refined and athletically elegant.
+  BACKGROUND & ATMOSPHERE: A sunlit countryside stable with wooden fences and green fields visible behind. Warm, golden afternoon light.
+  OUTPUT: Sophisticated, equestrian, and aspirationally masculine.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, formal wedding-ready photo of a man wearing the provided belt.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
+  MODEL & STYLE: A groom in a classic charcoal three-piece suit, adjusting his waistcoat. The belt peeks from under the waistcoat at the sides, clearly visible. His grooming is impeccable — clean shave, neat hair. He holds a single boutonniere or adjusts his tie.
+  BACKGROUND & ATMOSPHERE: An elegant, sunlit venue — a manor house garden or a classic stone church porch. Soft, romantic lighting.
+  OUTPUT: Polished, romantic, and premium wedding-ready.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, craftsman workshop photo of the provided belt coiled alongside artisan tools.
+  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle, and stitching must be perfectly preserved.
+  SCENE & STYLE: The belt is beautifully coiled on a rough wooden workbench alongside leather-working tools — a stitching awl, waxed thread, a burnishing tool, and leather scraps. The scene evokes handcrafted artisanship.
+  LIGHTING & ATMOSPHERE: Warm, directional light from a workshop lamp. The textures of leather and wood fill the frame. The mood is authentic, artisanal, and respectful of craft.
+  OUTPUT: Heritage craftsmanship, detail-rich, and product-focused.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, flat-lay styling photo centered on the provided belt.
+  CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. It is a fixed, unchangeable element.
+  SCENE & STYLE: A meticulously arranged flat-lay on a dark wooden surface. The belt is the hero piece, surrounded by complementary accessories — a leather wallet, a pair of sunglasses, a pocket knife, and a wristwatch. The arrangement is symmetrical and intentional.
+  LIGHTING & ATMOSPHERE: Bright, even overhead lighting that clearly shows the belt's texture, color, and buckle detail.
+  OUTPUT: High-resolution, editorial flat-lay, product-catalogue quality.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, casual beach boardwalk photo of a man wearing the provided belt.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**.
+  MODEL & STYLE: A relaxed man in rolled-up chinos, a linen shirt, and leather sandals, walking along a sun-drenched wooden boardwalk. The belt is clearly visible, adding a stylish detail to his casual beach-town look.
+  BACKGROUND & ATMOSPHERE: A bright, coastal boardwalk with the ocean visible in the background. Warm, natural daylight with a slight sea breeze effect in his clothes.
+  OUTPUT: Bright, relaxed, coastal-chic lifestyle.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, seated office portrait focusing on the provided belt.
+  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its design, buckle, or material.
+  MODEL & STYLE: A confident man seated in a leather office chair behind a modern desk. He leans forward with his hands clasped, and the belt is clearly visible where his jacket hangs open. He wears a crisp white shirt and tailored grey trousers.
+  BACKGROUND & ATMOSPHERE: A modern, executive office with clean lines, bookshelves, and natural light from large windows. The background is softly blurred.
+  OUTPUT: Professional, authoritative, and polished.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, hiking trail adventure photo of a man wearing the provided belt.
+  CRITICAL RULE: The belt **MUST NOT BE CHANGED** in any way. Preserve its original design and material.
+  MODEL & STYLE: A rugged, outdoorsy man in tactical cargo pants and a fitted performance T-shirt, pausing on a mountain trail to take in a panoramic view. The belt is clearly visible and integrated naturally into his adventure gear.
+  BACKGROUND & ATMOSPHERE: A breathtaking mountain landscape with valleys, forests, and a clear sky. Bright, high-altitude daylight.
+  OUTPUT: Adventurous, rugged, and dynamic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, backstage concert photo of a rock musician wearing the provided belt.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
+  MODEL & STYLE: A man with an edgy rock musician look — fitted black jeans, a band T-shirt, and tattoos visible on his forearms. The belt is a statement piece, visible at his hips. He sits on an amp backstage, tuning a guitar.
+  BACKGROUND & ATMOSPHERE: A dimly lit backstage area with equipment cases, cables, and warm stage lights bleeding in from behind a curtain. The mood is gritty, creative, and cool.
+  OUTPUT: Rock & roll, authentic, and edgy.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, grooming mirror shot focusing on the provided belt.
+  CRITICAL RULE: The belt from the user's image must be used **EXACTLY AS IS**. Do not modify it.
+  MODEL & STYLE: A man is captured in a bathroom mirror reflection, finishing his morning routine. He wears tailored dark trousers with the belt already fastened, and has just put on a fresh white shirt that he is buttoning up. The belt is sharply reflected in the clean mirror.
+  LIGHTING & ATMOSPHERE: Bright, clean bathroom lighting with a modern, minimalist interior. The reflection adds visual depth and interest.
+  OUTPUT: Clean, intimate, aspirational morning-routine aesthetic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, autumn walk editorial photo of a man wearing the provided belt.
+  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is an unchangeable element.
+  MODEL & STYLE: A well-dressed man in a tailored peacoat (open, showing the belt), dark jeans, and Chelsea boots, walking along a tree-lined path covered in golden fallen leaves. He carries a leather messenger bag over one shoulder.
+  BACKGROUND & ATMOSPHERE: A beautiful autumn setting with warm orange, red, and gold foliage. Soft, warm afternoon sunlight filters through the canopy.
+  OUTPUT: High-resolution, warm, seasonal, and effortlessly stylish.
   `
 ];
 
@@ -402,24 +642,104 @@ const APPAREL_PHOTO_PROMPTS = [
   - Do NOT generate a back view if no back product image was provided.
   MODEL & STYLE: Choose a pose, expression, and body language that creatively fits the garment's character — not a stiff catalog pose. The setting should be clean and complementary.
   OUTPUT SPECIFICATIONS: Clear, well-lit, and informative — as seen on a premium e-commerce product page, but with creative direction.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, heritage-inspired cultural portrait of a man wearing the provided garment.
+  CRITICAL RULE: The clothing item must be used **EXACTLY AS IS** — no alterations to design, color, pattern, texture, or fit.
+  DYNAMIC DIRECTION: If the garment has ethnic or traditional roots, embrace that lineage — place the model in a setting that honors the garment's cultural origin (a Rajasthani fort, a Japanese temple garden, a Moroccan medina). If the garment is modern, create an intriguing contrast with a rich cultural backdrop. The model's accessories and styling should complement the heritage feel.
+  ATMOSPHERE: Warm, rich colors and textures. Cinematic lighting with golden or amber tones.
+  OUTPUT SPECIFICATIONS: High-resolution, culturally rich, and deeply atmospheric.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, golden hour silhouette and detail photo of a man wearing the provided garment.
+  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
+  DYNAMIC DIRECTION: Capture the model at golden hour in a way that highlights the garment's shape and texture — either as a dramatic backlit silhouette or with warm sunlight streaming across the fabric. The pose should be strong and considered, emphasizing the garment's structure and fit.
+  ATMOSPHERE: Warm, golden light with long shadows. An open, expansive location — a field, a rooftop, or a coastline.
+  OUTPUT SPECIFICATIONS: High-resolution, warm, dramatic, and poetic.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, rain-soaked city editorial photo of a man wearing the provided garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED** — preserve its original design, color, and texture perfectly.
+  DYNAMIC DIRECTION: The model walks confidently through a rain-soaked urban street. Wet pavement creates beautiful reflections. The garment should look intentional and stylish despite the weather — showing the wearer's confidence and character. The mood is moody, cinematic, and atmospheric.
+  ATMOSPHERE: Cool blue-grey tones accented by warm shop-window light. Film-like quality.
+  OUTPUT SPECIFICATIONS: High-resolution, editorial, dramatic, and movie-like.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, seated portrait of a man wearing the provided garment in a character-filled setting.
+  CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
+  DYNAMIC DIRECTION: The model is seated in an interesting setting — a vintage barber's chair, a modern café booth, a workshop stool, or a classic car's open door. The seated pose naturally showcases how the garment falls and fits at rest. Expression should be contemplative, warm, or quietly confident.
+  ATMOSPHERE: Thoughtful composition with the environment adding personality and narrative.
+  OUTPUT SPECIFICATIONS: High-resolution, artistic, intimate portrait photography.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, layered styling editorial of a man wearing the provided garment.
+  CRITICAL RULE: The clothing item from the user's image must be used **EXACTLY AS IS**. It is a fixed, unchangeable element.
+  DYNAMIC DIRECTION: Style the garment as part of a layered outfit — add a complementary jacket, scarf, blazer, or vest that enhances the look without hiding the garment. Show how the piece integrates into a complete, fashion-forward outfit that feels personal and intentional.
+  ATMOSPHERE: A stylish urban environment — a concept store, a design district, or an art gallery. Clean, modern lighting.
+  OUTPUT SPECIFICATIONS: High-resolution, editorial, showing real-world styling versatility.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, athletic/sports lifestyle photo of a man wearing the provided garment.
+  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
+  DYNAMIC DIRECTION: If the garment suits an active context, place the model in a relevant sports or fitness scenario — stretching at a track, boxing in a gym, warming up on a basketball court. If the garment is not athletic, create a contrast — an athlete in a casual or formal garment captured in a sports setting, showing versatility.
+  ATMOSPHERE: Energetic, bold lighting. The setting should feel real and immersive.
+  OUTPUT SPECIFICATIONS: High-resolution, powerful, and action-driven.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, minimalist studio editorial photo of a man wearing the provided garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED** in any way.
+  DYNAMIC DIRECTION: A clean, stark studio shot that puts the garment on a pedestal. The model poses against a seamless solid background (white, grey, or a bold color chosen to complement the garment). The pose is strong and editorial — not a catalog pose. Grooming is clean and minimal.
+  ATMOSPHERE: Pure, undistracted focus on the garment. Precise, professional lighting.
+  OUTPUT SPECIFICATIONS: High-resolution, minimalist, powerful, gallery-quality fashion photography.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, industrial warehouse editorial photo of a man wearing the provided garment.
+  CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
+  DYNAMIC DIRECTION: The model stands or leans in a raw, industrial space — exposed brick, steel beams, concrete floors, large factory windows. The contrast between the raw venue and the styled garment creates visual tension. The pose should feel authentic and confident.
+  ATMOSPHERE: Cool, desaturated tones with dramatic directional light from large windows creating hard shadows. Gritty, editorial, and cinematic.
+  OUTPUT SPECIFICATIONS: High-resolution, industrial-chic, and visually compelling.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, rooftop cityscape photo of a man wearing the provided garment at sunset.
+  CRITICAL RULE: The clothing item must be used **EXACTLY AS IS** — no alterations whatsoever.
+  DYNAMIC DIRECTION: The model stands on a city rooftop with a panoramic skyline behind him. The setting sun casts dramatic warm light on the garment, highlighting its color and texture. His pose is confident and relaxed — looking out over the city or towards the camera.
+  ATMOSPHERE: Golden-hour warmth mixed with cool urban tones. The skyline adds scale and aspiration.
+  OUTPUT SPECIFICATIONS: High-resolution, aspirational, cinematic, and powerfully composed.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic, coastal/beach lifestyle photo of a man wearing the provided garment.
+  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
+  DYNAMIC DIRECTION: The model is in a coastal setting — walking along a rocky shoreline, standing on a pier, or leaning against a beachside rail. The garment should feel natural in this environment. Hair is slightly windswept, the mood is relaxed and confident.
+  ATMOSPHERE: Bright, natural daylight with vivid blues from sky and sea. Warm skin tones. The mood is relaxed luxury.
+  OUTPUT SPECIFICATIONS: High-resolution, fresh, coastal-lifestyle editorial.
   `
 ];
 
 export const MEN_PROMPTS = {
-    watch: {
-        coverPrompt: WATCH_COVER_PROMPT,
-        photoPrompts: WATCH_PHOTO_PROMPTS
-    },
-    perfume: {
-        coverPrompt: PERFUME_COVER_PROMPT,
-        photoPrompts: PERFUME_PHOTO_PROMPTS
-    },
-    belt: {
-        coverPrompt: BELT_COVER_PROMPT,
-        photoPrompts: BELT_PHOTO_PROMPTS
-    },
-    apparel: {
-        coverPrompt: APPAREL_COVER_PROMPT,
-        photoPrompts: APPAREL_PHOTO_PROMPTS
-    }
+  watch: {
+    coverPrompt: WATCH_COVER_PROMPT,
+    photoPrompts: WATCH_PHOTO_PROMPTS
+  },
+  perfume: {
+    coverPrompt: PERFUME_COVER_PROMPT,
+    photoPrompts: PERFUME_PHOTO_PROMPTS
+  },
+  belt: {
+    coverPrompt: BELT_COVER_PROMPT,
+    photoPrompts: BELT_PHOTO_PROMPTS
+  },
+  apparel: {
+    coverPrompt: APPAREL_COVER_PROMPT,
+    photoPrompts: APPAREL_PHOTO_PROMPTS
+  }
 };

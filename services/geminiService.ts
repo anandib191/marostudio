@@ -8,6 +8,18 @@ import { ECOMMERCE_PROMPTS } from "./prompts/ecommerce";
 import { STYLE_OPTIONS } from "./styles";
 import { PROFESSIONAL_APPAREL_PROMPTS } from "./prompts/professionalApparel";
 
+/**
+ * Fisher-Yates shuffle: returns a new array with elements in random order.
+ */
+function shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
 }
@@ -208,7 +220,9 @@ export const generateCatalogueImages = async (
             activePhotoPrompts.pop();
         }
 
-        const allPrompts = [coverPrompt, ...activePhotoPrompts];
+        // Shuffle photo prompts randomly for variety, keeping cover prompt as first
+        const shuffledPhotoPrompts = shuffleArray(activePhotoPrompts);
+        const allPrompts = [coverPrompt, ...shuffledPhotoPrompts];
 
         // Build the final prompt list: generate exactly numberOfImages images,
         // cycling through available prompts if numberOfImages > allPrompts.length
@@ -303,9 +317,11 @@ export const generateOtherProductImages = async (
     const styleModifier = STYLE_OPTIONS.find(s => s.id === styleId)?.promptModifier || '';
     const backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
 
+    // Shuffle photo prompts randomly for variety, keeping cover prompt as first
+    const shuffledPhotoPrompts = shuffleArray(photoPromptsFns).map(fn => fn(productName));
     const allPrompts = [
         coverPromptFn(productName),
-        ...photoPromptsFns.map(fn => fn(productName))
+        ...shuffledPhotoPrompts
     ];
 
     // Build the final prompt list: generate exactly numberOfImages images,
