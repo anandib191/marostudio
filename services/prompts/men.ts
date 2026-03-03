@@ -222,119 +222,109 @@ GOAL: The final composition should feel masculine, powerful, and high-end, with 
 
 const WATCH_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic, close-up shot of a man's wrist wearing the provided watch, with his hand on the steering wheel of a classic luxury car.
+  TASK: Generate an ultra-realistic, macro product shot of the provided watch resting on a piece of dark, polished obsidian.
   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the watch. It is a fixed, unchangeable element.
-  MODEL & STYLE: The man is wearing a tailored leather driving glove on his other hand or a crisp shirt cuff is visible. The focus is sharp on the watch.
-  BACKGROUND & ATMOSPHERE: The interior of a vintage sports car. The lighting is cinematic, with clear light catching the details of the watch and the car's interior.
-  OUTPUT SPECIFICATIONS: High-resolution, aspirational, and sophisticated.
+  SCENE & STYLE: The watch is delicately placed on a jagged yet reflective obsidian surface. A wisp of ethereal grey smoke curls in the dark background, adding mystery.
+  LIGHTING & ATMOSPHERE: High-contrast, dramatic studio lighting with a sharp rim light highlighting the metallic edges and glass of the watch.
+  OUTPUT SPECIFICATIONS: Premium, high-end editorial product photography, ultra-detailed.
   `,
   `
-  TASK: Generate an ultra-realistic photo of a man in a sharp business suit, with the provided watch subtly visible.
+  TASK: Generate an ultra-realistic, luxurious product photoshoot of the provided watch resting on rich emerald green velvet.
   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**, without any modifications.
-  MODEL & STYLE: A confident man in a business meeting or his office, perhaps writing notes or adjusting his tie. The watch is visible peeking from under his shirt sleeve.
-  LIGHTING & ATMOSPHERE: Clear, natural light from a large office window. The mood is professional and successful.
-  OUTPUT SPECIFICATIONS: Polished, corporate, and elegant.
+  SCENE & STYLE: The watch sits elegantly among the deep folds of premium emerald velvet. The texture of the fabric contrasts beautifully with the hard metallic and glass surfaces of the watch.
+  LIGHTING & ATMOSPHERE: Soft, sweeping directional light that creates rich shadows in the velvet while illuminating the watch face perfectly.
+  OUTPUT SPECIFICATIONS: Classic, wealthy, opulent, and flawlessly realistic.
   `,
   `
-  TASK: Generate an ultra-realistic lifestyle photo of an adventurous man wearing the provided watch.
+  TASK: Generate an ultra-realistic, creative aquatic product shot featuring the provided watch.
   CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A ruggedly handsome man hiking or exploring, checking his watch against a mountain sunset or a coastal view. He wears practical, stylish outdoor gear.
-  BACKGROUND & ATMOSPHERE: A breathtaking natural landscape. The lighting is clear late afternoon light, creating a warm and adventurous feel.
-  OUTPUT SPECIFICATIONS: Aspirational, rugged, and dynamic.
+  SCENE & STYLE: The watch is resting on a completely submerged smooth dark slate, with crystal clear water forming gentle, slow-motion ripples over its surface. The water magnifies the details and creates dynamic reflections.
+  LIGHTING & ATMOSPHERE: Crisp, pure white lighting from above, creating caustic light patterns on the watch and surrounding stone.
+  OUTPUT SPECIFICATIONS: Refreshing, dynamic, high-tech premium watch campaign.
   `,
   `
-  TASK: Generate a moody, ultra-realistic shot of a man at a sophisticated bar, with the provided watch in focus.
+  TASK: Generate a modern, ultra-realistic architectural photoshoot featuring the provided watch.
   CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**.
-  MODEL & STYLE: A well-dressed man holding a glass of whiskey or a classic cocktail. The shot is cropped to focus on his hand, the glass, and the watch on his wrist.
-  LIGHTING & BACKGROUND: Dim, ambient lighting of an upscale bar. The lighting should clearly define the watch.
-  OUTPUT SPECIFICATIONS: Cinematic, mysterious, and masculine.
+  SCENE & STYLE: The watch is positioned on a series of minimalist, abstract geometric concrete and matte black blocks. The composition is highly structured and asymmetrical.
+  LIGHTING & ATMOSPHERE: Harsh, cinematic sunlight creating strong, sharp diagonal shadows across the concrete, emphasizing a modern architectural aesthetic.
+  OUTPUT SPECIFICATIONS: Contemporary, minimalist, avant-garde luxury.
   `,
   `
-  TASK: Generate an ultra-realistic, casual street style photo featuring the provided watch.
+  TASK: Generate an ultra-realistic, high-fashion levitating product shot of the provided watch.
   CRITICAL RULE: It is absolutely essential that the watch from the provided image is used **WITHOUT ANY MODIFICATION**.
-  MODEL & STYLE: A stylish man in a leather jacket and jeans, leaning against a city wall. The watch is a key accessory to his cool, effortless look.
-  BACKGROUND & ATMOSPHERE: A chic urban environment with interesting textures (brick, concrete). Clear, natural daylight.
-  OUTPUT SPECIFICATIONS: High-resolution, fashionable, and candid.
+  SCENE & STYLE: The watch appears to be floating perfectly in mid-air against a seamless, deep matte black background. A scattering of fine gold dust or metallic particles is suspended around it, catching the light.
+  LIGHTING & ATMOSPHERE: Dual side-lighting to flawlessly sculpt the edges of the watch, with a subtle golden glow illuminating the floating particles.
+  OUTPUT SPECIFICATIONS: Magical, high-resolution, hypnotic and exclusive showcase.
   `,
-
   `
-  TASK: Generate an ultra-realistic, luxury sailing photo of a man on a yacht, with the provided watch prominently visible.
-  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. Do not alter any aspect of it.
-  MODEL & STYLE: A confident, athletic man in a white polo shirt and navy shorts, gripping a yacht's helm. His wrist is raised, clearly showcasing the watch as he steers. His hair is windswept and skin sun-kissed.
-  BACKGROUND & ATMOSPHERE: Open ocean with deep blue water, a clear sky, and the yacht's rigging visible. Bright, vivid natural daylight with reflections sparkling on the water.
-  OUTPUT SPECIFICATIONS: High-resolution, aspirational, nautical luxury.
+  TASK: Generate an ultra-realistic, sophisticated still-life photoshoot of the provided watch in a study setting.
+  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**.
+  SCENE & STYLE: The watch rests draped over the open pages of a vintage, leather-bound astronomical ledger. Beside it is a high-end fountain pen with golden nib details.
+  LIGHTING & ATMOSPHERE: Warm, inviting ambient light, reminiscent of a crackling fireplace or a classic brass desk lamp, creating deep amber and golden tones.
+  OUTPUT SPECIFICATIONS: Timeless, intellectual, heritage craftsmanship aesthetic.
   `,
-
   `
-  TASK: Generate an ultra-realistic, athletic lifestyle photo of a man working out in a premium gym, wearing the provided watch.
-  CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A fit, muscular man in a fitted performance tank top, completing a set of kettlebell swings or resting between sets. The watch is clearly visible on his wrist, showing durability and sporty elegance. His expression shows focus and determination.
-  BACKGROUND & ATMOSPHERE: A modern, high-end gym with clean lines, dark tones, and dramatic overhead lighting. The background is slightly blurred.
-  OUTPUT SPECIFICATIONS: High-resolution, athletic, powerful, and motivational.
+  TASK: Generate an ultra-realistic, dynamic light painting product shot featuring the provided watch.
+  CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**.
+  SCENE & STYLE: The watch stands perfectly upright on a reflective black glass surface. The background features sweeping, long-exposure trails of vibrant neon blue and purple light beams crossing in a high-tech pattern.
+  LIGHTING & ATMOSPHERE: The neon streaks reflect subtly on the watch face and metallic casing, giving it a futuristic, precision-engineered aura.
+  OUTPUT SPECIFICATIONS: Cutting-edge, vibrant, visually arresting modern luxury.
   `,
-
   `
-  TASK: Generate an ultra-realistic travel lifestyle photo of a well-dressed man at an international airport, with the provided watch visible.
+  TASK: Generate an ultra-realistic, elemental photoshoot of the provided watch resting on a block of ice.
   CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**. Its original design and details must be perfectly preserved.
-  MODEL & STYLE: A sophisticated man in a tailored overcoat and turtleneck sweater, walking through a modern airport terminal. He checks his watch as he walks. A leather carry-on bag is in his other hand.
-  BACKGROUND & ATMOSPHERE: A bright, modern terminal with large glass windows and natural light. The background is softly blurred to keep focus on the man and his watch.
-  OUTPUT SPECIFICATIONS: High-resolution, jet-setter lifestyle, polished and global.
+  SCENE & STYLE: The watch is embedded slightly into a crystalline block of raw ice. Frozen bubbles and internal fractures are visible within the ice. Extreme macro focus.
+  LIGHTING & ATMOSPHERE: Cool, pristine cyan and silver lighting coming from below the ice, making the scene feel intensely cold, durable, and pure.
+  OUTPUT SPECIFICATIONS: Rugged yet pristine, high-end expedition luxury.
   `,
-
   `
-  TASK: Generate an ultra-realistic, extreme close-up product shot of the provided watch resting on a mountaineering surface.
+  TASK: Generate an ultra-realistic, dark-mode styling photoshoot featuring the provided watch.
   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw it.
-  SCENE & STYLE: The watch sits on a cracked, weathered piece of ice or a frost-covered rock at high altitude. Tiny ice crystals and snowflakes are visible around it. The focus is razor-sharp on the watch face and bracelet.
-  LIGHTING & ATMOSPHERE: Cool, high-altitude blue-toned lighting with crisp, clear shadows. The scene conveys extreme durability and adventure.
-  OUTPUT SPECIFICATIONS: High-resolution, rugged, adventurous, and product-focused.
+  SCENE & STYLE: The watch rests on a piece of dark, porous volcanic rock. The entire scene is monochromatic, leaning heavily into deep charcoal, black, and silver tones, focusing on supreme texture.
+  LIGHTING & ATMOSPHERE: Moody, low-key lighting. Only the watch catches the subtle, focused light, emerging from the dark void like a masterpiece.
+  OUTPUT SPECIFICATIONS: Stealthy, powerful, ultra-masculine editorial style.
   `,
-
   `
-  TASK: Generate an ultra-realistic, black-tie gala portrait of a man wearing the provided watch with formal attire.
+  TASK: Generate an ultra-realistic, high-speed photography product shot of the watch.
   CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. Do not change its design or details.
-  MODEL & STYLE: A distinguished man in a perfectly tailored black tuxedo with a white pocket square, adjusting his cufflink. The watch peeks elegantly from under his shirt cuff. His expression is suave and sophisticated.
-  BACKGROUND & ATMOSPHERE: A grand ballroom or opera house foyer with crystal chandeliers, marble floors, and warm, golden lighting.
-  OUTPUT SPECIFICATIONS: High-resolution, elegant, James Bond-level sophistication.
+  SCENE & STYLE: The watch is standing on a dark pedestal, while a burst of fine, dry metallic silver powder explodes dynamically behind it. The powder is frozen in mid-air in razor-sharp detail.
+  LIGHTING & ATMOSPHERE: Extremely bright, instantaneous strobe lighting to freeze the motion, creating an energetic and explosive visual impact.
+  OUTPUT SPECIFICATIONS: Dynamic, explosive energy, ultra-detailed action product shot.
   `,
-
   `
-  TASK: Generate an ultra-realistic, artisan workshop photo with the provided watch placed on a craftsman's workbench.
+  TASK: Generate an ultra-realistic, horological-themed photoshoot of the provided watch.
   CRITICAL RULE: The watch from the user's image must be used **WITHOUT ANY MODIFICATION**. It is a fixed, unchangeable element.
-  SCENE & STYLE: The watch is placed on a worn, wooden artisan workbench alongside traditional watchmaker's tools — tiny screwdrivers, a loupe, brass gears. The scene suggests fine craftsmanship and heritage.
-  LIGHTING & ATMOSPHERE: Warm, directional light from a workshop desk lamp. Rich textures of wood, metal, and leather fill the frame. The mood is nostalgic, artisanal, and respectful of craft.
-  OUTPUT SPECIFICATIONS: High-resolution, detail-rich, heritage craftsmanship aesthetic.
+  SCENE & STYLE: The watch is placed on a pristine white jeweler's mat, surrounded artistically by macro-sized, disassembled golden cogs, springs, and ruby bearings.
+  LIGHTING & ATMOSPHERE: Bright, immaculate, clean white lighting with zero harsh shadows, emphasizing pure mechanical perfection and engineering.
+  OUTPUT SPECIFICATIONS: Technical, pristine, master-watchmaker aesthetic.
   `,
-
   `
-  TASK: Generate an ultra-realistic, luxury poolside photo of a man relaxing with the provided watch visible.
+  TASK: Generate an ultra-realistic, automotive-inspired macro product shot featuring the provided watch.
   CRITICAL RULE: The watch must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
-  MODEL & STYLE: A relaxed, well-groomed man in swim trunks and an open linen shirt, lounging on a daybed by an infinity pool. His arm rests on the daybed's armrest, clearly displaying the watch. He holds a drink in his other hand.
-  BACKGROUND & ATMOSPHERE: A luxury resort with an infinity pool overlooking a tropical ocean. Warm, bright sunlight and vivid blues and whites dominate the scene.
-  OUTPUT SPECIFICATIONS: High-resolution, relaxed luxury, vacation-aspirational.
+  SCENE & STYLE: The watch rests on a piece of ultra-premium quilted black leather with bright red or striking blue contrast stitching (like a supercar interior). There are no hands or steering wheels, just the pure materials contrasting.
+  LIGHTING & ATMOSPHERE: Sleek, glossy lighting that highlights the grain of the premium leather and the polished finish of the watch.
+  OUTPUT SPECIFICATIONS: High-octane luxury, refined material contrast, pure product focus.
   `,
-
   `
-  TASK: Generate an ultra-realistic, corporate boardroom close-up of a man gesturing during a presentation, with the provided watch in focus.
-  CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**. Its design and materials must be perfectly preserved.
-  MODEL & STYLE: A powerful man in a navy pinstripe suit and French cuff shirt. The shot focuses on his hand and wrist as he makes a decisive gesture during a boardroom presentation. The watch is the sharpest element in the frame.
-  BACKGROUND & ATMOSPHERE: A modern, glass-walled boardroom with soft, even lighting. Other attendees are softly blurred in the background, creating a sense of importance.
-  OUTPUT SPECIFICATIONS: High-resolution, authoritative, corporate power.
+  TASK: Generate an ultra-realistic, fine art gallery photoshoot featuring the provided watch.
+  CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**.
+  SCENE & STYLE: The watch is displayed like a museum artifact on a solid, unpolished marble plinth. The background is a stark, textured gallery wall.
+  LIGHTING & ATMOSPHERE: A single, perfectly circular beam of warm gallery spotlight illuminates only the watch and the top of the plinth, surrounded by deep, elegant vignette shadowing.
+  OUTPUT SPECIFICATIONS: Museum-quality display, reverent, highly prestigious.
   `,
-
   `
-  TASK: Generate an ultra-realistic, motorcycle adventure photo of a man wearing the provided watch.
+  TASK: Generate an ultra-realistic, macro texture contrast photoshoot of the provided watch.
   CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**. It is a fixed, unchangeable element.
-  MODEL & STYLE: A rugged man in a vintage leather motorcycle jacket and aviator sunglasses, gripping the handlebar of a classic motorcycle. The shot focuses on his gloved hand and wrist — the glove is short enough to reveal the watch clearly.
-  BACKGROUND & ATMOSPHERE: A wide, open road stretching into arid hills or canyons. The lighting is warm afternoon light with a slight dusty haze in the air.
-  OUTPUT SPECIFICATIONS: High-resolution, rebellious, adventurous, and cinematic.
+  SCENE & STYLE: The watch is resting half on a piece of deeply distressed, aged brown wood and half on a sheet of flawless brushed titanium.
+  LIGHTING & ATMOSPHERE: Even, diffused lighting that allows the eye to explore the contrast between the ancient organic wood, the high-tech metal, and the perfection of the watch itself.
+  OUTPUT SPECIFICATIONS: Textural masterpiece, grounded yet highly engineered.
   `,
-
   `
-  TASK: Generate an ultra-realistic, culinary lifestyle photo of a man cooking in a premium kitchen, with the provided watch visible on his wrist.
+  TASK: Generate an ultra-realistic, liquid gold concept photoshoot of the provided watch.
   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. Do not modify it.
-  MODEL & STYLE: A stylish man in a casual henley shirt with rolled-up sleeves, chopping fresh herbs on a wooden cutting board in a beautifully designed modern kitchen. The watch is clearly visible on his wrist as he works with his hands.
-  BACKGROUND & ATMOSPHERE: A bright, modern kitchen with marble countertops, copper accents, and fresh ingredients arranged aesthetically. Warm, natural light from a window.
-  OUTPUT SPECIFICATIONS: High-resolution, lifestyle-driven, modern masculinity, and aspirational.
+  SCENE & STYLE: The watch is placed on a dark surface while thick, luxurious liquid gold appears to be dripping or pooling around its base, reflecting the watch beautifully.
+  LIGHTING & ATMOSPHERE: Warm, rich ambient light that makes the golden liquid shimmer intensely in the dark space.
+  OUTPUT SPECIFICATIONS: Peak opulence, surreal luxury, breathtaking editorial product shot.
   `
 ];
 
