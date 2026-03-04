@@ -1,216 +1,3 @@
-// // --- WATCH PROMPTS ---
-// const WATCH_COVER_PROMPT = `
-// TASK: Create a luxurious product photoshoot stage for a men's watch.
-// IMPORTANT INSTRUCTION: You will be given an image containing a watch. Your primary and most critical task is to use the **exact watch** from the provided image. **DO NOT ALTER THE WATCH IN ANY WAY.** This includes its design, materials, watch face, and strap. It must be presented **AS IS**.
-// SCENE: Place this unaltered watch on a rugged, natural element like a piece of dark, polished wood or a dark slate rock. The background should be a blurred, sophisticated setting like a modern office with city views or a mountain landscape at dusk.
-// LIGHTING: The lighting must be dramatic and focused, creating crisp highlights on the watch's metallic details and glass face, preserving its original form.
-// GOAL: The final composition should feel masculine, powerful, and high-end, with the original watch as the untouched centerpiece.
-// `;
-
-// const WATCH_PHOTO_PROMPTS = [
-//   `
-//   TASK: Generate an ultra-realistic, close-up shot of a man's wrist wearing the provided watch, with his hand on the steering wheel of a classic luxury car.
-//   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the watch. It is a fixed, unchangeable element.
-//   MODEL & STYLE: The man is wearing a tailored leather driving glove on his other hand or a crisp shirt cuff is visible. The focus is sharp on the watch.
-//   BACKGROUND & ATMOSPHERE: The interior of a vintage sports car. The lighting is cinematic, with clear light catching the details of the watch and the car's interior.
-//   OUTPUT SPECIFICATIONS: High-resolution, aspirational, and sophisticated.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic photo of a man in a sharp business suit, with the provided watch subtly visible.
-//   CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**, without any modifications.
-//   MODEL & STYLE: A confident man in a business meeting or his office, perhaps writing notes or adjusting his tie. The watch is visible peeking from under his shirt sleeve.
-//   LIGHTING & ATMOSPHERE: Clear, natural light from a large office window. The mood is professional and successful.
-//   OUTPUT SPECIFICATIONS: Polished, corporate, and elegant.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic lifestyle photo of an adventurous man wearing the provided watch.
-//   CRITICAL RULE: You **MUST** use the watch from the user's image with **ZERO ALTERATIONS**.
-//   MODEL & STYLE: A ruggedly handsome man hiking or exploring, checking his watch against a mountain sunset or a coastal view. He wears practical, stylish outdoor gear.
-//   BACKGROUND & ATMOSPHERE: A breathtaking natural landscape. The lighting is clear late afternoon light, creating a warm and adventurous feel.
-//   OUTPUT SPECIFICATIONS: Aspirational, rugged, and dynamic.
-//   `,
-//   `
-//   TASK: Generate a moody, ultra-realistic shot of a man at a sophisticated bar, with the provided watch in focus.
-//   CRITICAL RULE: The watch from the user's image **MUST NOT BE CHANGED**.
-//   MODEL & STYLE: A well-dressed man holding a glass of whiskey or a classic cocktail. The shot is cropped to focus on his hand, the glass, and the watch on his wrist.
-//   LIGHTING & BACKGROUND: Dim, ambient lighting of an upscale bar. The lighting should clearly define the watch.
-//   OUTPUT SPECIFICATIONS: Cinematic, mysterious, and masculine.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic, casual street style photo featuring the provided watch.
-//   CRITICAL RULE: It is absolutely essential that the watch from the provided image is used **WITHOUT ANY MODIFICATION**.
-//   MODEL & STYLE: A stylish man in a leather jacket and jeans, leaning against a city wall. The watch is a key accessory to his cool, effortless look.
-//   BACKGROUND & ATMOSPHERE: A chic urban environment with interesting textures (brick, concrete). Clear, natural daylight.
-//   OUTPUT SPECIFICATIONS: High-resolution, fashionable, and candid.
-//   `
-// ];
-
-// // --- PERFUME PROMPTS ---
-// const PERFUME_COVER_PROMPT = `
-// TASK: Create a luxurious, masculine product photoshoot stage for a men's perfume bottle.
-// IMPORTANT INSTRUCTION: You will be given an image of a perfume bottle. Your primary and most critical task is to use the **exact perfume bottle** from the provided image. **DO NOT ALTER THE BOTTLE IN ANY WAY.** This includes its shape, label, and liquid color.
-// SCENE: Place this unaltered bottle on a dark, textured surface like wet charcoal or a slab of concrete. The background should be abstract and moody, with elements like swirling smoke or dramatic water splashes.
-// LIGHTING: Clear, high-contrast lighting. Use a single key light to sculpt the bottle's shape and create deep shadows.
-// GOAL: The final composition should feel mysterious, sophisticated, and powerful, suitable for a luxury men's fragrance campaign.
-// `;
-
-// const PERFUME_PHOTO_PROMPTS = [
-//   `
-//   TASK: Generate an ultra-realistic luxury fragrance campaign visual featuring the provided perfume bottle.
-//   CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED** (shape, label, cap, and proportions must remain exactly as provided).
-//   SCENE: A sunlit Mediterranean coastal setting with deep turquoise sea and towering limestone cliffs forming a natural arch. An athletic, tanned male model reclines shirtless on the white deck of a sleek yacht, wearing crisp white swim trunks. He has short dark hair slicked back from the sea, subtle stubble, and sun-kissed skin glistening with water droplets. He rests casually, gazing forward with a calm, confident expression, evoking effortless summer luxury.
-//   LIGHTING & BACKGROUND: Bright natural daylight with vivid ocean blues and shimmering reflections. The cliffs and arch create striking depth, while the open sea and clear sky provide expansive negative space for elegant typography.
-//   OUTPUT SPECIFICATIONS: Ultra-detailed, photorealistic, bold, and editorial—ready for a premium fragrance advertisement with clean negative space for branding.
-//   `,
-//   `
-//   TASK: Generate a dramatic black and white portrait of a bearded man in a suit, holding the provided perfume bottle close to his face.  
-//   CRITICAL RULE: The perfume bottle must be used **EXACTLY AS IS** and must be the only element in color.  
-//   MODEL & STYLE: A confident man with a thick beard, sharp features, and intense gaze, dressed in a tailored suit with an open-collar shirt. The rest of the scene is monochrome.  
-//   LIGHTING & ATMOSPHERE: High-contrast, clear black and white studio lighting, with shadows adding depth and drama.  
-//   OUTPUT SPECIFICATIONS: Striking, masculine, bold, and modern.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic, high-fashion dark-fantasy fragrance advertisement featuring the provided perfume bottle.
-//   CRITICAL RULE: The attached perfume bottle **MUST NOT BE CHANGED** — keep its exact shape, label, cap, and proportions.
-//   SCENE: Extreme close-up composition where the **perfume bottle fills most of the frame**, resting on fractured black crystal with razor-sharp edges. Behind and partly above the bottle, a tall spectral witch-like figure emerges from swirling obsidian mist. Only her lower face and one hand are clearly revealed. Her long  finger presses to **luminous nuade-red lips** in a commanding “shh” gesture, appearing just over the bottle’s shoulder. Wisps of icy blue magic curl around the cap and base, as if drawn to the fragrance.
-//   LIGHTING & BACKGROUND: Ultra-dramatic low-key lighting with focused electric-blue and silver edge lights that sculpt every surface of the bottle and crystal. Cold mist and faint sparks wrap the bottle in supernatural energy while the figure remains partially hidden in velvety shadow.
-//   MOOD & STYLE: Dark, hypnotic, and intensely premium. The scene fuses high-fashion witchcraft with cinematic fantasy, making the **bottle the undisputed star** while still evoking forbidden allure and silent power.
-//   OUTPUT SPECIFICATIONS: Ultra-detailed, photorealistic, 8k resolution—perfect for a bold, unforgettable luxury fragrance campaign.
-//   `,
-//   `
-//   TASK: Generate a sophisticated, ultra-realistic still life featuring the provided perfume bottle.
-//   CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED**.
-//   SCENE: The bottle is placed on a polished dark wood desk, next to other masculine accessories like a leather-bound journal, a fountain pen, or a pair of classic sunglasses.
-//   LIGHTING & BACKGROUND: Soft, directional light, like from a desk lamp, creating an intelligent and refined mood.
-//   OUTPUT SPECIFICATIONS: Elegant, classic, and detailed.
-//   `,
-//   `
-//   TASK: Generate a glamorous, ultra-realistic luxury fragrance advertisement featuring the provided perfume bottle.
-//   CRITICAL RULE: The perfume bottle from the provided image **MUST NOT BE CHANGED** — keep its exact shape, label, and signature.
-//   SCENE: A striking, fashion-forward couple stands in a sleek mirrored elevator. The man wears a perfectly tailored black tuxedo with a crisp white shirt and untied bow tie, leaning slightly toward the woman with one hand resting on the wall behind her and the other lightly at her waist. The woman, in a fitted black tuxedo jacket with a daring deep neckline, tilts her face up toward him, one hand placed gently on his chest and the other brushing his lapel. Their pose radiates intimacy and confidence. The perfume bottle is displayed on a glossy reflective surface in the foreground, perfectly centered and sharply detailed.
-//   LIGHTING & BACKGROUND: Moody, cinematic lighting with soft golden highlights on their faces and dramatic shadows on the dark metallic elevator panels. Subtle reflections add depth and a sense of luxury.
-//   OUTPUT SPECIFICATIONS: Ultra-realistic, elegant, and sensuous. Every detail—from clothing texture to reflections on the elevator walls—must convey premium sophistication and timeless allure.
-//   `
-
-
-// ];
-
-// // --- BELT PROMPTS ---
-// const BELT_COVER_PROMPT = `
-// TASK: Create a minimalist, high-end product shot for a men's belt.
-// IMPORTANT INSTRUCTION: You will be given an image of a belt. Your primary task is to use the **exact belt** from the image **WITHOUT ANY ALTERATION** to its design, buckle, color, or material.
-// SCENE: The belt is coiled elegantly on a minimalist surface like brushed metal, concrete, or rich leather.
-// LIGHTING: Clean, directional lighting that clearly defines the texture of the belt's material and the metallic finish of the buckle.
-// GOAL: The final image should be sharp, sophisticated, and focused entirely on the craftsmanship of the unchanged belt.
-// `;
-
-// const BELT_PHOTO_PROMPTS = [
-//   `
-//   TASK: Create a hyper-realistic, high-contrast monochrome close-up shot focusing on the provided belt.
-//   CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle, and stitching must be preserved with perfect accuracy. The entire image output must be black and white.
-//   SCENE & STYLE: A man is fastening the belt. The shot is tightly cropped on his torso, with his hands visible. He is wearing dark, textured trousers (like raw denim). The focus is razor-sharp on the belt's buckle and the leather's grain. The belt must cast a soft, realistic shadow on the trousers.
-//   PHOTOGRAPHY: Shot with a macro lens to capture extreme detail. The lighting should be dramatic and from the side, creating deep shadows and clear highlights that emphasize the texture of the materials. The final image should be a powerful, high-fashion black and white photograph.
-//   OUTPUT: Moody, textural, and highly detailed.
-//   `,
-//   `
-//   TASK: Generate a clean, ultra-realistic editorial photo of a man wearing the provided belt, focusing on how it complements his outfit.
-//   CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-//   MODEL & STYLE: A three-quarter shot of a man wearing impeccably tailored chinos and a crisp, tucked-in linen shirt. The pose is simple and classic, showcasing the belt as a centerpiece of a smart-casual outfit. The belt must appear naturally cinched and conform to his waist.
-//   BACKGROUND & ATMOSPHERE: A studio with clear, natural light coming from a large window just out of frame. The background is a simple, neutral-colored wall with subtle texture.
-//   PHOTOGRAPHY & REALISM: Shot with an 85mm portrait lens for a clean, compressed look with soft background blur. The lighting should be soft and diffused, creating clear highlights on the buckle and subtle shadows that define the belt's shape and how it sits on the trousers. Every stitch should be visible.
-//   OUTPUT: Sharp, sophisticated, and flawlessly realistic, like a page from a luxury brand's lookbook.
-//   `,
-//   `
-//   TASK: Generate a cinematic, ultra-realistic portrait of a man wearing the provided belt, shot during late afternoon.
-//   CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. Its design, buckle, and material must be an exact match.
-//   MODEL & STYLE: A rugged man in a simple, well-fitted white henley shirt and dark jeans, leaning against a rustic wall. The belt is a key element, and it must look naturally integrated, conforming to his posture.
-//   PHOTOGRAPHY & REALISM: Shot on a 50mm f/1.4 lens. The clear light of the late afternoon must realistically reflect off the belt's buckle and the texture of the leather. The belt must cast soft, convincing shadows on his jeans. The overall feel should be authentic and clear, not like a composite image.
-//   OUTPUT: Cinematic, and authentic.
-//   `,
-//   `
-//   TASK: Generate a moody, ultra-realistic nighttime shot of a man wearing the provided belt in a city environment.
-//   CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is an unchangeable part of his style.
-//   MODEL & STYLE: A stylish man in a leather jacket and dark jeans, standing on a rain-slicked city street with neon lights blurred in the background. The belt is clearly visible and integrated into his look.
-//   LIGHTING & REALISM: The scene is lit by ambient city lights. These colored lights must cast clear reflections on the metal buckle and the sheen of the leather. The belt must look like a natural part of his outfit, with shadows and highlights that match the complex lighting environment perfectly.
-//   PHOTOGRAPHY: Cinematic, shallow depth of field, shot with a 35mm lens. A subtle film grain should be added for texture.
-//   OUTPUT: Gritty, cool, and photorealistic.
-//   `,
-//   `
-//   TASK: Generate an authentic, ultra-realistic photo of a man getting dressed, with a focus on him putting on the provided belt.
-//   CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
-//   MODEL & STYLE: A man in a stylish, well-lit bedroom. He is in the process of threading the belt through the loops of his trousers. The shot is a medium-close up, focusing on his hands, the belt, and his waist area.
-//   BACKGROUND & ATMOSPHERE: A sophisticated and slightly out-of-focus background with a chair and warm ambient light. The depth of field should be shallow, keeping the focus entirely on the action of putting on the belt.
-//   LIGHTING & REALISM: The lighting should be clear and natural, as if from a window. It must create clear highlights on the buckle as it moves and cast soft shadows from his hands onto the belt and trousers, ensuring the components look integrated and not flat.
-//   OUTPUT: Candid, intimate, and highly realistic, focusing on the tactile quality of the product.
-//   `
-// ];
-
-// // --- APPAREL PROMPTS ---
-// const APPAREL_COVER_PROMPT = `
-// TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a male model wearing the provided clothing item.
-// CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the clothing. This includes its design, color, pattern, texture, and fit. It is a fixed, unchangeable element placed onto the model.
-// MODEL & STYLE: A confident male fashion model. His pose should be strong and impactful, like a magazine cover shot. Hair and makeup are clean and masculine.
-// BACKGROUND & ATMOSPHERE: A clean, minimalist studio background with strong architectural elements (e.g., concrete blocks, a stark staircase).
-// LIGHTING: Professional studio lighting with balanced shadows that highlights the form of the model and the texture of the fabric.
-// OUTPUT SPECIFICATIONS: High-resolution, sharp, editorial quality. The clothing is the absolute star of the image.
-// `;
-
-// const APPAREL_PHOTO_PROMPTS = [
-//   `
-//   TASK: Generate an ultra-realistic, full-body street style photo of a man wearing the provided garment.
-//   CRITICAL RULE: The clothing item must be used **EXACTLY AS IS**.
-//   MODEL & STYLE: A stylish man walking confidently on a city street (e.g., SoHo, London). The pose is natural and in-motion, capturing an effortless look. Accessorize appropriately (e.g., sunglasses, sneakers).
-//   BACKGROUND & ATMOSPHERE: A slightly blurred, chic urban street. The lighting is clear and natural, like on a sunny day.
-//   OUTPUT SPECIFICATIONS: High-resolution, candid, editorial fashion magazine style.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic lifestyle photo of a man wearing the provided garment in a relaxed, seated pose.
-//   CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS**.
-//   MODEL & STYLE: A man sitting in a modern armchair in a stylish loft apartment, at a rustic cafe, or on a park bench. His pose is relaxed and natural.
-//   BACKGROUND & ATMOSPHERE: An aesthetically pleasing setting. The focus is sharp on the model and his outfit, with the background softly blurred.
-//   OUTPUT SPECIFICATIONS: A high-end, aspirational lifestyle shot.
-//   `,
-//   `
-//   TASK: Generate a dramatic, ultra-realistic medium-close-up shot focusing on the details of the provided clothing item.
-//   CRITICAL RULE: The clothing **MUST NOT BE CHANGED**. Its original fabric texture, pattern, and details must be preserved.
-//   MODEL & STYLE: A model in a simple, strong pose that showcases the garment's texture and cut. The crop should be from the waist-up.
-//   LIGHTING & BACKGROUND: A plain, dark studio background. The lighting is designed to clearly define the fabric's details.
-//   OUTPUT SPECIFICATIONS: High-fashion, sharp focus on the garment. Timeless and clean.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic, dynamic photo of a model wearing the provided garment in motion.
-//   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION**.
-//   MODEL & STYLE: A male model captured mid-jump or striding with purpose such as creative modeling pose., causing the garment (if loose) to show movement and flow. The energy is powerful and athletic.
-//   BACKGROUND & ATMOSPHERE: A simple, open space, like a minimalist rooftop or an empty warehouse, to avoid distraction.
-//   OUTPUT SPECIFICATIONS: High-resolution and full of energy.
-//   `,
-//   `
-//   TASK: Generate an ultra-realistic photo showing the back or three-quarter view of a model wearing the provided garment.
-//   CRITICAL RULE: The garment must be used **EXACTLY AS IS**, accurately representing its fit from a non-frontal view.
-//   MODEL & STYLE: A model standing with his back to the camera or in a three-quarter turn. The pose should clearly display the garment's silhouette from the back or side.
-//   BACKGROUND & ATMOSPHERE: A clean, neutral studio background.
-//   OUTPUT SPECIFICATIONS: Clear and well-lit, as seen on a high-end e-commerce site.
-//   `
-// ];
-
-// export const MEN_PROMPTS = {
-//     watch: {
-//         coverPrompt: WATCH_COVER_PROMPT,
-//         photoPrompts: WATCH_PHOTO_PROMPTS
-//     },
-//     perfume: {
-//         coverPrompt: PERFUME_COVER_PROMPT,
-//         photoPrompts: PERFUME_PHOTO_PROMPTS
-//     },
-//     belt: {
-//         coverPrompt: BELT_COVER_PROMPT,
-//         photoPrompts: BELT_PHOTO_PROMPTS
-//     },
-//     apparel: {
-//         coverPrompt: APPAREL_COVER_PROMPT,
-//         photoPrompts: APPAREL_PHOTO_PROMPTS
-//     }
-// };
 // --- WATCH PROMPTS ---
 const WATCH_COVER_PROMPT = `
 TASK: Create a luxurious product photoshoot stage for a men's watch.
@@ -460,134 +247,129 @@ const PERFUME_PHOTO_PROMPTS = [
 
 // --- BELT PROMPTS ---
 const BELT_COVER_PROMPT = `
-TASK: Create a minimalist, high-end product shot for a men's belt.
-IMPORTANT INSTRUCTION: You will be given an image of a belt. Your primary task is to use the **exact belt** from the image **WITHOUT ANY ALTERATION** to its design, buckle, color, or material.
-SCENE: The belt is coiled elegantly on a minimalist surface like brushed metal, concrete, or rich leather.
-LIGHTING: Clean, directional lighting that clearly defines the texture of the belt's material and the metallic finish of the buckle.
-GOAL: The final image should be sharp, sophisticated, and focused entirely on the craftsmanship of the unchanged belt.
+TASK: Orchestrate a masterful, high-end editorial centerpiece photoshoot for a luxury men's belt.
+IMPORTANT INSTRUCTION: You will be provided with an image of a belt. Your absolute priority is to render the **exact belt** from the image **WITHOUT A SINGLE ALTERATION**. The design, buckle intricacies, color grading, and material texture must remain pristine and completely untouched.
+SCENE: The belt is sculpted into a striking, elegant helix, resting upon a gallery-worthy plinth—perhaps dark, porous obsidian or a slab of raw, highly textured travertine. The visual weight should feel grounded yet incredibly sophisticated.
+LIGHTING: Employ precise, cinematic chiaroscuro lighting. A single, focused key light should carve out the architectural lines of the buckle and illuminate the microscopic grain of the leather, allowing deep, rich shadows to create immense depth and volume.
+GOAL: Produce a breathtaking, museum-quality product portrait that exudes heritage craftsmanship, power, and unapologetic luxury. The original belt must be the absolute hero of this visual symphony.
 `;
 
 const BELT_PHOTO_PROMPTS = [
   `
-  TASK: Create a hyper-realistic, high-contrast monochrome close-up shot focusing on the provided belt.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle, and stitching must be preserved with perfect accuracy. The entire image output must be black and white.
-  SCENE & STYLE: A man is fastening the belt. The shot is tightly cropped on his torso, with his hands visible. He is wearing dark, textured trousers (like raw denim). The focus is razor-sharp on the belt's buckle and the leather's grain. The belt must cast a soft, realistic shadow on the trousers.
-  PHOTOGRAPHY: Shot with a macro lens to capture extreme detail. The lighting should be dramatic and from the side, creating deep shadows and clear highlights that emphasize the texture of the materials. The final image should be a powerful, high-fashion black and white photograph.
-  OUTPUT: Moody, textural, and highly detailed.
+  TASK: Execute a breathtaking, hyper-realistic, high-contrast monochrome editorial portrait featuring the provided belt.
+  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle architecture, and stitch fidelity must be preserved with absolute perfection. 
+  SCENE & STYLE: A powerfully built model, sculpted by shadow, stands in profile fastening the belt over raw, heavyweight selvedge denim. His torso is artfully cropped to emphasize the waistline. The pose is deliberate, commanding, and sculptural, reminiscent of fine art photography.
+  PHOTOGRAPHY: Shot on medium format film for unparalleled dynamic range. Razor-sharp macro focus on the belt's buckle, with the leather's grain heavily pronounced. Intense, single-source side lighting creates a dramatic fall-off, emphasizing the tactile reality of the materials.
+  OUTPUT: Moody, intensely textural, avant-garde masculinity, worthy of a flagship luxury boutique's wall.
   `,
   `
-  TASK: Generate a clean, ultra-realistic editorial photo of a man wearing the provided belt, focusing on how it complements his outfit.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A three-quarter shot of a man wearing impeccably tailored chinos and a crisp, tucked-in linen shirt. The pose is simple and classic, showcasing the belt as a centerpiece of a smart-casual outfit. The belt must appear naturally cinched and conform to his waist.
-  BACKGROUND & ATMOSPHERE: A studio with clear, natural light coming from a large window just out of frame. The background is a simple, neutral-colored wall with subtle texture.
-  PHOTOGRAPHY & REALISM: Shot with an 85mm portrait lens for a clean, compressed look with soft background blur. The lighting should be soft and diffused, creating clear highlights on the buckle and subtle shadows that define the belt's shape and how it sits on the trousers. Every stitch should be visible.
-  OUTPUT: Sharp, sophisticated, and flawlessly realistic, like a page from a luxury brand's lookbook.
+  TASK: Capture a breathtaking, ultra-realistic cinematic lifestyle editorial of a man wearing the provided belt, exuding 'Sprezzatura'.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is the non-negotiable anchor of the image.
+  MODEL & STYLE: A charismatic man with effortless Mediterranean elegance, wearing a perfectly imperfect, casually unbuttoned linen suit in deep navy or crisp beige. The belt is the focal point, beautifully cinching the trousers with natural ease as he leans slightly against a sun-drenched stone balustrade.
+  BACKGROUND & ATMOSPHERE: A hazy, sun-drenched Italian coastal villa overlooking the azure sea. The depth of field is shallow, rendering the background into a beautiful bokeh of light and color.
+  PHOTOGRAPHY & REALISM: Shot on an 85mm f/1.2 lens. The lighting is golden-hour perfection, casting a warm, romantic glow that highlights the polished metal of the buckle against the matte linen.
+  OUTPUT: Flawless, romantic, aspirational old-money luxury, captured with absolute photographic authenticity.
   `,
   `
-  TASK: Generate a cinematic, ultra-realistic portrait of a man wearing the provided belt, shot during late afternoon.
-  CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. Its design, buckle, and material must be an exact match.
-  MODEL & STYLE: A rugged man in a simple, well-fitted white henley shirt and dark jeans, leaning against a rustic wall. The belt is a key element, and it must look naturally integrated, conforming to his posture.
-  PHOTOGRAPHY & REALISM: Shot on a 50mm f/1.4 lens. The clear light of the late afternoon must realistically reflect off the belt's buckle and the texture of the leather. The belt must cast soft, convincing shadows on his jeans. The overall feel should be authentic and clear, not like a composite image.
-  OUTPUT: Cinematic, and authentic.
+  TASK: Direct an edgy, ultra-realistic, low-key urban fashion editorial featuring the provided belt.
+  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is the authentic centerpiece of the narrative.
+  MODEL & STYLE: A ruggedly handsome man with a subtle artistic edge, wearing an open, heavy-gauge leather moto jacket over structured midnight-black denim. He sits astride a vintage custom motorcycle, adjusting his stance, allowing the belt to catch the ambient light perfectly at his waist.
+  LIGHTING & REALISM: Illuminated by the raw, chaotic neon glow of a wet city night. The neon lights (crimson and cyan) must reflect authentically off the belt's buckle and the slick texture of the leather strap. 
+  PHOTOGRAPHY: Shot with a 35mm lens for environmental context. Cinematic film grain is essential. The camera angle is slightly low, projecting power and cool indifference.
+  OUTPUT: Gritty, unapologetically cool, photorealistic street-luxury, dripping with attitude.
   `,
   `
-  TASK: Generate a moody, ultra-realistic nighttime shot of a man wearing the provided belt in a city environment.
-  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is an unchangeable part of his style.
-  MODEL & STYLE: A stylish man in a leather jacket and dark jeans, standing on a rain-slicked city street with neon lights blurred in the background. The belt is clearly visible and integrated into his look.
-  LIGHTING & REALISM: The scene is lit by ambient city lights. These colored lights must cast clear reflections on the metal buckle and the sheen of the leather. The belt must look like a natural part of his outfit, with shadows and highlights that match the complex lighting environment perfectly.
-  PHOTOGRAPHY: Cinematic, shallow depth of field, shot with a 35mm lens. A subtle film grain should be added for texture.
-  OUTPUT: Gritty, cool, and photorealistic.
+  TASK: Craft a striking, ultra-realistic avant-garde architectural portrait highlighting the provided belt.
+  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its geometry and material must remain perfectly intact.
+  MODEL & STYLE: A strikingly angular model dressed in stark, unstructured monochrome fashion—perhaps a draped black overcoat layered over wide-leg trousers. The belt acts as the architectural anchor, violently cinching the silhouette into a masterpiece of modern proportion.
+  BACKGROUND & ATMOSPHERE: An imposing background of brutalist concrete architecture. The lines are harsh, clean, and imposing.
+  LIGHTING & REALISM: Cold, diffused, overcast daylight that eliminates harsh shadows but highlights the micro-textures of the concrete and the deep, rich finish of the belt. The metallic buckle provides the only sharp highlight in the frame.
+  OUTPUT: High-concept, conceptual fashion, architecturally disciplined, and radically modern.
   `,
   `
-  TASK: Generate an authentic, ultra-realistic photo of a man getting dressed, with a focus on him putting on the provided belt.
-  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
-  MODEL & STYLE: A man in a stylish, well-lit bedroom. He is in the process of threading the belt through the loops of his trousers. The shot is a medium-close up, focusing on his hands, the belt, and his waist area.
-  BACKGROUND & ATMOSPHERE: A sophisticated and slightly out-of-focus background with a chair and warm ambient light. The depth of field should be shallow, keeping the focus entirely on the action of putting on the belt.
-  LIGHTING & REALISM: The lighting should be clear and natural, as if from a window. It must create clear highlights on the buckle as it moves and cast soft shadows from his hands onto the belt and trousers, ensuring the components look integrated and not flat.
-  OUTPUT: Candid, intimate, and highly realistic, focusing on the tactile quality of the product.
+  TASK: Generate an ultra-realistic, pinnacle-of-power editorial portrait centered on the provided belt.
+  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its design, buckle, or material; it is the emblem of control in this image.
+  MODEL & STYLE: A fiercely confident executive in an immaculate, bespoke charcoal pinstripe suit. He is captured mid-motion, unbuttoning his suit jacket as he sits down, perfectly revealing the belt beneath a crisp, tailored white shirt. The fit is flawless.
+  BACKGROUND & ATMOSPHERE: A cavernous, hyper-modern corner office with floor-to-ceiling glass overlooking a sprawling metropolis. 
+  LIGHTING & REALISM: Dramatic 'Rembrandt' studio lighting seamlessly blended with the cool, blue-tinted natural light of the cityscape. The buckle gleams with a sharp, authoritative highlight, commanding immediate attention.
+  OUTPUT: Cinematic, immensely powerful, flawless corporate luxury, exuding absolute authority.
   `,
-
   `
-  TASK: Generate an ultra-realistic, equestrian lifestyle photo of a man wearing the provided belt.
-  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its appearance in any way.
-  MODEL & STYLE: A well-built man in jodhpurs, riding boots, and a fitted polo shirt, standing next to a horse and stroking its mane. The belt is clearly visible, cinching his waist. The mood is refined and athletically elegant.
-  BACKGROUND & ATMOSPHERE: A sunlit countryside stable with wooden fences and green fields visible behind. Warm, golden afternoon light.
-  OUTPUT: Sophisticated, equestrian, and aspirationally masculine.
+  TASK: Orchestrate a hyper-realistic, soulful lifestyle portrait of a man wearing the provided belt in a realm of pure craftsmanship.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. Retain every nuance of its original essence.
+  MODEL & STYLE: A weathered, artistic man with rolled-up flannel sleeves and rugged work jeans, standing amidst a beautifully chaotic sculptor’s or leatherworker's atelier. He is wiping his hands on a cloth, the belt sitting proudly and naturally at his waist, perfectly integrated into his authentic workwear aesthetic.
+  LIGHTING & ATMOSPHERE: Dust motes dance in thick shafts of warm, amber light slicing through large, dirty workshop windows. The lighting is poetic and textured, illuminating the belt as a piece of functional art.
+  OUTPUT: Earthy, authentic, heritage-rich, celebrating the romanticism of raw creation.
   `,
-
   `
-  TASK: Generate an ultra-realistic, formal wedding-ready photo of a man wearing the provided belt.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A groom in a classic charcoal three-piece suit, adjusting his waistcoat. The belt peeks from under the waistcoat at the sides, clearly visible. His grooming is impeccable — clean shave, neat hair. He holds a single boutonniere or adjusts his tie.
-  BACKGROUND & ATMOSPHERE: An elegant, sunlit venue — a manor house garden or a classic stone church porch. Soft, romantic lighting.
-  OUTPUT: Polished, romantic, and premium wedding-ready.
+  TASK: Capture a breathtaking, ultra-realistic red-carpet snapshot of a star wearing the provided belt.
+  CRITICAL RULE: The belt from the user's image must be used **EXACTLY AS IS**. It is a fixed, untouchable element of his wardrobe.
+  MODEL & STYLE: A classically handsome leading man in a razor-sharp, midnight blue velvet tuxedo. He is captured adjusting his cummerbund or jacket, briefly but clearly exposing the elegant lines of the provided belt acting as the luxurious anchor to his formalwear. 
+  BACKGROUND & ATMOSPHERE: The blurred, chaotic energy of a film premiere or gala, with soft, out-of-focus flashbulbs popping in the background, creating a dazzling array of bokeh.
+  LIGHTING & REALISM: The harsh, immediate flash of paparazzi cameras perfectly balanced with rich ambient event lighting, freezing the moment and making the belt's buckle pop with intense clarity.
+  OUTPUT: High-glamour, timeless celebrity elegance, exceptionally dynamic and alive.
   `,
-
   `
-  TASK: Generate an ultra-realistic, craftsman workshop photo of the provided belt coiled alongside artisan tools.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle, and stitching must be perfectly preserved.
-  SCENE & STYLE: The belt is beautifully coiled on a rough wooden workbench alongside leather-working tools — a stitching awl, waxed thread, a burnishing tool, and leather scraps. The scene evokes handcrafted artisanship.
-  LIGHTING & ATMOSPHERE: Warm, directional light from a workshop lamp. The textures of leather and wood fill the frame. The mood is authentic, artisanal, and respectful of craft.
-  OUTPUT: Heritage craftsmanship, detail-rich, and product-focused.
+  TASK: Create a mind-bending, ultra-realistic surrealist fashion editorial featuring the provided belt.
+  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It must remain the definitive anchor of reality in this dreamscape.
+  MODEL & STYLE: A slender, enigmatic model draped in flowing, earth-toned silk garments that billow impossibly in the wind. The belt violently cinches the ethereal fabric, providing a gorgeous contrast of rigid, structured leather against liquid-like textiles.
+  BACKGROUND & ATMOSPHERE: An endless, desolate expanse of pristine white sand dunes beneath a bruised, stormy purple sky. 
+  LIGHTING & REALISM: The lighting is unearthly, with a golden hour glow hitting the model from an impossibly low angle, stretching shadows into infinity and making the belt's hardware gleam like a desert artifact.
+  OUTPUT: Ethereal, avant-garde, deeply poetic fashion photography that transcends the ordinary.
   `,
-
   `
-  TASK: Generate an ultra-realistic, flat-lay styling photo centered on the provided belt.
-  CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. It is a fixed, unchangeable element.
-  SCENE & STYLE: A meticulously arranged flat-lay on a dark wooden surface. The belt is the hero piece, surrounded by complementary accessories — a leather wallet, a pair of sunglasses, a pocket knife, and a wristwatch. The arrangement is symmetrical and intentional.
-  LIGHTING & ATMOSPHERE: Bright, even overhead lighting that clearly shows the belt's texture, color, and buckle detail.
-  OUTPUT: High-resolution, editorial flat-lay, product-catalogue quality.
+  TASK: Direct an ultra-realistic, highly intimate, voyeuristic portrait of a man slipping on the provided belt.
+  CRITICAL RULE: The belt **MUST NOT BE CHANGED** in any way. Preserve its original design and material perfectly.
+  MODEL & STYLE: A man captured in the private sanctuary of a breathtaking, architecturally stunning bathroom. He is seen through an open doorway, half-dressed in dark trousers, his hands beautifully framing the belt as he pulls it through the final loop. His musculature is relaxed but defined.
+  BACKGROUND & ATMOSPHERE: Rich, dark marble walls, a freestanding copper tub in the blurred background. Steam hangs heavy in the air.
+  LIGHTING & REALISM: Soft, diffused morning light filtering through frosted glass, wrapping beautifully around his torso and hands, creating deep, luscious shadows and making the leather of the belt look incredibly supple and tactile.
+  OUTPUT: Sensual, highly intimate, refined, and exceptionally cinematic.
   `,
-
   `
-  TASK: Generate an ultra-realistic, casual beach boardwalk photo of a man wearing the provided belt.
+  TASK: Generate an ultra-realistic, high-kinetic-energy fashion shot of a man wearing the provided belt.
   CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A relaxed man in rolled-up chinos, a linen shirt, and leather sandals, walking along a sun-drenched wooden boardwalk. The belt is clearly visible, adding a stylish detail to his casual beach-town look.
-  BACKGROUND & ATMOSPHERE: A bright, coastal boardwalk with the ocean visible in the background. Warm, natural daylight with a slight sea breeze effect in his clothes.
-  OUTPUT: Bright, relaxed, coastal-chic lifestyle.
+  MODEL & STYLE: An athletic model caught in mid-stride, leaping across a gap or vaulting a low wall in an urban environment. He wears high-end performance-meets-luxury apparel—technical trousers and a light windbreaker. The belt remains perfectly secured, visually anchoring his dynamic, airborne movement.
+  PHOTOGRAPHY & REALISM: Shot with an incredibly fast shutter speed (e.g., 1/4000s) to freeze the action flawlessly. Sharp focus tracks the center of mass (the belt), while the extremities exhibit the slightest, artistic motion blur.
+  OUTPUT: Explosively dynamic, high-performance luxury, dripping with adrenaline and perfect styling.
   `,
-
   `
-  TASK: Generate an ultra-realistic, seated office portrait focusing on the provided belt.
+  TASK: Craft an ultra-realistic, blue-blood equestrian lifestyle portrait highlighting the provided belt.
   CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its design, buckle, or material.
-  MODEL & STYLE: A confident man seated in a leather office chair behind a modern desk. He leans forward with his hands clasped, and the belt is clearly visible where his jacket hangs open. He wears a crisp white shirt and tailored grey trousers.
-  BACKGROUND & ATMOSPHERE: A modern, executive office with clean lines, bookshelves, and natural light from large windows. The background is softly blurred.
-  OUTPUT: Professional, authoritative, and polished.
+  MODEL & STYLE: A distinguished gentleman standing beside a magnificent, muscular thoroughbred horse. He is casually leaning against a weathered oak fence, wearing tailored riding breeches, knee-high bespoke boots, and an untucked, fine-gauge knit polo. The belt is prominently displayed at his waist, radiating quiet, old-world wealth.
+  BACKGROUND & ATMOSPHERE: A rolling, emerald-green English countryside estate wrapped in the delicate morning mist.
+  LIGHTING & REALISM: Soft, cool, diffused morning light that brings out the incredibly rich, organic earth tones of the leather belt and the horse's coat.
+  OUTPUT: Aristocratic, deeply sophisticated, classic heritage elegance.
   `,
-
   `
-  TASK: Generate an ultra-realistic, hiking trail adventure photo of a man wearing the provided belt.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED** in any way. Preserve its original design and material.
-  MODEL & STYLE: A rugged, outdoorsy man in tactical cargo pants and a fitted performance T-shirt, pausing on a mountain trail to take in a panoramic view. The belt is clearly visible and integrated naturally into his adventure gear.
-  BACKGROUND & ATMOSPHERE: A breathtaking mountain landscape with valleys, forests, and a clear sky. Bright, high-altitude daylight.
-  OUTPUT: Adventurous, rugged, and dynamic.
+  TASK: Compose a masterpiece, ultra-realistic editorial still-life focusing exclusively on the provided belt.
+  CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. It is the magnum opus of the composition.
+  SCENE & STYLE: Not a standard flat-lay, but a dynamic, multi-layered composition. The belt is draped artistically over a stack of rare, vintage photography books and a crushed piece of heavy velvet. Next to it sit a crystal tumbler of amber liquid and a vintage Leica camera. The arrangement looks like the stylish detritus of a creative genius.
+  LIGHTING & ATMOSPHERE: Cinematic, moody 'chiaroscuro' lighting from a single, slightly flagged source, creating rivers of light and deep pools of impenetrable shadow. 
+  OUTPUT: Highly intellectual, rich in narrative, an absolute triumph of artistic product styling.
   `,
-
   `
-  TASK: Generate an ultra-realistic, backstage concert photo of a rock musician wearing the provided belt.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A man with an edgy rock musician look — fitted black jeans, a band T-shirt, and tattoos visible on his forearms. The belt is a statement piece, visible at his hips. He sits on an amp backstage, tuning a guitar.
-  BACKGROUND & ATMOSPHERE: A dimly lit backstage area with equipment cases, cables, and warm stage lights bleeding in from behind a curtain. The mood is gritty, creative, and cool.
-  OUTPUT: Rock & roll, authentic, and edgy.
+  TASK: Capture a sun-drenched, ultra-realistic Riviera lifestyle editorial featuring the provided belt.
+  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**.
+  MODEL & STYLE: A tanned, effortlessly chic man relaxing on the bleached teak deck of a luxury yacht. He wears pristine white tailored shorts and a subtle, unbuttoned silk shirt flapping in the sea breeze. The belt is the singular contrast point, perfectly dividing the bright whites of his outfit.
+  BACKGROUND & ATMOSPHERE: The blinding, crystal-clear turquoise waters of the French Riviera. Bright, high-noon summer sun casting sharp, distinct shadows.
+  PHOTOGRAPHY: Shot with a polarizing filter to make the sky pop and remove reflections, giving the image a hyper-clean, vibrant, high-end magazine aesthetic.
+  OUTPUT: Crisp, vibrant, jet-set luxury, flawlessly executed.
   `,
-
   `
-  TASK: Generate an ultra-realistic, grooming mirror shot focusing on the provided belt.
+  TASK: Direct a deeply atmospheric, ultra-realistic vintage portrait of a man wearing the provided belt.
+  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**.
+  MODEL & STYLE: A man exuding old-school cool, seated in a plush velvet booth at an underground jazz club. He sports a high-waisted, wide-leg trouser with suspenders hanging down, relying entirely on the provided belt. He leans forward, elbows on the table, smoke from a cigarette curling perfectly around him.
+  LIGHTING & ATMOSPHERE: Illuminated only by the dim, warm glow of a small table lamp with a fringed shade. The lighting is incredibly warm, casting long, dramatic shadows and creating specular highlights on the metal belt buckle through the hazy, smoke-filled air.
+  OUTPUT: Mood-drenched, cinematic, unapologetically classic and impossibly cool.
+  `,
+  `
+  TASK: Generate an ultra-realistic, abstract macro art photograph focusing strictly on the provided belt being worn.
   CRITICAL RULE: The belt from the user's image must be used **EXACTLY AS IS**. Do not modify it.
-  MODEL & STYLE: A man is captured in a bathroom mirror reflection, finishing his morning routine. He wears tailored dark trousers with the belt already fastened, and has just put on a fresh white shirt that he is buttoning up. The belt is sharply reflected in the clean mirror.
-  LIGHTING & ATMOSPHERE: Bright, clean bathroom lighting with a modern, minimalist interior. The reflection adds visual depth and interest.
-  OUTPUT: Clean, intimate, aspirational morning-routine aesthetic.
-  `,
-
-  `
-  TASK: Generate an ultra-realistic, autumn walk editorial photo of a man wearing the provided belt.
-  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is an unchangeable element.
-  MODEL & STYLE: A well-dressed man in a tailored peacoat (open, showing the belt), dark jeans, and Chelsea boots, walking along a tree-lined path covered in golden fallen leaves. He carries a leather messenger bag over one shoulder.
-  BACKGROUND & ATMOSPHERE: A beautiful autumn setting with warm orange, red, and gold foliage. Soft, warm afternoon sunlight filters through the canopy.
-  OUTPUT: High-resolution, warm, seasonal, and effortlessly stylish.
+  MODEL & STYLE: An extreme close-up of a model's waist. He wears a highly textured fabric—perhaps a heavy tweed or a deeply ribbed velvet. The composition is cropped so tightly that it becomes an abstract exploration of lines, curves, and overlapping materials.
+  PHOTOGRAPHY & REALISM: Shot with a specialized macro lens. The depth of field is razor-thin. The focus rests absolutely perfectly on the edge of the belt's buckle, while the leather grain softly blurs away into the textured fabric of the trousers.
+  OUTPUT: Highly specialized, abstract art photography, celebrating the microscopic beauty of design and texture.
   `
 ];
-
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
 TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a male model wearing the provided clothing item.
