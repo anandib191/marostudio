@@ -245,131 +245,320 @@ const PERFUME_PHOTO_PROMPTS = [
 
 ];
 
-// --- BELT PROMPTS ---
-const BELT_COVER_PROMPT = `
-TASK: Orchestrate a masterful, high-end editorial centerpiece photoshoot for a luxury men's belt.
-IMPORTANT INSTRUCTION: You will be provided with an image of a belt. Your absolute priority is to render the **exact belt** from the image **WITHOUT A SINGLE ALTERATION**. The design, buckle intricacies, color grading, and material texture must remain pristine and completely untouched.
-SCENE: The belt is sculpted into a striking, elegant helix, resting upon a gallery-worthy plinth—perhaps dark, porous obsidian or a slab of raw, highly textured travertine. The visual weight should feel grounded yet incredibly sophisticated.
-LIGHTING: Employ precise, cinematic chiaroscuro lighting. A single, focused key light should carve out the architectural lines of the buckle and illuminate the microscopic grain of the leather, allowing deep, rich shadows to create immense depth and volume.
-GOAL: Produce a breathtaking, museum-quality product portrait that exudes heritage craftsmanship, power, and unapologetic luxury. The original belt must be the absolute hero of this visual symphony.
-`;
+// --- BELT PROMPTS (DYNAMIC) ---
 
-const BELT_PHOTO_PROMPTS = [
-  `
-  TASK: Execute a breathtaking, hyper-realistic, high-contrast monochrome editorial portrait featuring the provided belt.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its texture, buckle architecture, and stitch fidelity must be preserved with absolute perfection. 
-  SCENE & STYLE: A powerfully built model, sculpted by shadow, stands in profile fastening the belt over raw, heavyweight selvedge denim. His torso is artfully cropped to emphasize the waistline. The pose is deliberate, commanding, and sculptural, reminiscent of fine art photography.
-  PHOTOGRAPHY: Shot on medium format film for unparalleled dynamic range. Razor-sharp macro focus on the belt's buckle, with the leather's grain heavily pronounced. Intense, single-source side lighting creates a dramatic fall-off, emphasizing the tactile reality of the materials.
-  OUTPUT: Moody, intensely textural, avant-garde masculinity, worthy of a flagship luxury boutique's wall.
-  `,
-  `
-  TASK: Capture a breathtaking, ultra-realistic cinematic lifestyle editorial of a man wearing the provided belt, exuding 'Sprezzatura'.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. It is the non-negotiable anchor of the image.
-  MODEL & STYLE: A charismatic man with effortless Mediterranean elegance, wearing a perfectly imperfect, casually unbuttoned linen suit in deep navy or crisp beige. The belt is the focal point, beautifully cinching the trousers with natural ease as he leans slightly against a sun-drenched stone balustrade.
-  BACKGROUND & ATMOSPHERE: A hazy, sun-drenched Italian coastal villa overlooking the azure sea. The depth of field is shallow, rendering the background into a beautiful bokeh of light and color.
-  PHOTOGRAPHY & REALISM: Shot on an 85mm f/1.2 lens. The lighting is golden-hour perfection, casting a warm, romantic glow that highlights the polished metal of the buckle against the matte linen.
-  OUTPUT: Flawless, romantic, aspirational old-money luxury, captured with absolute photographic authenticity.
-  `,
-  `
-  TASK: Direct an edgy, ultra-realistic, low-key urban fashion editorial featuring the provided belt.
-  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It is the authentic centerpiece of the narrative.
-  MODEL & STYLE: A ruggedly handsome man with a subtle artistic edge, wearing an open, heavy-gauge leather moto jacket over structured midnight-black denim. He sits astride a vintage custom motorcycle, adjusting his stance, allowing the belt to catch the ambient light perfectly at his waist.
-  LIGHTING & REALISM: Illuminated by the raw, chaotic neon glow of a wet city night. The neon lights (crimson and cyan) must reflect authentically off the belt's buckle and the slick texture of the leather strap. 
-  PHOTOGRAPHY: Shot with a 35mm lens for environmental context. Cinematic film grain is essential. The camera angle is slightly low, projecting power and cool indifference.
-  OUTPUT: Gritty, unapologetically cool, photorealistic street-luxury, dripping with attitude.
-  `,
-  `
-  TASK: Craft a striking, ultra-realistic avant-garde architectural portrait highlighting the provided belt.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED**. Its geometry and material must remain perfectly intact.
-  MODEL & STYLE: A strikingly angular model dressed in stark, unstructured monochrome fashion—perhaps a draped black overcoat layered over wide-leg trousers. The belt acts as the architectural anchor, violently cinching the silhouette into a masterpiece of modern proportion.
-  BACKGROUND & ATMOSPHERE: An imposing background of brutalist concrete architecture. The lines are harsh, clean, and imposing.
-  LIGHTING & REALISM: Cold, diffused, overcast daylight that eliminates harsh shadows but highlights the micro-textures of the concrete and the deep, rich finish of the belt. The metallic buckle provides the only sharp highlight in the frame.
-  OUTPUT: High-concept, conceptual fashion, architecturally disciplined, and radically modern.
-  `,
-  `
-  TASK: Generate an ultra-realistic, pinnacle-of-power editorial portrait centered on the provided belt.
-  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its design, buckle, or material; it is the emblem of control in this image.
-  MODEL & STYLE: A fiercely confident executive in an immaculate, bespoke charcoal pinstripe suit. He is captured mid-motion, unbuttoning his suit jacket as he sits down, perfectly revealing the belt beneath a crisp, tailored white shirt. The fit is flawless.
-  BACKGROUND & ATMOSPHERE: A cavernous, hyper-modern corner office with floor-to-ceiling glass overlooking a sprawling metropolis. 
-  LIGHTING & REALISM: Dramatic 'Rembrandt' studio lighting seamlessly blended with the cool, blue-tinted natural light of the cityscape. The buckle gleams with a sharp, authoritative highlight, commanding immediate attention.
-  OUTPUT: Cinematic, immensely powerful, flawless corporate luxury, exuding absolute authority.
-  `,
-  `
-  TASK: Orchestrate a hyper-realistic, soulful lifestyle portrait of a man wearing the provided belt in a realm of pure craftsmanship.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**. Retain every nuance of its original essence.
-  MODEL & STYLE: A weathered, artistic man with rolled-up flannel sleeves and rugged work jeans, standing amidst a beautifully chaotic sculptor’s or leatherworker's atelier. He is wiping his hands on a cloth, the belt sitting proudly and naturally at his waist, perfectly integrated into his authentic workwear aesthetic.
-  LIGHTING & ATMOSPHERE: Dust motes dance in thick shafts of warm, amber light slicing through large, dirty workshop windows. The lighting is poetic and textured, illuminating the belt as a piece of functional art.
-  OUTPUT: Earthy, authentic, heritage-rich, celebrating the romanticism of raw creation.
-  `,
-  `
-  TASK: Capture a breathtaking, ultra-realistic red-carpet snapshot of a star wearing the provided belt.
-  CRITICAL RULE: The belt from the user's image must be used **EXACTLY AS IS**. It is a fixed, untouchable element of his wardrobe.
-  MODEL & STYLE: A classically handsome leading man in a razor-sharp, midnight blue velvet tuxedo. He is captured adjusting his cummerbund or jacket, briefly but clearly exposing the elegant lines of the provided belt acting as the luxurious anchor to his formalwear. 
-  BACKGROUND & ATMOSPHERE: The blurred, chaotic energy of a film premiere or gala, with soft, out-of-focus flashbulbs popping in the background, creating a dazzling array of bokeh.
-  LIGHTING & REALISM: The harsh, immediate flash of paparazzi cameras perfectly balanced with rich ambient event lighting, freezing the moment and making the belt's buckle pop with intense clarity.
-  OUTPUT: High-glamour, timeless celebrity elegance, exceptionally dynamic and alive.
-  `,
-  `
-  TASK: Create a mind-bending, ultra-realistic surrealist fashion editorial featuring the provided belt.
-  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**. It must remain the definitive anchor of reality in this dreamscape.
-  MODEL & STYLE: A slender, enigmatic model draped in flowing, earth-toned silk garments that billow impossibly in the wind. The belt violently cinches the ethereal fabric, providing a gorgeous contrast of rigid, structured leather against liquid-like textiles.
-  BACKGROUND & ATMOSPHERE: An endless, desolate expanse of pristine white sand dunes beneath a bruised, stormy purple sky. 
-  LIGHTING & REALISM: The lighting is unearthly, with a golden hour glow hitting the model from an impossibly low angle, stretching shadows into infinity and making the belt's hardware gleam like a desert artifact.
-  OUTPUT: Ethereal, avant-garde, deeply poetic fashion photography that transcends the ordinary.
-  `,
-  `
-  TASK: Direct an ultra-realistic, highly intimate, voyeuristic portrait of a man slipping on the provided belt.
-  CRITICAL RULE: The belt **MUST NOT BE CHANGED** in any way. Preserve its original design and material perfectly.
-  MODEL & STYLE: A man captured in the private sanctuary of a breathtaking, architecturally stunning bathroom. He is seen through an open doorway, half-dressed in dark trousers, his hands beautifully framing the belt as he pulls it through the final loop. His musculature is relaxed but defined.
-  BACKGROUND & ATMOSPHERE: Rich, dark marble walls, a freestanding copper tub in the blurred background. Steam hangs heavy in the air.
-  LIGHTING & REALISM: Soft, diffused morning light filtering through frosted glass, wrapping beautifully around his torso and hands, creating deep, luscious shadows and making the leather of the belt look incredibly supple and tactile.
-  OUTPUT: Sensual, highly intimate, refined, and exceptionally cinematic.
-  `,
-  `
-  TASK: Generate an ultra-realistic, high-kinetic-energy fashion shot of a man wearing the provided belt.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: An athletic model caught in mid-stride, leaping across a gap or vaulting a low wall in an urban environment. He wears high-end performance-meets-luxury apparel—technical trousers and a light windbreaker. The belt remains perfectly secured, visually anchoring his dynamic, airborne movement.
-  PHOTOGRAPHY & REALISM: Shot with an incredibly fast shutter speed (e.g., 1/4000s) to freeze the action flawlessly. Sharp focus tracks the center of mass (the belt), while the extremities exhibit the slightest, artistic motion blur.
-  OUTPUT: Explosively dynamic, high-performance luxury, dripping with adrenaline and perfect styling.
-  `,
-  `
-  TASK: Craft an ultra-realistic, blue-blood equestrian lifestyle portrait highlighting the provided belt.
-  CRITICAL RULE: The belt must be used **EXACTLY AS IS**. Do not alter its design, buckle, or material.
-  MODEL & STYLE: A distinguished gentleman standing beside a magnificent, muscular thoroughbred horse. He is casually leaning against a weathered oak fence, wearing tailored riding breeches, knee-high bespoke boots, and an untucked, fine-gauge knit polo. The belt is prominently displayed at his waist, radiating quiet, old-world wealth.
-  BACKGROUND & ATMOSPHERE: A rolling, emerald-green English countryside estate wrapped in the delicate morning mist.
-  LIGHTING & REALISM: Soft, cool, diffused morning light that brings out the incredibly rich, organic earth tones of the leather belt and the horse's coat.
-  OUTPUT: Aristocratic, deeply sophisticated, classic heritage elegance.
-  `,
-  `
-  TASK: Compose a masterpiece, ultra-realistic editorial still-life focusing exclusively on the provided belt.
-  CRITICAL RULE: The belt from the user's image must be used **WITHOUT ANY MODIFICATION**. It is the magnum opus of the composition.
-  SCENE & STYLE: Not a standard flat-lay, but a dynamic, multi-layered composition. The belt is draped artistically over a stack of rare, vintage photography books and a crushed piece of heavy velvet. Next to it sit a crystal tumbler of amber liquid and a vintage Leica camera. The arrangement looks like the stylish detritus of a creative genius.
-  LIGHTING & ATMOSPHERE: Cinematic, moody 'chiaroscuro' lighting from a single, slightly flagged source, creating rivers of light and deep pools of impenetrable shadow. 
-  OUTPUT: Highly intellectual, rich in narrative, an absolute triumph of artistic product styling.
-  `,
-  `
-  TASK: Capture a sun-drenched, ultra-realistic Riviera lifestyle editorial featuring the provided belt.
-  CRITICAL RULE: You **MUST** use the belt from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A tanned, effortlessly chic man relaxing on the bleached teak deck of a luxury yacht. He wears pristine white tailored shorts and a subtle, unbuttoned silk shirt flapping in the sea breeze. The belt is the singular contrast point, perfectly dividing the bright whites of his outfit.
-  BACKGROUND & ATMOSPHERE: The blinding, crystal-clear turquoise waters of the French Riviera. Bright, high-noon summer sun casting sharp, distinct shadows.
-  PHOTOGRAPHY: Shot with a polarizing filter to make the sky pop and remove reflections, giving the image a hyper-clean, vibrant, high-end magazine aesthetic.
-  OUTPUT: Crisp, vibrant, jet-set luxury, flawlessly executed.
-  `,
-  `
-  TASK: Direct a deeply atmospheric, ultra-realistic vintage portrait of a man wearing the provided belt.
-  CRITICAL RULE: The belt must be used **WITHOUT ANY MODIFICATION**.
-  MODEL & STYLE: A man exuding old-school cool, seated in a plush velvet booth at an underground jazz club. He sports a high-waisted, wide-leg trouser with suspenders hanging down, relying entirely on the provided belt. He leans forward, elbows on the table, smoke from a cigarette curling perfectly around him.
-  LIGHTING & ATMOSPHERE: Illuminated only by the dim, warm glow of a small table lamp with a fringed shade. The lighting is incredibly warm, casting long, dramatic shadows and creating specular highlights on the metal belt buckle through the hazy, smoke-filled air.
-  OUTPUT: Mood-drenched, cinematic, unapologetically classic and impossibly cool.
-  `,
-  `
-  TASK: Generate an ultra-realistic, abstract macro art photograph focusing strictly on the provided belt being worn.
-  CRITICAL RULE: The belt from the user's image must be used **EXACTLY AS IS**. Do not modify it.
-  MODEL & STYLE: An extreme close-up of a model's waist. He wears a highly textured fabric—perhaps a heavy tweed or a deeply ribbed velvet. The composition is cropped so tightly that it becomes an abstract exploration of lines, curves, and overlapping materials.
-  PHOTOGRAPHY & REALISM: Shot with a specialized macro lens. The depth of field is razor-thin. The focus rests absolutely perfectly on the edge of the belt's buckle, while the leather grain softly blurs away into the textured fabric of the trousers.
-  OUTPUT: Highly specialized, abstract art photography, celebrating the microscopic beauty of design and texture.
-  `
+// ─── Dynamic Pool Definitions ────────────────────────────────────────────────
+// These pools are inspired by 2024 luxury belt editorial trends:
+// statement buckles, artisan craftsmanship, urban noir, architectural abstraction,
+// dark nature, reversible styling, sustainable materials, and tech-forward designs.
+
+const _BELT_BUCKLE_FOCUSES = [
+  "The statement buckle dominates the frame — its geometry catches a razor-sharp specular highlight that draws the eye instantly.",
+  "A macro close-up reveals the intricate engraving on the buckle, each groove catching soft directional light like a sculptor's masterpiece.",
+  "The burnished gold-toned prong buckle gleams against the matte leather, acting as the single point of brilliance in an otherwise moody frame.",
+  "An oversized, geometric minimalist buckle provides strikingly bold contrast against the fine-grain leather — modern and assertive.",
+  "A vintage-style roller buckle with an antique patina finish tells a story of heirloom quality and timeless design.",
+  "The brushed silver hardware of the belt buckle glints coolly, an engineering detail celebrated for its mechanical precision.",
 ];
+
+const _BELT_SCENES = [
+  // Artisan / Craftsmanship
+  "A dimly lit artisan leatherworker's atelier. The belt hangs from a worn wooden peg above a workbench cluttered with awls, leather scraps, heavy-gauge needles, and thread spools. Dust motes float in a single amber shaft of light.",
+  // Urban Noir
+  "A rain-slicked urban alleyway at midnight. Neon signage (deep crimson and electric teal) reflects off the wet cobblestones. The belt rests on the hood of a parked vintage muscle car, the city noise implied in every shadow.",
+  // Architectural Abstraction
+  "A brutalist concrete staircase with harsh geometric shadows. The belt is draped over the edge of a thick concrete ledge, its leather contrasting dramatically with the raw, porous surface. Clean, austere, and commanding.",
+  // Dark Nature
+  "A moody forest floor at dusk. Dark volcanic rock, gnarled roots, and damp fallen leaves surround the belt, coiled naturally like a resting creature. The scene is primal, rugged, and deeply atmospheric.",
+  // Gentleman's Study
+  "A sophisticated dark-oak paneled study. The belt is laid across an open first-edition leather-bound book on a mahogany desk beside a crystal decanter of amber scotch and a vintage Mont Blanc pen. Warm lamplight creates pools of gold.",
+  // Rooftop Powerplay
+  "A penthouse rooftop terrace at twilight. The belt is fastened around the waist of a silhouetted figure against a sweeping cityscape igniting with amber and violet light. The scene radiates quiet, supreme power.",
+  // Fine Art Gallery
+  "A minimalist fine-art gallery with stark white walls. The belt lies on an unpolished travertine plinth under a single focused gallery spotlight. Treated as a museum artifact — irreplaceable and iconic.",
+  // Equestrian Estate
+  "A fog-drenched English countryside estate at dawn. The belt is worn by a distinguished man in riding breeches, leaning against a weathered oak fence as a thoroughbred horse stands majestically in the background.",
+  // Reflective Obsidian
+  "The belt is displayed on a polished black acrylic surface. Its reflection creates a perfect mirror image below it, the buckle gleaming with razor-sharp specular highlights in the inky dark void.",
+  // Jazz Club Vintage
+  "A subterranean jazz club glowing with the amber warmth of table lamps and candles. The belt is worn by a man in high-waisted wide-leg trousers, leaning back in a velvet booth while the haze of the room wraps everything in nostalgic atmosphere.",
+  // Riviera Yacht
+  "The sun-blazed teak deck of a superyacht off the French Riviera. The belt divides the pristine white of a man's tailored linen outfit, the turquoise sea stretching to the horizon behind him.",
+  // Kinetic Urban
+  "A man mid-vault over a low urban barrier in a gritty downtown district, the belt perfectly secured at his waist — frozen in razor-sharp detail by a 1/4000s shutter, the background city a dynamic blur of energy.",
+  // Macro Texture
+  "An extreme macro composition: a razor-thin depth of field places the belt buckle edge in knife-sharp focus while the grain of heavyweight tweed trousers dissolves into abstract texture behind it.",
+  // Surrealist Desert
+  "An impossibly vast expanse of porcelain-white salt flats beneath a bruised violet storm sky. The belt cinches billowing earth-toned silk garments, the only rigid, grounded element in a dreamlike, windswept scene.",
+];
+
+const _BELT_LIGHTING_MOODS = [
+  "Cinematic chiaroscuro — single hard key light from a sharp 45° angle, creating deep pools of shadow that give the leather immense depth and volume.",
+  "Cool, overcast diffused daylight — shadowless and clinical, revealing every micro-texture and stitch detail with forensic precision.",
+  "Golden-hour warmth — the last horizontal rays of sunlight casting long, dramatic shadows and wrapping the leather in a burnished amber glow.",
+  "Neon-noir — crimson and electric cyan neon reflections paint the belt's buckle and strap with pops of vivid, cinematic color against deep shadow.",
+  "Rembrandt studio lighting — a large softbox at 45° with a subtle fill, sculpting the model's form and creating a luminous triangle highlight on the belt buckle.",
+  "High-key gallery lighting — a perfectly circular overhead spotlight illuminates only the belt and its supporting surface, surrounded by velvety shadow vignette.",
+  "Amber workshop light — warm, slightly dusty shafts of incandescent light slicing through dark space, making the leather glow with organic warmth.",
+  "Blue-hour cool ambiance — the calm, desaturated light just after sunset, giving the belt a cool, authoritative presence against blue-grey urban textures.",
+  "Reflected city glow — ambient light sourced entirely from the glittering city skyline, bathing the scene in layered warm amber and cool blue.",
+];
+
+const _BELT_MODEL_ARCHETYPES = [
+  "A powerfully built man with sharp, confident features and close-cropped hair, exuding controlled authority.",
+  "A lean, angular artist with expressive eyes and slightly disheveled dark hair — creative, intense, and magnetic.",
+  "A sun-bronzed Mediterranean man with effortless ease, the kind of man who was born into quiet luxury.",
+  "A rugged, weathered outdoorsman with calloused hands and a calm, knowing expression — heritage and grit personified.",
+  "A sharp, immaculate corporate executive — suit flawlessly tailored, posture commanding, not a single detail out of place.",
+  "An athletic, broad-shouldered man with a relaxed but deliberate energy — the modern gentleman at rest.",
+  "A distinguished silver-templed man in his 40s radiating effortless, old-money sophistication and quiet confidence.",
+];
+
+const _BELT_STYLE_CONTEXTS = [
+  "paired with raw selvedge heavyweight denim and a crisp white Oxford shirt, sleeves rolled to the forearm",
+  "cinching a perfectly imperfect unstructured linen suit in deep navy, casually unbuttoned at the collar",
+  "anchoring a bespoke charcoal pinstripe suit with a crisp white shirt beneath, the picture of corporate mastery",
+  "worn over slim dark technical trousers and a deconstructed leather moto jacket, urban and razor-sharp",
+  "pairing with wide-leg vintage high-waisted wool trousers and a fine-knit cashmere roll-neck",
+  "cinching cream tailored chinos and a breathable linen blazer — effortlessly summer, unmistakably luxurious",
+  "fastened over midnight-black slim-fit formal trousers under a midnight blue velvet dinner jacket",
+  "worn with tailored riding breeches and a subtle untucked fine-gauge polo — equestrian, aristocratic",
+];
+
+// ─── Helper: seeded random pick ─────────────────────────────────────────────
+function _beltPick<T>(arr: T[], seed: number): T {
+  // Use a simple LCG permutation on the seed so different call-sites with the same
+  // base seed still pick independently from different positions in each array.
+  const idx = Math.abs(seed * 1664525 + 1013904223) % arr.length;
+  return arr[idx];
+}
+
+// ─── Dynamic Cover Prompt ────────────────────────────────────────────────────
+export function getBeltCoverPrompt(): string {
+  const seed = Date.now();
+  const scene = _beltPick(_BELT_SCENES, seed);
+  const lighting = _beltPick(_BELT_LIGHTING_MOODS, seed ^ 0xDEADBEEF);
+  const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0xCAFEBABE);
+
+  return `
+TASK: Create a masterful, high-end editorial centerpiece for a luxury men's belt.
+
+CRITICAL RULE — NON-NEGOTIABLE: You are provided with an image of a belt. Your absolute priority is to render the **exact belt** from that image **WITHOUT A SINGLE ALTERATION**. The design, buckle intricacies, color grading, stitching pattern, and material texture must remain pristine and completely untouched. Do NOT redesign, reinterpret, or redraw the belt.
+
+SCENE: ${scene}
+
+LIGHTING: ${lighting}
+
+BUCKLE FOCUS: ${buckle}
+
+GOAL: Produce a breathtaking, ultra-realistic, museum-quality product portrait. Every element of the composition — scene, light, texture, angle — must serve one purpose: making the original belt the uncontested hero. The result should feel worthy of a flagship luxury campaign.
+`.trim();
+}
+
+// ─── Dynamic Photo Prompts Array (replaces static BELT_PHOTO_PROMPTS) ────────
+// Each entry is a function that generates a fresh, unique prompt using randomized
+// combinations of scene, lighting, model, and style from the pools above.
+// The final BELT_PHOTO_PROMPTS array is built at module load time.
+
+const _BELT_PHOTO_PROMPT_TEMPLATES: Array<(seed: number) => string> = [
+  // 1. Statement Buckle Close-Up Editorial
+  (seed) => {
+    const lighting = _beltPick(_BELT_LIGHTING_MOODS, seed);
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0x11);
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0x22);
+    return `
+TASK: Generate an ultra-realistic, statement-buckle close-up editorial featuring the provided belt.
+CRITICAL RULE: The belt MUST NOT BE CHANGED — its buckle design, leather texture, stitching, and color must remain exactly as provided. It is the sole untouchable element.
+COMPOSITION: Frame a razor-tight crop at the model's waist, ${style}. The composition is deliberately abstract — the belt's buckle anchors the center while the surrounding fabric and leather blur into rich texture.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: ${lighting}
+PHOTOGRAPHY: Shot with a 100mm macro lens, aperture f/2.8, capturing every engraving and surface nuance. The depth of field is knife-thin — the buckle edge is in surgical focus, the strap dissolving into beautiful bokeh.
+OUTPUT: Intensely textural, abstract product art — the belt celebrated as a sculptural object, not merely a functional accessory.
+`.trim();
+  },
+
+  // 2. Artisan Workshop Heritage
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0x33);
+    return `
+TASK: Orchestrate a hyper-realistic, soulful artisan-heritage portrait featuring the provided belt.
+CRITICAL RULE: You MUST use the belt from the user's image with ZERO ALTERATIONS. Every nuance of its design, buckle, stitching, and leather must be preserved exactly.
+SCENE: A dimly lit, rustic leatherworker's atelier — workbench strewn with awls, thread spools, leather scraps, and hand tools. Raw leather hides hang on the wall. The space feels lived-in and honest.
+MODEL: ${model} He stands in the atelier, wearing the provided belt naturally over rugged work jeans and a rolled-up flannel shirt, wiping his hands on a worn cloth. The belt sits at his waist like a finished masterpiece.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: Thick, amber shafts of warm incandescent light cut through dusty workshop air at dramatic angles. Dust motes dance visibly. Deep, enveloping shadows surround the islands of warm light.
+PHOTOGRAPHY: Shot on 35mm film, slight organic grain, medium close-up that includes hands, waist, and the workshop environment. Cinematic color grade — deep amber, warm brown, dark shadow.
+OUTPUT: Earthy, authentic, heritage-rich. The belt is celebrated as functional art, born from craft and worn with genuine purpose.
+`.trim();
+  },
+
+  // 3. Urban Noir Night
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0x44);
+    return `
+TASK: Direct an edgy, ultra-realistic urban noir editorial featuring the provided belt.
+CRITICAL RULE: The belt must be used WITHOUT ANY MODIFICATION. Its design, buckle, leather color, and stitching are a fixed, non-negotiable element.
+SCENE: A rain-soaked city alleyway at midnight. Crimson and electric cyan neon signs reflect off the wet cobblestones, creating puddles of vivid color in the darkness. The air feels heavy, charged, cinematic.
+MODEL: ${model} Wearing the provided belt, ${style}. He leans against a rain-slicked brick wall or stands mid-stride, his posture exuding controlled, cool indifference.
+LIGHTING: Pure neon-noir — no artificial softboxes. The entire scene is lit by the chaos of reflected neon and distant street lamps. The buckle catches a sharp sliver of crimson light, a single point of intensity against the moody darkness.
+PHOTOGRAPHY: 35mm lens, cinematic film grain, slightly underexposed for maximum atmosphere. Low camera angle projecting power.
+OUTPUT: Gritty, unapologetically cool, photorealistic street-luxury. The belt is the anchor of discipline in a beautifully chaotic urban world.
+`.trim();
+  },
+
+  // 4. Architectural Brutalist Power
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0x55);
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0x66);
+    return `
+TASK: Craft an ultra-realistic, avant-garde architectural editorial featuring the provided belt.
+CRITICAL RULE: The belt MUST NOT BE CHANGED. Its geometry, buckle design, and leather must remain perfectly intact — it is the sole element of warmth and humanity in a cold architectural world.
+SCENE: An imposing brutalist concrete structure — raw poured concrete walls, geometric staircase, harsh structural shadows creating bold graphic patterns.
+MODEL: ${model} Dressed in stark, monochrome fashion with the provided belt, ${style}. He stands perfectly still against the concrete geometry, the belt's warm leather contrasting violently with the cold, industrial backdrop.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: Cold, diffused overcast daylight, clinical and shadowless — revealing every micro-texture of the concrete and every grain of the belt leather with forensic detail. The metallic buckle is the only warm specular highlight in the entire frame.
+PHOTOGRAPHY: Shot on an 85mm lens, full body to mid-shot, strong graphic composition. Deep contrast in post.
+OUTPUT: High-concept, architecturally disciplined, radically modern — the belt as the only human warmth in a controlled, abstract world.
+`.trim();
+  },
+
+  // 5. Corporate Power Play
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    const lighting = _beltPick(_BELT_LIGHTING_MOODS, seed ^ 0x77);
+    return `
+TASK: Generate an ultra-realistic, pinnacle-of-power editorial centered on the provided belt.
+CRITICAL RULE: The belt must be used EXACTLY AS IS — design, buckle, leather grain, and color are untouchable. It is the emblem of controlled authority.
+SCENE: A hyper-modern corner office with floor-to-ceiling glass walls overlooking a glittering metropolis. Dark walnut desk, architect's chair, a single framed abstract canvas on the wall. The space is immaculate and imposing.
+MODEL: ${model} In a bespoke charcoal pinstripe suit, mid-motion — seated, leaning forward over the desk, suit jacket falling open to perfectly reveal the belt beneath the crisp white shirt. The posture radiates absolute control.
+LIGHTING: ${lighting}
+PHOTOGRAPHY: 85mm, f/4, capturing both sharp belt detail and the sweeping cityscape in soft bokeh. Cinematic desaturated color grade with a single pop of warmth on the belt's leather.
+OUTPUT: Cinematic, immensely powerful corporate luxury. The belt is the emblem of a man at the absolute apex of his world.
+`.trim();
+  },
+
+  // 6. Red-Carpet Glamour
+  (seed) => {
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0x88);
+    return `
+TASK: Capture an ultra-realistic red-carpet editorial featuring the provided belt as an unexpected luxury detail.
+CRITICAL RULE: The belt from the user's image must be used EXACTLY AS IS — it is a fixed, untouchable element of his wardrobe, celebrated as a deliberate style choice.
+SCENE: The electric, chaotic energy of a major film premiere or fashion gala. Models are a blur of glamour behind the velvet rope. The air crackles with camera flashes and the energy of a thousand eyes.
+MODEL: A classically handsome, charismatic leading man in a razor-sharp midnight blue velvet tuxedo. Captured in a candid mid-adjustment moment — jacket falling open as he turns to the cameras, perfectly revealing the provided belt beneath.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: The harsh, immediate burst of paparazzi camera flashes balanced with rich, warm event ambient lighting. The buckle pops with a single intense highlight that freezes it with perfect clarity against the velvet.
+PHOTOGRAPHY: 35mm lens for editorial immediacy, slight motion in the crowd background, tack-sharp focus on the model and belt. Vibrant, high-energy color grade.
+OUTPUT: High-glamour, timeless celebrity elegance — the belt elevated from accessory to signature statement.
+`.trim();
+  },
+
+  // 7. Kinetic Urban Action
+  (seed) => {
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0x99);
+    return `
+TASK: Generate an ultra-realistic, high-kinetic-energy fashion shot featuring the provided belt in a moment of pure, frozen motion.
+CRITICAL RULE: You MUST use the belt from the user's image with ZERO ALTERATIONS. The belt's design, buckle, and leather are fixed elements that persist perfectly through motion.
+SCENE: A raw urban environment — a gritty downtown district, an empty plaza, or a concrete parkour terrain. The city is a blurred backdrop to a singular moment of controlled athleticism.
+MODEL: An athletic, broad-shouldered model caught mid-action — vaulting a barrier, mid-stride in a powerful run, or spinning in a sharp pivot. He wears the provided belt, ${style}. The movement is dynamic, the styling remains impeccably intentional.
+LIGHTING: Bright, directional midday sun — hard shadows frozen mid-motion. The belt buckle catches a sharp, explosive highlight at the moment of peak energy.
+PHOTOGRAPHY: 1/4000s shutter speed freezes all motion flawlessly. The focus tracks the belt's center with tack-sharp precision, while extremities show the faintest artistic motion blur. 70mm lens, dynamic composition with the rule of thirds breaking for tension.
+OUTPUT: Explosively dynamic, high-performance luxury — the belt as the anchor of perfect style in a world of movement and energy.
+`.trim();
+  },
+
+  // 8. Reflective Dark Still Life
+  (seed) => {
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0xAA);
+    const companions = _beltPick([
+      "a crystal decanter of aged Scotch, a vintage Leica camera, and a crushed piece of dark velvet",
+      "a leather-bound first-edition book, a Montblanc fountain pen, a pair of aviator sunglasses",
+      "a hand-rolled cigar in a dark ceramic ashtray, a brushed silver lighter, a stack of rare photography books",
+      "a premium mechanical watch removed from its wrist, a rough fragment of volcanic rock, a single white orchid",
+    ], seed ^ 0xBB);
+    return `
+TASK: Compose an ultra-realistic, moody dark luxury still-life centered on the provided belt.
+CRITICAL RULE: The belt from the user's image must be used WITHOUT ANY MODIFICATION — it is the magnum opus at the center of this arrangement.
+SCENE: A polished black acrylic surface in a nearly dark room. The belt is coiled or draped artistically in the center, its reflection mirrored perfectly in the glossy surface below. Carefully placed beside it: ${companions}. Every element is chosen to imply a character — an intelligent, worldly, quietly powerful man.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: Cinematic chiaroscuro — a single, slightly flagged key light creates rivers of intense light falling across the belt and companions, while deep, absolute shadow consumes the edges of the frame. The reflection adds another layer of glowing, mysterious depth.
+PHOTOGRAPHY: Overhead or 30° elevated angle, medium format for flawless detail. Color grade: cool deep shadows, warm amber highlights. Zero grain — immaculate and precise.
+OUTPUT: Intellectually rich, narratively deep, an absolute triumph of product styling that feels like a painting from a museum of modern luxury.
+`.trim();
+  },
+
+  // 9. Golden-Hour Silhouette
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0xCC);
+    return `
+TASK: Generate an ultra-realistic, golden-hour silhouette and detail portrait featuring the provided belt.
+CRITICAL RULE: The belt MUST NOT BE CHANGED in any way — its design, buckle, leather, and color are preserved perfectly in both silhouette and lit portions of the frame.
+SCENE: A sweeping open location at golden hour — a city rooftop, a vast salt flat, an ocean bluff. The last horizontal rays of the sun create impossibly long shadows.
+MODEL: ${model} Wearing the provided belt, ${style}. He stands in profile or faces the dying sun, his silhouette crisp and powerful against a vivid orange and violet sky. The buckle catches a precise, blazing rim of golden back-light — the only element that glows from within the silhouette.
+LIGHTING: Intense golden-hour backlighting. The sky is vivid — deep amber, blazing orange, bruised violet. The model is underexposed to near-silhouette, but the belt's buckle catches a razor edge of pure gold light.
+PHOTOGRAPHY: 85mm, f/8, hyperfocal distance set to capture both model and sky with superb detail. Polarizing filter on the sky. Slightly warm color grade.
+OUTPUT: Iconic, poster-worthy, cinematic. The belt glows at the center of a breathtaking natural spectacle — a timeless image of power and ease.
+`.trim();
+  },
+
+  // 10. Equestrian Heritage
+  (seed) => {
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0xDD);
+    return `
+TASK: Craft an ultra-realistic, blue-blood equestrian heritage portrait featuring the provided belt.
+CRITICAL RULE: The belt must be used EXACTLY AS IS — its design, buckle, leather color, and stitching are unchangeable elements of old-world authenticity.
+SCENE: A fog-drenched English countryside estate at dawn. Rolling emerald hills, ancient stone walls, bare oak trees in the morning mist. A magnificent bay thoroughbred stands behind a weathered wooden fence.
+MODEL: A distinguished gentleman in his late 40s with effortless silver-templed elegance. He wears tailored cavalry twill riding breeches, knee-high bespoke leather boots, and a fine-gauge knit polo — the provided belt prominently cinching the breeches. He leans against the fence with one hand resting on the horse's strong neck, relaxed and natural.
+BUCKLE FOCUS: ${buckle}
+LIGHTING: Soft, cool diffused morning light — no harsh shadows, just a gentle luminosity that brings out the incredibly rich earth tones of the leather, the horse's coat, and the dewy grass. The buckle has a subtle warm gleam from the pale morning sun breaking through the mist.
+PHOTOGRAPHY: 135mm lens for gentle compression, pulling the landscape beautifully around the figure. Clean, organic color grade — muted greens, warm browns, silver-grey mist.
+OUTPUT: Aristocratic, deeply sophisticated, classic heritage elegance. The belt as the natural choice of a man who inherits quality, not chases it.
+`.trim();
+  },
+
+  // 11. Jazz Club Vintage Noir
+  (seed) => {
+    const model = _beltPick(_BELT_MODEL_ARCHETYPES, seed);
+    return `
+TASK: Direct an ultra-realistic, deeply atmospheric vintage jazz-club editorial featuring the provided belt.
+CRITICAL RULE: The belt must be used WITHOUT ANY MODIFICATION — every leather detail, buckle design, and stitch is preserved with perfection.
+SCENE: A subterranean jazz club alive with warm amber candlelight, thick cigarette haze, and the implied sound of a double bass. A plush velvet booth. Dark wood paneling. A small table lamp with a fringed amber shade.
+MODEL: ${model} Dressed in vintage-inspired high-waisted, wide-leg wool trousers with suspenders hanging loose, relying entirely on the provided belt to hold the look together. He sits forward, elbows on the table, a glass of amber rye within reach, looking into the middle distance with unforgettable cool.
+LIGHTING: Illuminated only by the small table lamp and the ambient warmth of the room. Extremely warm, low-key — deep, impenetrable shadow fills much of the frame. A single golden highlight traces the belt buckle through the haze, the brightest element in the shot.
+PHOTOGRAPHY: Shot at f/1.4 for maximum atmospheric bokeh in the background. Film simulation — Kodak Portra 800 tones. The grain is part of the mood.
+OUTPUT: Mood-drenched, cinematic, impossibly cool vintage masculinity. The belt as the quiet anchor of a look built on nostalgia and effortless charisma.
+`.trim();
+  },
+
+  // 12. Surrealist Desert Dream
+  (seed) => {
+    const buckle = _beltPick(_BELT_BUCKLE_FOCUSES, seed ^ 0xEE);
+    const style = _beltPick(_BELT_STYLE_CONTEXTS, seed ^ 0xFF);
+    return `
+TASK: Create an ultra-realistic surrealist fashion editorial featuring the provided belt as the single anchor of reality in a dreamscape.
+CRITICAL RULE: The belt must be used WITHOUT ANY MODIFICATION. It must remain the definitive, rigid centerpiece of a scene that dissolves into fantasy around it.
+SCENE: An impossibly vast expanse of porcelain-white salt flats stretching to the horizon under a bruised, storm-violet sky. The air is electric. The environment is alien, dreamlike, and haunting.
+MODEL: A slender, enigmatic figure draped in voluminous, earth-toned raw silk garments that billow impossibly in the wind — as if defying gravity. The provided belt, ${style}, cinches the center of this flowing mass of fabric with a single act of structural authority.
+BUCKLE FOCUS: ${buckle} Against the white salt and the dark sky, the buckle is the only hard, defined object in a frame of dissolving forms.
+LIGHTING: Unearthly golden hour from an impossibly low angle — stretching every shadow across the white salt flats into infinity. Light wraps around the silk like liquid while the belt's leather and buckle remain crisply, defiantly real.
+PHOTOGRAPHY: 50mm, slight tilt downward, capturing the salt flat reflection beneath the figure. The sky is fully saturated — the most saturated element in the image. The belt is the sharpest.
+OUTPUT: Ethereal, avant-garde, deeply poetic. Fashion photography that transcends commerce and becomes pure visual storytelling.
+`.trim();
+  },
+];
+
+// Build the static export arrays from the dynamic templates at module load time.
+// Each template is called with a unique seed derived from its index so the
+// initial set of prompts is already diverse — and every subsequent reload or
+// shuffle produces a completely different set of results.
+const BELT_PHOTO_PROMPTS: string[] = _BELT_PHOTO_PROMPT_TEMPLATES.map(
+  (fn, i) => fn(Date.now() + i * 999983) // large prime step keeps seeds well-separated
+);
+
+const BELT_COVER_PROMPT: string = getBeltCoverPrompt();
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
 TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a male model wearing the provided clothing item.
