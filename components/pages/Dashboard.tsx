@@ -44,7 +44,7 @@ interface User {
   isActive?: boolean;
 }
 
-type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits' | 'statistics';
+type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits' | 'statistics' | 'gen-history';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -129,6 +129,13 @@ export const Dashboard: React.FC = () => {
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
 
+  // Generation history state
+  const [generations, setGenerations] = useState<any[]>([]);
+  const [loadingGenerations, setLoadingGenerations] = useState(false);
+  const [genPage, setGenPage] = useState(1);
+  const [genTotalPages, setGenTotalPages] = useState(1);
+  const [expandedGenId, setExpandedGenId] = useState<string | null>(null);
+
   const [planToDeleteIndex, setPlanToDeleteIndex] = useState<number | null>(null);
   const [showDeletePlanModal, setShowDeletePlanModal] = useState(false);
   const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null);
@@ -170,8 +177,10 @@ export const Dashboard: React.FC = () => {
       loadCreditDeductions(token); // Load credit deduction configuration
     } else if (section === 'statistics') {
       loadStatistics(token);
+    } else if (section === 'gen-history') {
+      loadGenerations(token, genPage);
     }
-  }, [navigate, section, usersPage, adminsPage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigate, section, usersPage, adminsPage, genPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPlans = async (token: string) => {
     // Don't set loading or clear plans if we already have plans (prevents flash)
@@ -292,6 +301,26 @@ export const Dashboard: React.FC = () => {
       toast.error('Failed to save statistics', { position: "top-right", autoClose: 3000 });
     } finally {
       setSavingStatistics(false);
+    }
+  };
+
+  const loadGenerations = async (token: string, page: number) => {
+    setLoadingGenerations(true);
+    try {
+      const res = await fetch(`${API_URL}/api/user/generations/admin/all?page=${page}&limit=50`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setGenerations(data.generations || []);
+        setGenTotalPages(data.pagination?.pages || 1);
+      } else {
+        toast.error(data.message || 'Failed to load generations', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load generations', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingGenerations(false);
     }
   };
 
@@ -1031,6 +1060,16 @@ export const Dashboard: React.FC = () => {
             }`}
         >
           Statistics
+        </button>
+        <button
+          onClick={() => {
+            setSection('gen-history');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'gen-history' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+        >
+          Gen History
         </button>
       </nav>
     </aside>
@@ -1993,6 +2032,113 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {section === 'gen-history' && (
+              <div className="w-full">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold font-serif-display">Generation History</h2>
+                  <p className="text-sm text-neutral-400">All image generations by users</p>
+                </div>
+
+                {loadingGenerations ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : generations.length === 0 ? (
+                  <div className="text-center py-16 text-neutral-500">
+                    No generations recorded yet.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[700px]">
+                        <thead className="bg-neutral-800/50">
+                          <tr>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">User Email</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Type</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Quality</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Category</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Images</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Credits</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {generations.map((gen: any) => (
+                            <React.Fragment key={gen._id}>
+                              <tr
+                                className="hover:bg-neutral-800/30 cursor-pointer"
+                                onClick={() => setExpandedGenId(expandedGenId === gen._id ? null : gen._id)}
+                              >
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-white">
+                                  <div className="max-w-[180px] truncate" title={gen.userEmail}>{gen.userEmail}</div>
+                                </td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${gen.type === 'photoshoot' ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'}`}>
+                                    {gen.type === 'photoshoot' ? 'Photoshoot' : 'Marketing'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${gen.quality === '4K' ? 'bg-gold-500/20 text-gold-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                                    {gen.quality || 'HD'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 capitalize">{gen.category || '—'}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-white font-medium">{gen.imageUrls?.length || 0}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">{gen.creditsUsed || 0}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 whitespace-nowrap">{formatDate(gen.createdAt)}</td>
+                              </tr>
+                              {expandedGenId === gen._id && gen.imageUrls && gen.imageUrls.length > 0 && (
+                                <tr>
+                                  <td colSpan={7} className="px-3 py-3 bg-neutral-900/50">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                                      {gen.imageUrls.map((url: string, idx: number) => (
+                                        <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block">
+                                          <img
+                                            src={url}
+                                            alt={`Gen ${idx + 1}`}
+                                            className="w-full h-24 sm:h-32 object-cover rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                              (e.target as HTMLImageElement).style.display = 'none';
+                                            }}
+                                          />
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {genTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 pt-4">
+                        <button
+                          onClick={() => setGenPage(Math.max(1, genPage - 1))}
+                          disabled={genPage === 1}
+                          className="px-3 py-1.5 text-xs bg-neutral-800 text-neutral-300 border border-white/10 rounded-lg disabled:opacity-30 hover:bg-neutral-700"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-xs text-neutral-400">Page {genPage} of {genTotalPages}</span>
+                        <button
+                          onClick={() => setGenPage(Math.min(genTotalPages, genPage + 1))}
+                          disabled={genPage === genTotalPages}
+                          className="px-3 py-1.5 text-xs bg-neutral-800 text-neutral-300 border border-white/10 rounded-lg disabled:opacity-30 hover:bg-neutral-700"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
