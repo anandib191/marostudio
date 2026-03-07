@@ -213,6 +213,89 @@ router.delete("/users/:userId", protect, admin, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/admin/users/:userId/details
+ * @desc    Get detailed user info including credit history (admin only)
+ * @access  Private/Admin
+ */
+router.get("/users/:userId/details", protect, admin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Get plan info
+    const plan = user.subscriptionPlan
+      ? await PricePlan.findOne({
+          $or: [
+            { name: user.subscriptionPlan },
+            { name: new RegExp(`^${user.subscriptionPlan}$`, "i") },
+          ],
+        })
+      : null;
+
+    // Sort creditHistory newest first, limit to last 100
+    const sortedHistory = (user.creditHistory || [])
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 100)
+      .map((h) => ({
+        date: h.date,
+        action: h.action,
+        planName: h.planName,
+        totalCredits: h.totalCredits || null,
+        usedPhotoshootCredits: h.usedPhotoshootCredits || null,
+        usedMarketingCredits: h.usedMarketingCredits || null,
+        reason: h.reason || null,
+        adminEmail: h.adminEmail || null,
+        billingPeriod: h.billingPeriod || null,
+        razorpayPaymentId: h.razorpayPaymentId || null,
+        amount: h.amount || null,
+        errorCode: h.errorCode || null,
+      }));
+
+    // Count generations
+    const usageEntries = (user.creditHistory || []).filter((h) => h.action === "usage");
+    const photoshootGens = usageEntries.filter((h) => h.reason?.includes("Photoshoot")).length;
+    const marketingGens = usageEntries.filter((h) => h.reason?.includes("Marketing")).length;
+
+    const isActive =
+      user.subscriptionPlan && user.subscriptionExpiresAt
+        ? new Date(user.subscriptionExpiresAt) > new Date()
+        : false;
+
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name || null,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionBillingPeriod: user.subscriptionBillingPeriod,
+        subscriptionPurchasedAt: user.subscriptionPurchasedAt,
+        subscriptionExpiresAt: user.subscriptionExpiresAt,
+        totalCredits: user.totalCredits || 0,
+        usedPhotoshootCredits: user.usedPhotoshootCredits || 0,
+        usedMarketingCredits: user.usedMarketingCredits || 0,
+        remainingCredits: Math.max(0, (user.totalCredits || 0) - (user.usedPhotoshootCredits || 0) - (user.usedMarketingCredits || 0)),
+        isActive,
+        photoshootGenerations: photoshootGens,
+        marketingGenerations: marketingGens,
+        planPrice: plan ? plan.price : null,
+        planYearlyPrice: plan ? plan.yearlyPrice : null,
+      },
+      history: sortedHistory,
+    });
+  } catch (error) {
+    logger.error("Get user details error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
  * @route   GET /api/admin/price-plans
  * @desc    Get price plans (admin)
  */
@@ -1352,4 +1435,68 @@ router.put(
   },
 );
 
+/**
+ * @route   PUT /api/admin/users/:userId/adjust-credits
+ * @desc    Adjust a user's credits (increase or decrease) - admin only
+ * @access  Private/Admin
+ */
+router.put("/users/:userId/adjust-credits", protect, admin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { adjustment, reason } = req.body; // adjustment: number (positive = add, negative = subtract)
+
+    if (adjustment === undefined || adjustment === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Adjustment amount is required and cannot be zero",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const oldTotalCredits = user.totalCredits || 0;
+    const newTotalCredits = Math.max(0, oldTotalCredits + parseInt(adjustment));
+
+    user.totalCredits = newTotalCredits;
+
+    // Log in credit history
+    if (!user.creditHistory) user.creditHistory = [];
+    user.creditHistory.push({
+      date: new Date(),
+      action: "manual_adjustment",
+      planName: user.subscriptionPlan || "Free Tier",
+      totalCredits: {
+        previous: oldTotalCredits,
+        new: newTotalCredits,
+        change: newTotalCredits - oldTotalCredits,
+      },
+      reason: reason || `Admin adjusted credits by ${adjustment > 0 ? '+' : ''}${adjustment}`,
+      adminEmail: req.user.email,
+    });
+
+    await user.save();
+
+    logger.info("Admin adjusted credits:", {
+      adminEmail: req.user.email,
+      userEmail: user.email,
+      adjustment,
+      oldCredits: oldTotalCredits,
+      newCredits: newTotalCredits,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Credits adjusted successfully. New total: ${newTotalCredits}`,
+      totalCredits: newTotalCredits,
+    });
+  } catch (error) {
+    logger.error("Adjust credits error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 export default router;
+

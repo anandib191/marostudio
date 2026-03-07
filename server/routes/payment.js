@@ -135,6 +135,7 @@ router.post(
         razorpay_signature,
         planName,
         billingPeriod,
+        amount,
       } = req.body;
       const userId = req.user._id.toString();
 
@@ -264,6 +265,9 @@ router.post(
             change: -oldUsedMarketingCredits,
           },
           billingPeriod: billingPeriod,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpayOrderId: razorpay_order_id,
+          amount: amount || null,
           reason: `Purchased ${planName} plan (${billingPeriod}) - Fresh credits assigned`,
         });
 
@@ -342,4 +346,154 @@ router.post(
   },
 );
 
+/**
+ * @route   POST /api/payment/log-failed
+ * @desc    Log a failed Razorpay payment attempt to the user's credit history
+ * @access  Protected
+ */
+router.post("/log-failed", protect, async (req, res) => {
+  try {
+    const { planName, billingPeriod, orderId, errorCode, errorDescription, amount } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (!user.creditHistory) user.creditHistory = [];
+    user.creditHistory.push({
+      date: new Date(),
+      action: "payment_failed",
+      planName: planName || "Unknown",
+      reason: errorDescription || "Payment failed",
+      billingPeriod: billingPeriod || null,
+      orderId: orderId || null,
+      errorCode: errorCode || null,
+      amount: amount || null,
+    });
+
+    await user.save();
+    res.status(200).json({ success: true, message: "Failed payment logged" });
+  } catch (error) {
+    logger.error("Error logging failed payment:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+});
+
+/**
+ * @route   GET /api/payment/purchase-history
+ * @desc    Get user's purchase history (successful + failed payments)
+ * @access  Protected
+ */
+router.get("/purchase-history", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      "creditHistory name email subscriptionPurchasedAt subscriptionBillingPeriod"
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Load all plans to fill in missing amounts for old purchases
+    const plans = await PricePlan.find({});
+    const planPriceMap = {};
+    plans.forEach((p) => {
+      planPriceMap[p.name.toLowerCase()] = {
+        monthly: parseFloat(p.price) || 0,
+        yearly: parseFloat(p.yearlyPrice) || 0,
+      };
+    });
+
+    // Filter only purchase & payment_failed events, sort newest first
+    const history = (user.creditHistory || [])
+      .filter((h) => h.action === "purchase" || h.action === "payment_failed")
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .map((h, idx) => {
+        // For old purchases without amount, derive from PricePlan
+        let amount = h.amount || null;
+        if (!amount && h.action === "purchase" && h.planName) {
+          const planKey = h.planName.toLowerCase();
+          const planPrices = planPriceMap[planKey];
+          if (planPrices) {
+            const billing = h.billingPeriod || "monthly";
+            if (billing === "yearly") {
+              amount = planPrices.yearly * 12; // yearly = monthlyPrice * 12
+            } else {
+              amount = planPrices.monthly;
+            }
+          }
+        }
+
+        return {
+          index: idx,
+          date: h.date,
+          action: h.action,
+          planName: h.planName,
+          billingPeriod: h.billingPeriod || null,
+          totalCredits: h.totalCredits ? h.totalCredits.new : null,
+          reason: h.reason || null,
+          errorCode: h.errorCode || null,
+          orderId: h.orderId || h.razorpayOrderId || null,
+          razorpayPaymentId: h.razorpayPaymentId || null,
+          amount: amount,
+        };
+      });
+
+    res.status(200).json({
+      success: true,
+      history,
+      userName: user.name || null,
+      userEmail: user.email || null,
+    });
+  } catch (error) {
+    logger.error("Error fetching purchase history:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+});
+
+
+/**
+ * @route   GET /api/payment/invoice/:index
+ * @desc    Get invoice data for a specific successful purchase
+ * @access  Protected
+ */
+router.get("/invoice/:index", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      "creditHistory name email"
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const purchases = (user.creditHistory || [])
+      .filter((h) => h.action === "purchase")
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const idx = parseInt(req.params.index);
+    if (isNaN(idx) || idx < 0 || idx >= purchases.length) {
+      return res.status(404).json({ success: false, message: "Invoice not found" });
+    }
+
+    const purchase = purchases[idx];
+    res.status(200).json({
+      success: true,
+      invoice: {
+        invoiceNumber: `MS-${new Date(purchase.date).getFullYear()}-${String(idx + 1).padStart(4, "0")}`,
+        date: purchase.date,
+        planName: purchase.planName,
+        billingPeriod: purchase.billingPeriod || null,
+        totalCredits: purchase.totalCredits ? purchase.totalCredits.new : null,
+        amount: purchase.amount || null,
+        reason: purchase.reason || null,
+      },
+      userName: user.name || null,
+      userEmail: user.email || null,
+    });
+  } catch (error) {
+    logger.error("Error fetching invoice:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+});
+
 export default router;
+
