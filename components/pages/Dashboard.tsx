@@ -21,6 +21,7 @@ export interface PricePlan {
 
 interface User {
   _id: string;
+  name?: string;
   email: string;
   role: 'user' | 'admin';
   isVerified: boolean;
@@ -113,6 +114,21 @@ export const Dashboard: React.FC = () => {
   const [showDeleteAdminModal, setShowDeleteAdminModal] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  // Credit adjustment state
+  const [creditAdjustUserId, setCreditAdjustUserId] = useState<string | null>(null);
+  const [creditAdjustEmail, setCreditAdjustEmail] = useState('');
+  const [creditAdjustAmount, setCreditAdjustAmount] = useState('');
+  const [creditAdjustReason, setCreditAdjustReason] = useState('');
+  const [creditAdjustCurrentCredits, setCreditAdjustCurrentCredits] = useState(0);
+  const [showCreditAdjustModal, setShowCreditAdjustModal] = useState(false);
+  const [adjustingCredits, setAdjustingCredits] = useState(false);
+
+  // User detail overlay state
+  const [selectedUserDetail, setSelectedUserDetail] = useState<any>(null);
+  const [selectedUserHistory, setSelectedUserHistory] = useState<any[]>([]);
+  const [showUserDetail, setShowUserDetail] = useState(false);
+  const [loadingUserDetail, setLoadingUserDetail] = useState(false);
+
   const [planToDeleteIndex, setPlanToDeleteIndex] = useState<number | null>(null);
   const [showDeletePlanModal, setShowDeletePlanModal] = useState(false);
   const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null);
@@ -287,7 +303,7 @@ export const Dashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=10`, {
+      const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=100`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -348,7 +364,7 @@ export const Dashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/users?role=admin&page=${page}&limit=10`, {
+      const res = await fetch(`${API_URL}/api/admin/users?role=admin&page=${page}&limit=100`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -595,6 +611,10 @@ export const Dashboard: React.FC = () => {
       if (res.ok && data.success) {
         toast.success('User deleted successfully', { position: "top-right", autoClose: 3000 });
         loadUsers(token, usersPage);
+        // Close user detail overlay if open
+        setShowUserDetail(false);
+        setSelectedUserDetail(null);
+        setSelectedUserHistory([]);
       } else {
         toast.error(data.message || 'Failed to delete user', { position: "top-right", autoClose: 3000 });
       }
@@ -603,6 +623,88 @@ export const Dashboard: React.FC = () => {
     } finally {
       setShowDeleteUserModal(false);
       setDeleteUserId(null);
+    }
+  };
+
+  const handleAdjustCredits = async () => {
+    if (!creditAdjustUserId || !creditAdjustAmount) return;
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    setAdjustingCredits(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${creditAdjustUserId}/adjust-credits`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ adjustment: parseInt(creditAdjustAmount), reason: creditAdjustReason || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(data.message || 'Credits adjusted', { position: "top-right", autoClose: 3000 });
+        loadUsers(token, usersPage);
+        // Refresh user detail overlay if open
+        if (showUserDetail && creditAdjustUserId) {
+          loadUserDetail(creditAdjustUserId);
+        }
+        setShowCreditAdjustModal(false);
+        setCreditAdjustUserId(null);
+        setCreditAdjustAmount('');
+        setCreditAdjustReason('');
+      } else {
+        toast.error(data.message || 'Failed to adjust credits', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to adjust credits', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setAdjustingCredits(false);
+    }
+  };
+
+  const loadUserDetail = async (userId: string) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+    setLoadingUserDetail(true);
+    setShowUserDetail(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${userId}/details`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSelectedUserDetail(data.user);
+        setSelectedUserHistory(data.history || []);
+      } else {
+        toast.error(data.message || 'Failed to load user details', { position: "top-right", autoClose: 3000 });
+        setShowUserDetail(false);
+      }
+    } catch (e) {
+      toast.error('Failed to load user details', { position: "top-right", autoClose: 3000 });
+      setShowUserDetail(false);
+    } finally {
+      setLoadingUserDetail(false);
+    }
+  };
+
+  const getActionLabel = (action: string) => {
+    switch (action) {
+      case 'purchase': return 'Plan Purchase';
+      case 'payment_failed': return 'Payment Failed';
+      case 'usage': return 'Credit Usage';
+      case 'manual_adjustment': return 'Admin Adjustment';
+      case 'admin_sync': return 'Admin Sync';
+      case 'expiry': return 'Plan Expired';
+      default: return action;
+    }
+  };
+
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case 'purchase': return 'text-green-400 bg-green-500/15';
+      case 'payment_failed': return 'text-red-400 bg-red-500/15';
+      case 'usage': return 'text-blue-400 bg-blue-500/15';
+      case 'manual_adjustment': return 'text-gold-400 bg-gold-500/15';
+      case 'admin_sync': return 'text-purple-400 bg-purple-500/15';
+      case 'expiry': return 'text-orange-400 bg-orange-500/15';
+      default: return 'text-neutral-400 bg-neutral-500/15';
     }
   };
 
@@ -1156,6 +1258,7 @@ export const Dashboard: React.FC = () => {
                         <table className="w-full min-w-[900px] sm:min-w-[1200px]">
                           <thead className="bg-neutral-800/50">
                             <tr>
+                              <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Name</th>
                               <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Email</th>
                               <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Plan</th>
                               <th className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-left text-[9px] xs:text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider whitespace-nowrap">Status</th>
@@ -1169,7 +1272,10 @@ export const Dashboard: React.FC = () => {
                           </thead>
                           <tbody className="divide-y divide-white/5">
                             {users && users.length > 0 ? users.map((user) => (
-                              <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30">
+                              <tr key={user?._id || Math.random()} className="hover:bg-neutral-800/30 cursor-pointer" onClick={() => user?._id && loadUserDetail(user._id)}>
+                                <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm text-white">
+                                  <div className="max-w-[100px] xs:max-w-[120px] sm:max-w-none truncate" title={user?.name || ''}>{user?.name || '—'}</div>
+                                </td>
                                 <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm text-white">
                                   <div className="max-w-[120px] xs:max-w-[150px] sm:max-w-none truncate" title={user?.email || ''}>{user?.email || 'N/A'}</div>
                                 </td>
@@ -1254,25 +1360,46 @@ export const Dashboard: React.FC = () => {
                                 <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[9px] xs:text-[10px] sm:text-xs text-neutral-400 whitespace-nowrap">{formatDate(user?.lastLogin)}</td>
                                 <td className="px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">
                                   {user?._id && (
-                                    <button
-                                      onClick={() => {
-                                        setDeleteUserId(user._id);
-                                        setShowDeleteUserModal(true);
-                                      }}
-                                      className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
-                                      title="Delete user"
-                                      aria-label="Delete user"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCreditAdjustUserId(user._id);
+                                          setCreditAdjustEmail(user?.email || '');
+                                          setCreditAdjustCurrentCredits(user?.totalCredits || 0);
+                                          setCreditAdjustAmount('');
+                                          setCreditAdjustReason('');
+                                          setShowCreditAdjustModal(true);
+                                        }}
+                                        className="p-1.5 sm:p-2 text-gold-400 hover:text-gold-300 hover:bg-gold-500/10 rounded transition-colors"
+                                        title="Adjust credits"
+                                        aria-label="Adjust credits"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDeleteUserId(user._id);
+                                          setShowDeleteUserModal(true);
+                                        }}
+                                        className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                        title="Delete user"
+                                        aria-label="Delete user"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    </div>
                                   )}
                                 </td>
                               </tr>
                             )) : (
                               <tr>
-                                <td colSpan={9} className="px-4 py-8 text-center text-neutral-400 text-sm">
+                                <td colSpan={10} className="px-4 py-8 text-center text-neutral-400 text-sm">
                                   No users found
                                 </td>
                               </tr>
@@ -2296,6 +2423,258 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* User Detail Overlay */}
+      {showUserDetail && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-gold-500/20 rounded-xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-white/10 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                {loadingUserDetail ? (
+                  <div className="animate-pulse h-6 w-48 bg-neutral-700 rounded mb-2" />
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-white truncate">{selectedUserDetail?.name || 'User'}</h2>
+                    <p className="text-sm text-neutral-400 truncate">{selectedUserDetail?.email}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {selectedUserDetail?.subscriptionPlan && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 font-medium">
+                          {selectedUserDetail.subscriptionPlan}
+                        </span>
+                      )}
+                      {selectedUserDetail?.subscriptionBillingPeriod && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-neutral-700 text-neutral-300 capitalize">
+                          {selectedUserDetail.subscriptionBillingPeriod}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${selectedUserDetail?.isActive ? 'bg-green-500/20 text-green-300' : selectedUserDetail?.subscriptionPlan ? 'bg-red-500/20 text-red-300' : 'bg-neutral-700 text-neutral-400'}`}>
+                        {selectedUserDetail?.isActive ? '● Active' : selectedUserDetail?.subscriptionPlan ? '● Expired' : 'Free'}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => { setShowUserDetail(false); setSelectedUserDetail(null); setSelectedUserHistory([]); }}
+                className="text-neutral-400 hover:text-white transition-colors flex-shrink-0 p-1"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {loadingUserDetail ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-gold-500 border-t-transparent" />
+              </div>
+            ) : selectedUserDetail && (
+              <div className="overflow-y-auto flex-1 p-5 space-y-5">
+                {/* Credit Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-neutral-800/50 rounded-lg p-3 border border-white/5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Total Credits</div>
+                    <div className="text-lg font-bold text-white">{(selectedUserDetail.totalCredits || 0).toLocaleString()}</div>
+                  </div>
+                  <div className="bg-neutral-800/50 rounded-lg p-3 border border-white/5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Remaining</div>
+                    <div className="text-lg font-bold text-emerald-400">{(selectedUserDetail.remainingCredits || 0).toLocaleString()}</div>
+                  </div>
+                  <div className="bg-neutral-800/50 rounded-lg p-3 border border-white/5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Photoshoot Gen</div>
+                    <div className="text-lg font-bold text-blue-400">{selectedUserDetail.photoshootGenerations || 0}</div>
+                  </div>
+                  <div className="bg-neutral-800/50 rounded-lg p-3 border border-white/5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Marketing Gen</div>
+                    <div className="text-lg font-bold text-purple-400">{selectedUserDetail.marketingGenerations || 0}</div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setCreditAdjustUserId(selectedUserDetail._id);
+                      setCreditAdjustEmail(selectedUserDetail.email);
+                      setCreditAdjustCurrentCredits(selectedUserDetail.totalCredits || 0);
+                      setCreditAdjustAmount('');
+                      setCreditAdjustReason('');
+                      setShowCreditAdjustModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-gold-600/20 text-gold-400 border border-gold-500/30 rounded-lg hover:bg-gold-600/30 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Adjust Credits
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDeleteUserId(selectedUserDetail._id);
+                      setShowDeleteUserModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete User
+                  </button>
+                </div>
+
+                {/* Info Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <span className="text-neutral-500">Created: </span>
+                    <span className="text-neutral-300">{formatDate(selectedUserDetail.createdAt)}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">Last Login: </span>
+                    <span className="text-neutral-300">{formatDate(selectedUserDetail.lastLogin)}</span>
+                  </div>
+                  {selectedUserDetail.subscriptionPurchasedAt && (
+                    <div>
+                      <span className="text-neutral-500">Purchased: </span>
+                      <span className="text-neutral-300">{formatDate(selectedUserDetail.subscriptionPurchasedAt)}</span>
+                    </div>
+                  )}
+                  {selectedUserDetail.subscriptionExpiresAt && (
+                    <div>
+                      <span className="text-neutral-500">Expires: </span>
+                      <span className={selectedUserDetail.isActive ? 'text-emerald-400' : 'text-red-400'}>{formatDate(selectedUserDetail.subscriptionExpiresAt)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Activity Timeline */}
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Activity Timeline</h3>
+                  {selectedUserHistory.length === 0 ? (
+                    <p className="text-neutral-500 text-sm text-center py-8">No activity recorded yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedUserHistory.map((entry: any, idx: number) => (
+                        <div key={idx} className="bg-neutral-800/40 rounded-lg p-3 border border-white/5 hover:border-white/10 transition-colors">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <span className={`mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 text-[10px] ${getActionColor(entry.action)}`}>
+                                {entry.action === 'purchase' ? '✓' : entry.action === 'payment_failed' ? '✗' : entry.action === 'usage' ? '▶' : entry.action === 'manual_adjustment' ? '⚡' : '•'}
+                              </span>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs font-semibold text-white">{getActionLabel(entry.action)}</span>
+                                  {entry.planName && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-700 text-neutral-300">{entry.planName}</span>
+                                  )}
+                                </div>
+                                {entry.reason && (
+                                  <p className="text-[11px] text-neutral-400 mt-0.5 break-words">{entry.reason}</p>
+                                )}
+                                {entry.razorpayPaymentId && (
+                                  <p className="text-[10px] text-neutral-500 font-mono mt-0.5">Pay ID: {entry.razorpayPaymentId}</p>
+                                )}
+                                {entry.adminEmail && (
+                                  <p className="text-[10px] text-gold-500 mt-0.5">by {entry.adminEmail}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-[10px] text-neutral-500 whitespace-nowrap">{formatDate(entry.date)}</div>
+                              {entry.amount && (
+                                <div className="text-xs font-semibold text-neutral-300 mt-0.5">₹{Number(entry.amount).toLocaleString('en-IN')}</div>
+                              )}
+                              {entry.totalCredits?.change !== undefined && entry.totalCredits.change !== 0 && (
+                                <div className={`text-[10px] font-mono mt-0.5 ${entry.totalCredits.change > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {entry.totalCredits.change > 0 ? '+' : ''}{entry.totalCredits.change} credits
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Credit Adjust Modal */}
+      {showCreditAdjustModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border-2 border-gold-500/30 rounded-xl max-w-md w-full">
+            <div className="p-6 border-b border-white/10">
+              <h2 className="text-xl font-bold text-white mb-1">Adjust Credits</h2>
+              <p className="text-sm text-neutral-400">{creditAdjustEmail}</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Current Credits</label>
+                <div className="text-xl font-bold text-gold-400">{creditAdjustCurrentCredits.toLocaleString()}</div>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                  Adjustment (+ to add, - to subtract)
+                </label>
+                <input
+                  type="number"
+                  value={creditAdjustAmount}
+                  onChange={(e) => setCreditAdjustAmount(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-lg font-mono focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  placeholder="e.g. 500 or -100"
+                />
+              </div>
+              {creditAdjustAmount && (
+                <div className="bg-neutral-800/50 rounded-lg p-3 border border-white/5">
+                  <span className="text-xs text-neutral-400">New Total: </span>
+                  <span className="text-lg font-bold text-white">
+                    {Math.max(0, creditAdjustCurrentCredits + parseInt(creditAdjustAmount || '0')).toLocaleString()}
+                  </span>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Reason (optional)</label>
+                <input
+                  type="text"
+                  value={creditAdjustReason}
+                  onChange={(e) => setCreditAdjustReason(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  placeholder="e.g. Bonus credits, refund, etc."
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-white/10 flex gap-3">
+              <button
+                onClick={() => { setShowCreditAdjustModal(false); setCreditAdjustUserId(null); }}
+                className="flex-1 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAdjustCredits}
+                disabled={adjustingCredits || !creditAdjustAmount || parseInt(creditAdjustAmount) === 0}
+                className="flex-1 px-4 py-2 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 text-white rounded-lg transition-colors"
+              >
+                {adjustingCredits ? 'Adjusting...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteUserModal}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDeleteUser}
+        onCancel={() => { setShowDeleteUserModal(false); setDeleteUserId(null); }}
+        variant="danger"
+      />
 
       {/* Sync Credits Preview Modal */}
       {showSyncPreview && syncPreview && (

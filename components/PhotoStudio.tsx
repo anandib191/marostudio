@@ -1155,8 +1155,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
 
             // Deduct credit after successful generation
             if (token) {
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
                 try {
-                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
                     const deductRes = await fetch(`${API_URL}/api/credits/deduct`, {
                         method: 'POST',
                         headers: {
@@ -1186,6 +1186,29 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 } catch (err) {
                     console.error('Credit deduction error:', err);
                     // Don't fail the generation if credit deduction fails
+                }
+
+                // Save generation record for admin tracking
+                try {
+                    const allImages = [result.coverImage, ...result.modelImages].filter(Boolean);
+                    await fetch(`${API_URL}/api/user/generations/save`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            type: 'photoshoot',
+                            quality: imageQuality,
+                            imageUrls: allImages,
+                            category: promptCategory,
+                            productType,
+                            style: selectedStyle,
+                            creditsUsed: numberOfImages * (imageQuality === '4K' ? 40 : 20),
+                        }),
+                    });
+                } catch (err) {
+                    console.error('Save generation record error:', err);
                 }
             }
         } catch (err) {

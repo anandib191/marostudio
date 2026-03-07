@@ -315,6 +315,25 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         console.error('Failed to refresh credits:', fetchErr);
                     }
                 }
+
+                // Save generation record for admin tracking
+                try {
+                    await fetch(`${API_URL}/api/user/generations/save`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            type: 'marketing',
+                            quality: 'HD',
+                            imageUrls: [poster],
+                            creditsUsed: 20,
+                        }),
+                    });
+                } catch (err) {
+                    console.error('Save generation record error:', err);
+                }
             }
         } catch (err) {
             console.error(err);

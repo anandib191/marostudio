@@ -108,6 +108,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 razorpay_signature: response.razorpay_signature,
                 planName: planName,
                 billingPeriod: billingPeriod,
+                amount: amount,
               }),
             });
 
@@ -142,10 +143,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const razorpay = new window.Razorpay(options);
       razorpay.on('payment.failed', function (response: any) {
         console.error('Payment failed:', response.error);
+        // Log failed payment to backend
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          fetch(`${apiUrl}/api/payment/log-failed`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              planName,
+              billingPeriod,
+              orderId: order.id,
+              errorCode: response.error.code,
+              errorDescription: response.error.description,
+              amount,
+            }),
+          }).catch((err) => console.error('Failed to log payment failure:', err));
+        } catch (_) {}
         onPaymentError(response.error.description || 'Payment failed');
         setIsLoading(false);
       });
       razorpay.open();
+
     } catch (error: any) {
       console.error('Payment error:', error);
       onPaymentError(error.message || 'Failed to initiate payment');

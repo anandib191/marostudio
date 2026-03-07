@@ -89,6 +89,7 @@ const userSchema = new mongoose.Schema(
             "usage",
             "expiry",
             "manual_adjustment",
+            "payment_failed",
           ],
         },
         planName: String,

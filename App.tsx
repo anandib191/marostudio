@@ -22,6 +22,7 @@ import { PrivacyPolicy } from './components/pages/PrivacyPolicy';
 import { TermsOfService } from './components/pages/TermsOfService';
 import { AuthInterceptor } from './components/auth/AuthInterceptor';
 import { WelcomePopup } from './components/WelcomePopup';
+import { PurchaseHistoryPage } from './components/PurchaseHistoryPage';
 
 // Canvas Effect Hook
 const useCanvasEffect = () => {
@@ -177,6 +178,7 @@ const AppContent: React.FC = () => {
             <Route path="/book-demo" element={<BookDemoPage />} />
             <Route path="/studio" element={<StudioWrapper />} />
             <Route path="/previously-generated" element={<PreviouslyGenerated />} />
+            <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
 
