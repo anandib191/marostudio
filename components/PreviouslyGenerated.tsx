@@ -291,15 +291,23 @@ export const PreviouslyGenerated: React.FC = () => {
                 className="relative max-w-6xl w-full"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Title & Info */}
-                <div className="mb-6 text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                    {selectedGeneration.productType || selectedGeneration.category || selectedGeneration.type}
-                  </h2>
+                {/* Studio Deliverables Style Title */}
+                <h2 className="font-serif-display text-4xl sm:text-5xl text-center mb-8 sm:mb-16 text-white tracking-tighter">
+                  Studio <span className="italic text-neutral-400">Deliverables</span>
+                </h2>
+
+                {/* Info Bar */}
+                <div className="flex flex-col items-center gap-6 mb-12 sm:mb-20 w-full">
+                  {/* Product / Category Info */}
                   <div className="flex items-center justify-center gap-3 text-sm text-neutral-400 flex-wrap">
                     {selectedGeneration.category && (
-                      <span className="px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-xs font-medium">
+                      <span className="px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-xs font-medium uppercase tracking-widest">
                         {selectedGeneration.category}
+                      </span>
+                    )}
+                    {selectedGeneration.productType && (
+                      <span className="px-3 py-1 rounded-full bg-white/5 text-neutral-300 text-xs font-medium uppercase tracking-widest">
+                        {selectedGeneration.productType}
                       </span>
                     )}
                     <span>{formatDate(selectedGeneration.createdAt)}</span>
@@ -312,63 +320,70 @@ export const PreviouslyGenerated: React.FC = () => {
                       </>
                     )}
                   </div>
+
+                  {/* Action Buttons - Studio Deliverables Style */}
+                  <div className="flex flex-wrap justify-center items-center gap-4">
+                    <button
+                      onClick={() => handleDeleteClick(selectedGeneration._id)}
+                      className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 font-bold py-3 px-8 rounded-full transition-all flex items-center gap-3"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => setSelectedGeneration(null)}
+                      className="text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white border border-white/10 hover:border-white/20 font-bold py-3 px-8 rounded-full transition-all flex items-center gap-3"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Close
+                    </button>
+                  </div>
                 </div>
 
-                {/* Images Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                  {selectedGeneration.imageUrls.map((url, index) => (
-                    <div
-                      key={index}
-                      className="group relative bg-neutral-900 rounded-xl overflow-hidden border border-white/10 hover:border-gold-500/50 transition-all duration-300 cursor-pointer"
-                      onClick={() => setSelectedImageUrl(url)}
-                    >
-                      <div className="aspect-square relative overflow-hidden">
-                        <img
-                          src={url}
-                          alt={`Generated image ${index + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                        {/* Hover overlay with download */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-                            <span className="text-white text-sm font-medium">Image {index + 1}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload(url, index);
-                              }}
-                              className="px-3 py-1.5 bg-gold-600 hover:bg-gold-500 rounded-lg text-white text-xs font-semibold transition-colors flex items-center gap-1.5"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                              </svg>
-                              Download
-                            </button>
+                {/* Gallery Grid - Matching GeneratedImageGallery style */}
+                <div className="flex flex-col gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {selectedGeneration.imageUrls.map((url, index) => {
+                      const isCover = index === 0;
+                      const title = isCover ? 'Hero Composition' : `Neural Frame ${index}`;
+
+                      return (
+                        <div
+                          key={index}
+                          className="group relative rounded-2xl overflow-hidden glass-card shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+                          onClick={() => setSelectedImageUrl(url)}
+                        >
+                          <img
+                            src={url}
+                            alt={isCover ? 'AI-generated hero shot' : `Generated model frame ${index}`}
+                            className="w-full h-auto object-contain transition-transform duration-700 ease-in-out group-hover:scale-105"
+                            loading="lazy"
+                          />
+
+                          {/* Download Button on hover */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDownload(url, index); }}
+                            aria-label={`Download ${title}`}
+                            className="absolute top-4 right-4 z-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-gold-600 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl border border-white/10"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </button>
+
+                          {/* Bottom Gradient Overlay with Title */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white p-6 text-left pt-20">
+                            <p className="font-bold text-[10px] uppercase tracking-[0.2em] opacity-60 mb-1">Asset Frame</p>
+                            <p className="font-serif-display italic text-xl">{title}</p>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={() => handleDeleteClick(selectedGeneration._id)}
-                    className="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-300 font-semibold transition-colors flex items-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete Generation
-                  </button>
-                  <button
-                    onClick={() => setSelectedGeneration(null)}
-                    className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white font-semibold transition-colors"
-                  >
-                    Close
-                  </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
