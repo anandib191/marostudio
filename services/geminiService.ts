@@ -159,6 +159,34 @@ const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectR
     throw new Error('Image generation failed: ' + (data.message || 'Unknown API error'));
 }
 
+/**
+ * Retry wrapper: attempts generateSingleImage up to MAX_RETRIES times.
+ * Waits 1 second between retries.
+ */
+const MAX_RETRIES = 3;
+
+const generateWithRetry = async (
+    imageFile: ImageFile,
+    prompt: string,
+    aspectRatio: AspectRatio,
+    referenceImageSource?: string,
+    imageQuality: ImageQuality = 'HD'
+): Promise<string> => {
+    let lastError: Error | unknown;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            return await generateSingleImage(imageFile, prompt, aspectRatio, referenceImageSource, imageQuality);
+        } catch (err) {
+            lastError = err;
+            console.warn(`Image generation attempt ${attempt}/${MAX_RETRIES} failed:`, err);
+            if (attempt < MAX_RETRIES) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+    throw lastError;
+}
+
 const PROMPT_MAP = {
     women: WOMEN_PROMPTS,
     men: MEN_PROMPTS,
@@ -246,7 +274,7 @@ export const generateCatalogueImages = async (
                 const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
                 try {
-                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
+                    const image = await generateWithRetry(imageToUse, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
                     onImageGenerated(image, index);
                     generatedImages.push(image);
 
@@ -267,7 +295,7 @@ export const generateCatalogueImages = async (
                 const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
                 try {
-                    const image = await generateSingleImage(imageToUse, finalPrompt, aspectRatio, undefined, imageQuality);
+                    const image = await generateWithRetry(imageToUse, finalPrompt, aspectRatio, undefined, imageQuality);
                     onImageGenerated(image, index);
                     return image;
                 } catch (err) {
@@ -340,7 +368,7 @@ export const generateOtherProductImages = async (
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
-                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
+                const image = await generateWithRetry(imageFile, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
                 onImageGenerated(image, index);
                 generatedImages.push(image);
 
@@ -356,7 +384,7 @@ export const generateOtherProductImages = async (
             const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
             try {
-                const image = await generateSingleImage(imageFile, finalPrompt, aspectRatio, undefined, imageQuality);
+                const image = await generateWithRetry(imageFile, finalPrompt, aspectRatio, undefined, imageQuality);
                 onImageGenerated(image, index);
                 return image;
             } catch (err) {
