@@ -13,7 +13,7 @@ const router = express.Router();
  */
 router.post('/save', protect, async (req, res) => {
   try {
-    const { type, quality, imageUrls, category, productType, style, creditsUsed } = req.body;
+    const { type, quality, imageUrls, category, productType, style, creditsUsed, sourceImageUrl, numberOfImages, background, creatorName, aspectRatio, consistentCharacter } = req.body;
 
     if (!imageUrls || imageUrls.length === 0) {
       return res.status(400).json({ success: false, message: 'No image URLs provided' });
@@ -29,6 +29,12 @@ router.post('/save', protect, async (req, res) => {
       productType: productType || null,
       style: style || null,
       creditsUsed: creditsUsed || 0,
+      sourceImageUrl: sourceImageUrl || null,
+      numberOfImages: numberOfImages || 1,
+      background: background || null,
+      creatorName: creatorName || null,
+      aspectRatio: aspectRatio || null,
+      consistentCharacter: consistentCharacter || false,
     });
 
     res.status(201).json({

@@ -1205,6 +1205,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             productType,
                             style: selectedStyle,
                             creditsUsed: numberOfImages * (imageQuality === '4K' ? 40 : 20),
+                            sourceImageUrl: imageFiles[0]?.previewUrl || null,
+                            numberOfImages,
+                            background,
+                            creatorName: creatorName || null,
                         }),
                     });
                 } catch (err) {

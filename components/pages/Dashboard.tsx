@@ -2055,16 +2055,19 @@ export const Dashboard: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     <div className="overflow-x-auto">
-                      <table className="w-full min-w-[700px]">
+                      <table className="w-full min-w-[900px]">
                         <thead className="bg-neutral-800/50">
                           <tr>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">User Email</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Type</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Quality</th>
-                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Category</th>
-                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Images</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Canvas</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Environment</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Aesthetic</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Persona</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider"># Images</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Credits</th>
-                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Date</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Date & Time</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -2088,27 +2091,62 @@ export const Dashboard: React.FC = () => {
                                   </span>
                                 </td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 capitalize">{gen.category || '—'}</td>
-                                <td className="px-3 py-2.5 text-xs sm:text-sm text-white font-medium">{gen.imageUrls?.length || 0}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 capitalize">{gen.background || '—'}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 capitalize">{gen.style || '—'}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">{gen.creatorName || '—'}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-white font-medium">{gen.numberOfImages || gen.imageUrls?.length || 0}</td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">{gen.creditsUsed || 0}</td>
-                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 whitespace-nowrap">{formatDate(gen.createdAt)}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 whitespace-nowrap">
+                                  <div>{formatDate(gen.createdAt)}</div>
+                                  <div className="text-[10px] text-neutral-500">{formatDateTime(gen.createdAt)}</div>
+                                </td>
                               </tr>
-                              {expandedGenId === gen._id && gen.imageUrls && gen.imageUrls.length > 0 && (
+                              {expandedGenId === gen._id && (
                                 <tr>
-                                  <td colSpan={7} className="px-3 py-3 bg-neutral-900/50">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                                      {gen.imageUrls.map((url: string, idx: number) => (
-                                        <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block">
-                                          <img
-                                            src={url}
-                                            alt={`Gen ${idx + 1}`}
-                                            className="w-full h-24 sm:h-32 object-cover rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors"
-                                            loading="lazy"
-                                            onError={(e) => {
-                                              (e.target as HTMLImageElement).style.display = 'none';
-                                            }}
-                                          />
-                                        </a>
-                                      ))}
+                                  <td colSpan={10} className="px-3 py-4 bg-neutral-900/50">
+                                    <div className="space-y-3">
+                                      {/* Source Image (uploaded photo) */}
+                                      {gen.sourceImageUrl && (
+                                        <div>
+                                          <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Uploaded Photo</p>
+                                          <a href={gen.sourceImageUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                                            <img
+                                              src={gen.sourceImageUrl}
+                                              alt="Uploaded source"
+                                              className="h-28 sm:h-36 object-contain rounded-lg border-2 border-gold-500/30 bg-black/30 p-1"
+                                              loading="lazy"
+                                              onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                              }}
+                                            />
+                                          </a>
+                                        </div>
+                                      )}
+                                      {/* Generated Images */}
+                                      {gen.imageUrls && gen.imageUrls.length > 0 && (
+                                        <div>
+                                          <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Generated Images</p>
+                                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                                            {gen.imageUrls.map((url: string, idx: number) => (
+                                              <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block">
+                                                <img
+                                                  src={url}
+                                                  alt={`Gen ${idx + 1}`}
+                                                  className="w-full h-24 sm:h-32 object-cover rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors"
+                                                  loading="lazy"
+                                                  onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                  }}
+                                                />
+                                              </a>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                      {/* Extra Details Row */}
+                                      <div className="flex flex-wrap gap-4 text-xs text-neutral-500 pt-1">
+                                        {gen.productType && <span>Product Type: <span className="text-neutral-300 capitalize">{gen.productType}</span></span>}
+                                      </div>
                                     </div>
                                   </td>
                                 </tr>
