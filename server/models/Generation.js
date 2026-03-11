@@ -34,6 +34,18 @@ const generationSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    sourceImageUrl: String, // user's uploaded product photo (base64 data URL)
+    numberOfImages: {
+      type: Number,
+      default: 1,
+    },
+    background: String, // environment: studio, city, white, black, etc.
+    creatorName: String, // identity / brand name
+    aspectRatio: String, // canvas: 9:16, 16:9, 1:1, etc.
+    consistentCharacter: {
+      type: Boolean,
+      default: false,
+    }, // persona lock toggle
   },
   { timestamps: true }
 );

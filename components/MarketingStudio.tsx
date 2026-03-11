@@ -329,6 +329,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             quality: 'HD',
                             imageUrls: [poster],
                             creditsUsed: 20,
+                            sourceImageUrl: imageFile?.previewUrl || null,
+                            numberOfImages: 1,
                         }),
                     });
                 } catch (err) {
