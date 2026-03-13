@@ -326,7 +326,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         },
                         body: JSON.stringify({
                             type: 'marketing',
-                            quality: 'HD',
+                            quality: '2K',
                             imageUrls: [poster],
                             creditsUsed: 20,
                             sourceImageUrl: imageFile?.previewUrl || null,

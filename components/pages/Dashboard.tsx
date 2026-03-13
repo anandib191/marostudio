@@ -2087,7 +2087,7 @@ export const Dashboard: React.FC = () => {
                                 </td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm">
                                   <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${gen.quality === '4K' ? 'bg-gold-500/20 text-gold-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                                    {gen.quality || 'HD'}
+                                    {gen.quality || '2K'}
                                   </span>
                                 </td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 capitalize">{gen.category || '—'}</td>
