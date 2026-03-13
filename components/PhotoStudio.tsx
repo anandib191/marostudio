@@ -209,7 +209,7 @@ const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
 ];
 
 const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
-    { id: 'HD', label: 'HD' },
+    { id: '2K', label: '2K' },
     { id: '4K', label: '4K' },
 ];
 
@@ -938,7 +938,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
     const [consistentCharacter, setConsistentCharacter] = useState<boolean>(false);
     const [background, setBackground] = useState<BackgroundType>('studio');
-    const [imageQuality, setImageQuality] = useState<ImageQuality>('HD');
+    const [imageQuality, setImageQuality] = useState<ImageQuality>('2K');
     const [numberOfImages, setNumberOfImages] = useState<number>(2);
     const [customBackground, setCustomBackground] = useState<string>('');
 

@@ -101,9 +101,9 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
 }
 
 /**
- * Generates an image using the Joingy API, with 4K or HD quality
+ * Generates an image using the Joingy API, with 4K or 2K quality
  */
-const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'HD'): Promise<string> => {
+const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = '2K'): Promise<string> => {
     // Route to 4K API if quality is 4K
     if (imageQuality === '4K') {
         return generate4KImage(imageFile, prompt, aspectRatio);
@@ -120,7 +120,7 @@ const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectR
     }
 
     formData.append('prompt', prompt);
-    formData.append('image_size', 'HD');
+    formData.append('image_size', '2K');
 
     let apiAspectRatio = "16:9";
     if (['1:1', '16:9', '9:16', '4:5', '3:2'].includes(aspectRatio)) {
@@ -157,7 +157,7 @@ const generateWithRetry = async (
     prompt: string,
     aspectRatio: AspectRatio,
     referenceImageSource?: string,
-    imageQuality: ImageQuality = 'HD'
+    imageQuality: ImageQuality = '2K'
 ): Promise<string> => {
     let lastError: Error | unknown;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -199,7 +199,7 @@ export const generateCatalogueImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'HD',
+    imageQuality: ImageQuality = '2K',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
@@ -318,7 +318,7 @@ export const generateOtherProductImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'HD',
+    imageQuality: ImageQuality = '2K',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     const config = promptsConfig || ECOMMERCE_PROMPTS.other;
@@ -429,7 +429,7 @@ ${extraDetails ? `CAMPAIGN DETAILS/TEXT: ${extraDetails}` : ''}
 ${logoFile ? 'INSTRUCTION: Use the logo provided in the second image. Place it elegantly in the design.' : ''}`;
 
     formData.append('prompt', prompt);
-    formData.append('image_size', 'HD');
+    formData.append('image_size', '2K');
     formData.append('aspect_ratio', '4:5');
 
     const response = await fetch('https://api.joingy.site/', {

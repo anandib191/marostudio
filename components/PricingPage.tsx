@@ -266,23 +266,28 @@ export const PricingPage: React.FC = () => {
                             const currentPlanLevel = currentSubscriptionPlan ? (planHierarchy[currentSubscriptionPlan] || 0) : 0;
                             const planLevel = planHierarchy[plan.name] || 0;
 
+                            // Credit threshold: user must have < 200 credits to purchase a plan
+                            const CREDIT_PURCHASE_THRESHOLD = 500;
+                            const hasHighCredits = remainingCredits !== null && remainingCredits >= CREDIT_PURCHASE_THRESHOLD;
+
                             // Check if user has no credits remaining
-                            // If remaining credits are 0, enable all plans so user can purchase
                             const hasNoCredits = remainingCredits !== null && remainingCredits <= 0;
 
                             // Logic:
-                            // 1. If remaining credits are 0: Enable ALL plans (including current plan - user can repurchase)
-                            // 2. If user has credits > 0 and has a plan: Disable current plan and lower plans (only allow upgrades)
+                            // 1. If remaining credits >= 200: Disable ALL plans (user should use existing credits first)
+                            // 2. If remaining credits are 0: Enable ALL plans (including current plan - user can repurchase)
+                            // 3. If user has 0 < credits < 200 and has a plan: Disable current plan and lower plans (only allow upgrades)
                             const isLowerPlan = currentPlanLevel > 0 && planLevel < currentPlanLevel;
 
-                            // If remaining credits are 0, enable ALL plans (no restrictions). 
-                            // Otherwise, disable current plan and lower plans (upgrade only).
                             let isDisabled = false;
-                            if (hasNoCredits) {
+                            if (hasHighCredits) {
+                                // Credits >= 200 - disable ALL plans
+                                isDisabled = true;
+                            } else if (hasNoCredits) {
                                 // Credits are 0 - enable ALL plans
                                 isDisabled = false;
                             } else {
-                                // Credits available - apply normal restrictions
+                                // Credits available but < 200 - apply normal upgrade restrictions
                                 isDisabled = isCurrentPlan || isLowerPlan;
                             }
 
@@ -379,7 +384,7 @@ export const PricingPage: React.FC = () => {
                                                         : 'btn-purchase-plan hover:scale-105'
                                                     }`}
                                             >
-                                                {isCurrentPlan && !hasNoCredits ? 'Current Plan' : !isAuthenticated ? 'Login to Purchase' : hasNoCredits ? 'Purchase Plan' : 'Choose Plan'}
+                                                {hasHighCredits ? `Credits: ${remainingCredits}` : isCurrentPlan && !hasNoCredits ? 'Current Plan' : !isAuthenticated ? 'Login to Purchase' : hasNoCredits ? 'Purchase Plan' : 'Choose Plan'}
                                             </button>
                                             <p className="mt-6 text-xs leading-5 text-neutral-500 h-8">{plan.description}</p>
                                         </div>
@@ -387,6 +392,16 @@ export const PricingPage: React.FC = () => {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+
+                {/* Message when credits >= 200 */}
+                {isAuthenticated && remainingCredits !== null && remainingCredits >= 500 && (
+                    <div className="flex justify-center mt-8 animate-fade-in-up">
+                        <div className="bg-neutral-900/80 border border-gold-500/30 rounded-xl px-6 py-4 max-w-lg text-center">
+                            <p className="text-gold-400 font-semibold text-sm mb-1">⚡ You have {remainingCredits} credits remaining</p>
+                            <p className="text-neutral-400 text-xs">You can purchase a new plan when your credits drop below 500. Use your existing credits first!</p>
+                        </div>
                     </div>
                 )}
 

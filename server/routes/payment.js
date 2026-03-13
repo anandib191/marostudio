@@ -51,6 +51,23 @@ router.post(
       const { amount, planName, billingPeriod } = req.body;
       const userId = req.user._id.toString();
 
+      // Credit threshold check: block purchase if user has >= 200 remaining credits
+      const CREDIT_PURCHASE_THRESHOLD = 500;
+      const user = await User.findById(userId);
+      if (user) {
+        const totalCreditsAvailable = user.totalCredits || 0;
+        const usedTotalCredits =
+          (user.usedPhotoshootCredits || 0) + (user.usedMarketingCredits || 0);
+        const remainingCredits = Math.max(0, totalCreditsAvailable - usedTotalCredits);
+
+        if (remainingCredits >= CREDIT_PURCHASE_THRESHOLD) {
+          return res.status(400).json({
+            success: false,
+            message: `You still have ${remainingCredits} credits remaining. You can purchase a new plan when your credits drop below ${CREDIT_PURCHASE_THRESHOLD}.`,
+          });
+        }
+      }
+
       // Convert amount to paise (Razorpay expects amount in smallest currency unit)
       const amountInPaise = Math.round(parseFloat(amount) * 100);
 
