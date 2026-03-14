@@ -23,7 +23,7 @@ router.post('/save', protect, async (req, res) => {
       userId: req.user._id,
       userEmail: req.user.email,
       type: type || 'photoshoot',
-      quality: quality || '2K',
+      quality: quality || 'HD',
       imageUrls,
       category: category || null,
       productType: productType || null,

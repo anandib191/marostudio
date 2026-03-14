@@ -3,18 +3,22 @@ import React, { useState, useEffect } from 'react';
 interface ImageVariation {
   id: string;
   variations: string[];
+  mainExt?: string;   // extension for the before/main image (default: 'png')
+  afterExt?: string;  // extension for the after images (default: 'png')
 }
 
 export const HeroImageCarousel: React.FC = () => {
   // Main images configuration - each main image has 3 variations
   const mainImages: ImageVariation[] = [
-    { id: 'a1', variations: ['a1-1', 'a1-2', 'a1-3'] },
-    { id: 'a2', variations: ['a2-1', 'a2-2', 'a2-3'] },
-    { id: 'a3', variations: ['a3-1', 'a3-2', 'a3-3'] },
-    { id: 'a4', variations: ['a4-1', 'a4-2', 'a4-3'] },
-    { id: 'a5', variations: ['a5-1', 'a5-2', 'a5-3'] },
-    { id: 'a6', variations: ['a6-1', 'a6-2', 'a6-3'] },
-    { id: 'a7', variations: ['a7-1', 'a7-2', 'a7-3'] },
+    { id: 'a8', variations: ['a8-1', 'a8-2', 'a8-3'], mainExt: 'jpeg', afterExt: 'jpeg' },
+    { id: 'a9', variations: ['a9-1', 'a9-2', 'a9-3'], mainExt: 'jpeg', afterExt: 'png' },
+    { id: 'a10', variations: ['a10-1', 'a10-2', 'a10-3'], mainExt: 'jpg', afterExt: 'png' },
+    { id: 'a5', variations: ['a5-1', 'a5-2', 'a5-3'], mainExt: 'png', afterExt: 'png' },
+    { id: 'a1', variations: ['a1-1', 'a1-2', 'a1-3'], mainExt: 'jpg', afterExt: 'png' },
+    { id: 'a3', variations: ['a3-1', 'a3-2', 'a3-3'], mainExt: 'png', afterExt: 'png' },
+    { id: 'a4', variations: ['a4-1', 'a4-2', 'a4-3'], mainExt: 'png', afterExt: 'png' },
+    { id: 'a6', variations: ['a6-1', 'a6-2', 'a6-3'], mainExt: 'png', afterExt: 'png' },
+    { id: 'a7', variations: ['a7-1', 'a7-2', 'a7-3'], mainExt: 'png', afterExt: 'png' },
   ];
 
   const [currentMainIndex, setCurrentMainIndex] = useState(0);
@@ -84,38 +88,33 @@ export const HeroImageCarousel: React.FC = () => {
     };
   }, [currentMainIndex, mainImages.length]);
 
-  // Get the actual image format based on folder
-  const getBeforeImageFormat = (mainIndex: number): string => {
-    const main = mainImages[mainIndex];
-    // a1-main is jpg, all others are png
-    return main.id === 'a1' ? 'jpg' : 'png';
-  };
 
-  // Get image path for variations (all are .png)
+  // Get image path for variations (uses per-set afterExt)
   const getImagePath = (mainIndex: number, variationIndex: number): string => {
     const main = mainImages[mainIndex];
     const variation = main.variations[variationIndex];
-    return `/assets/images/hero-carousel/${main.id}/${variation}.png`;
+    const ext = main.afterExt ?? 'png';
+    return `/assets/images/hero-carousel/${main.id}/${variation}.${ext}?v=2`;
   };
 
   // Get WebP image path for variations
   const getWebPImagePath = (mainIndex: number, variationIndex: number): string => {
     const main = mainImages[mainIndex];
     const variation = main.variations[variationIndex];
-    return `/assets/images/hero-carousel/${main.id}/webp/${variation}.webp`;
+    return `/assets/images/hero-carousel/${main.id}/webp/${variation}.webp?v=2`;
   };
 
   // Get the "before" image path
   const getBeforeImagePath = (mainIndex: number): string => {
     const main = mainImages[mainIndex];
-    const format = getBeforeImageFormat(mainIndex);
-    return `/assets/images/hero-carousel/${main.id}/${main.id}-main.${format}`;
+    const ext = main.mainExt ?? 'png';
+    return `/assets/images/hero-carousel/${main.id}/${main.id}-main.${ext}?v=2`;
   };
 
   // Get WebP "before" image path
   const getWebPBeforeImagePath = (mainIndex: number): string => {
     const main = mainImages[mainIndex];
-    return `/assets/images/hero-carousel/${main.id}/webp/${main.id}-main.webp`;
+    return `/assets/images/hero-carousel/${main.id}/webp/${main.id}-main.webp?v=2`;
   };
 
   // Fallback image if carousel images don't exist

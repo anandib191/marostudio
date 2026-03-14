@@ -9,11 +9,7 @@ export const WelcomePopup: React.FC = () => {
   const videos = [
     {
       title: 'Getting Started with MARO Studio',
-      src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      title: 'Choose Themes & Download Assets',
-      src: 'https://www.youtube.com/embed/jNQXAC9IVRw',
+      src: 'https://www.youtube.com/embed/2uR3IY2sDqM',
     },
   ];
 
@@ -60,18 +56,9 @@ export const WelcomePopup: React.FC = () => {
           <span className="welcome-popup-heading-gold">MARO Studio</span>
         </h2>
 
-        {/* Video tabs */}
-        <div className="welcome-popup-tabs">
-          {videos.map((v, i) => (
-            <button
-              key={i}
-              className={`welcome-popup-tab ${activeVideo === i ? 'welcome-popup-tab--active' : ''}`}
-              onClick={() => setActiveVideo(i)}
-            >
-              <span className="welcome-popup-tab-num">{String(i + 1).padStart(2, '0')}</span>
-              {v.title}
-            </button>
-          ))}
+        {/* Video heading */}
+        <div className="welcome-popup-video-header">
+          <h3 className="welcome-popup-video-title">{videos[0].title}</h3>
         </div>
 
         {/* Video embed */}
@@ -93,7 +80,7 @@ export const WelcomePopup: React.FC = () => {
         </p>
 
         {/* Buttons */}
-        <div className="welcome-popup-actions">
+        <div className="welcome-popup-actions" style={{ marginTop: '1.25rem' }}>
           <button className="welcome-popup-btn-primary" onClick={handleGetStarted}>
             Get Started
           </button>
@@ -189,46 +176,16 @@ export const WelcomePopup: React.FC = () => {
           color: transparent;
         }
 
-        /* ── Tabs ── */
-        .welcome-popup-tabs {
-          display: flex;
-          gap: 0.5rem;
+        /* ── Video Header ── */
+        .welcome-popup-video-header {
           margin-bottom: 1rem;
+          text-align: center;
         }
-        .welcome-popup-tab {
-          flex: 1;
-          padding: 0.6rem 0.75rem;
-          border-radius: 0.6rem;
-          font-size: 0.75rem;
+        .welcome-popup-video-title {
+          font-size: 0.9rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.5) !important;
-          background: rgba(255, 255, 255, 0.04) !important;
-          border: 1px solid rgba(255, 255, 255, 0.08) !important;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          box-shadow: none !important;
-        }
-        .welcome-popup-tab:hover {
-          background: rgba(255, 255, 255, 0.07) !important;
-          color: rgba(255, 255, 255, 0.8) !important;
-          transform: none !important;
-        }
-        .welcome-popup-tab--active {
-          color: #fff !important;
-          background: rgba(230, 183, 30, 0.1) !important;
-          border-color: rgba(230, 183, 30, 0.35) !important;
-        }
-        .welcome-popup-tab-num {
-          font-size: 0.6rem;
-          font-weight: 700;
-          color: rgba(248, 205, 107, 0.5);
-          font-variant-numeric: tabular-nums;
-        }
-        .welcome-popup-tab--active .welcome-popup-tab-num {
-          color: #f8cd6b;
+          color: #fff;
+          opacity: 0.9;
         }
 
         /* ── Video ── */

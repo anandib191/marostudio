@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,22 +7,23 @@ import { Header } from './components/Header';
 import { StudioTopBar } from './components/StudioTopBar';
 import { DropdownMenu } from './components/DropdownMenu';
 import { GlassFilter } from './components/ui/GlassFilter';
-import { BookDemoPage } from './components/BookDemoPage';
-import { StudioWrapper } from './components/StudioWrapper';
 import { LandingPage } from './components/LandingPage';
-import { PricingPageRoute } from './components/pages/PricingPageRoute';
-import { ContactPage } from './components/pages/ContactPage';
-import { UserLoginPage } from './components/pages/UserLoginPage';
-import { AdminLoginPage } from './components/pages/AdminLoginPage';
-import { AdminDashboard } from './components/pages/AdminDashboard';
-import { Dashboard } from './components/pages/Dashboard';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { PreviouslyGenerated } from './components/PreviouslyGenerated';
-import { PrivacyPolicy } from './components/pages/PrivacyPolicy';
-import { TermsOfService } from './components/pages/TermsOfService';
 import { AuthInterceptor } from './components/auth/AuthInterceptor';
 import { WelcomePopup } from './components/WelcomePopup';
-import { PurchaseHistoryPage } from './components/PurchaseHistoryPage';
+
+// Lazy-loaded route components (code-split for faster initial load)
+const BookDemoPage = React.lazy(() => import('./components/BookDemoPage').then(m => ({ default: m.BookDemoPage })));
+const StudioWrapper = React.lazy(() => import('./components/StudioWrapper').then(m => ({ default: m.StudioWrapper })));
+const PricingPageRoute = React.lazy(() => import('./components/pages/PricingPageRoute').then(m => ({ default: m.PricingPageRoute })));
+const ContactPage = React.lazy(() => import('./components/pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const UserLoginPage = React.lazy(() => import('./components/pages/UserLoginPage').then(m => ({ default: m.UserLoginPage })));
+const AdminLoginPage = React.lazy(() => import('./components/pages/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
+const AdminDashboard = React.lazy(() => import('./components/pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const Dashboard = React.lazy(() => import('./components/pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const PreviouslyGenerated = React.lazy(() => import('./components/PreviouslyGenerated').then(m => ({ default: m.PreviouslyGenerated })));
+const PrivacyPolicy = React.lazy(() => import('./components/pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = React.lazy(() => import('./components/pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
+const PurchaseHistoryPage = React.lazy(() => import('./components/PurchaseHistoryPage').then(m => ({ default: m.PurchaseHistoryPage })));
 
 // Canvas Effect Hook
 const useCanvasEffect = () => {
@@ -161,6 +162,11 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         ) : (
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gold-500"></div>
+            </div>
+          }>
           <Routes>
             {/* Auth Routes - Public */}
             <Route path="/login" element={<UserLoginPage />} />
@@ -211,6 +217,7 @@ const AppContent: React.FC = () => {
             {/* Default redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
         )}
       </main>
 

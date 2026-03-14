@@ -212,7 +212,7 @@ export const generateCatalogueImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'hd',
+    imageQuality: ImageQuality = '2K',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
@@ -282,7 +282,7 @@ export const generateCatalogueImages = async (
                         referenceImageForConsistency = image;
                     }
                 } catch (err) {
-                    console.error(`Failed to generate image for prompt index ${index}:`, err);
+                    console.error("Image generation failed. Please try again.");
                 }
             }
         } else {
@@ -299,7 +299,7 @@ export const generateCatalogueImages = async (
                     onImageGenerated(image, index);
                     return image;
                 } catch (err) {
-                    console.error(`Failed to generate image for prompt index ${index}:`, err);
+                    console.error("Image generation failed. Please try again.");
                     return null;
                 }
             });
@@ -333,7 +333,7 @@ export const generateOtherProductImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = 'hd',
+    imageQuality: ImageQuality = '2K',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     const config = promptsConfig || ECOMMERCE_PROMPTS.other;
@@ -376,7 +376,7 @@ export const generateOtherProductImages = async (
                     referenceImageForConsistency = image;
                 }
             } catch (err) {
-                console.error(`Failed to generate image for prompt index ${index}:`, err);
+                console.error("Image generation failed. Please try again.");
             }
         }
     } else {
@@ -388,7 +388,7 @@ export const generateOtherProductImages = async (
                 onImageGenerated(image, index);
                 return image;
             } catch (err) {
-                console.error(`Failed to generate image for prompt index ${index}:`, err);
+                console.error("Image generation failed. Please try again.");
                 return null;
             }
         });

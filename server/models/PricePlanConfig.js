@@ -15,7 +15,7 @@ const pricePlanConfigSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const DEFAULT_PLANS = [
-  { name: 'Silver', price: '49', yearlyPrice: '40', description: 'For early brands and creators', features: ['Access to model library', 'Background presets', 'Max upload file size: 10 MB', 'Max output resolution: 2K (up to 1080px)', 'No watermark', 'Regenerations per image: 1', 'Edits per image: 1', 'Email Support within 48 hours'], isPopular: false },
+  { name: 'Silver', price: '49', yearlyPrice: '40', description: 'For early brands and creators', features: ['Access to model library', 'Background presets', 'Max upload file size: 10 MB', 'Max output resolution: HD (up to 1080px)', 'No watermark', 'Regenerations per image: 1', 'Edits per image: 1', 'Email Support within 48 hours'], isPopular: false },
   { name: 'Gold', price: '59', yearlyPrice: '47', description: 'For growing teams', features: ['Access to model library', 'Background presets', 'Max upload file size: 10 MB', 'Max output resolution: 4K', 'No watermark', 'Regenerations per image: 2', 'Edits per image: 1', 'Email Support within 24 hours'], isPopular: true },
   { name: 'Platinum', price: '68', yearlyPrice: '54', description: 'For high-velocity teams', features: ['Access to model library', 'Background presets', 'Max upload file size: 10 MB', 'Max output resolution: 4K', 'No watermark', 'Regenerations per image: 3', 'Edits per image: 1', 'Email Support within 12 hours'], isPopular: false },
 ];

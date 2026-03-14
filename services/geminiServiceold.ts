@@ -267,7 +267,7 @@ export const generateCatalogueImages = async (
                         referenceImageForConsistency = image;
                     }
                 } catch (err) {
-                    console.error(`Failed to generate image for prompt index ${index}:`, err);
+                    console.error("Image generation failed. Please try again.");
                 }
             }
         } else {
@@ -284,7 +284,7 @@ export const generateCatalogueImages = async (
                     onImageGenerated(image, index);
                     return image;
                 } catch (err) {
-                    console.error(`Failed to generate image for prompt index ${index}:`, err);
+                    console.error("Image generation failed. Please try again.");
                     return null;
                 }
             });
@@ -358,7 +358,7 @@ export const generateOtherProductImages = async (
                     referenceImageForConsistency = image;
                 }
             } catch (err) {
-                console.error(`Failed to generate image for prompt index ${index}:`, err);
+                console.error("Image generation failed. Please try again.");
             }
         }
     } else {
@@ -370,7 +370,7 @@ export const generateOtherProductImages = async (
                 onImageGenerated(image, index);
                 return image;
             } catch (err) {
-                console.error(`Failed to generate image for prompt index ${index}:`, err);
+                console.error("Image generation failed. Please try again.");
                 return null;
             }
         });

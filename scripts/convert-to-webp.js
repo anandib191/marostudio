@@ -8,13 +8,14 @@ const __dirname = path.dirname(__filename);
 
 // Configuration
 const IMAGE_FOLDERS = ['fashion', 'accessories', 'product', 'marketing']; // image_carousel subfolders
-const HERO_CAROUSEL_FOLDERS = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'];
+const HERO_CAROUSEL_FOLDERS = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'a10'];
 const FLOW_FOLDER = 'flow'; // flow folder with hero images
 const INPUT_DIR = path.join(__dirname, '..', 'public', 'assets', 'images');
 const HERO_CAROUSEL_DIR = path.join(INPUT_DIR, 'hero-carousel');
 const IMAGE_CAROUSEL_DIR = path.join(INPUT_DIR, 'image_carousel');
 const FLOW_DIR = path.join(INPUT_DIR, 'flow');
-const WEBP_QUALITY = 85; // Quality setting (0-100)
+const WEBP_QUALITY = 82; // Quality setting (0-100)
+const MAX_WIDTH = 1400;   // Max width in pixels — reduces file size significantly
 
 /**
  * Convert a single image to WebP format
@@ -23,6 +24,7 @@ async function convertToWebP(inputPath, outputPath) {
   try {
     await sharp(inputPath)
       .rotate() // Auto-rotate based on EXIF orientation
+      .resize({ width: MAX_WIDTH, withoutEnlargement: true }) // Resize to max width, keep aspect ratio
       .webp({ quality: WEBP_QUALITY, effort: 6 })
       .toFile(outputPath);
     

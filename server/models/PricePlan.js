@@ -35,7 +35,7 @@ export const DEFAULT_PLANS = [
       "Access to model library",
       "Background presets",
       "Max upload file size: 10 MB",
-      "Max output resolution: 2K (up to 1080px)",
+      "Max output resolution: HD (up to 1080px)",
       "No watermark",
       "Regenerations per image: 1",
       "Edits per image: 1",

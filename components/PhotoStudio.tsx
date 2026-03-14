@@ -1,9 +1,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import JSZip from 'jszip';
+// jsPDF, html2canvas, JSZip are loaded dynamically when needed (see download handlers)
 
 import { ImageUploader } from './ImageUploader';
 import { GeneratedImageGallery } from './GeneratedImageGallery';
@@ -209,7 +207,7 @@ const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
 ];
 
 const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
-    { id: '2K', label: '2K' },
+    { id: 'HD', label: 'HD' },
     { id: '4K', label: '4K' },
 ];
 
@@ -938,7 +936,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
     const [consistentCharacter, setConsistentCharacter] = useState<boolean>(false);
     const [background, setBackground] = useState<BackgroundType>('studio');
-    const [imageQuality, setImageQuality] = useState<ImageQuality>('2K');
+    const [imageQuality, setImageQuality] = useState<ImageQuality>('HD');
     const [numberOfImages, setNumberOfImages] = useState<number>(2);
     const [customBackground, setCustomBackground] = useState<string>('');
 
@@ -1237,6 +1235,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 return;
             }
 
+            const { default: jsPDF } = await import('jspdf');
             const pdf = new jsPDF({
                 orientation: 'portrait', unit: 'mm', format: 'a4', hotfixes: ['px_scaling'],
             });
@@ -1315,6 +1314,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     tempContainer.appendChild(clonedPage);
                     document.body.appendChild(tempContainer);
 
+                    const { default: html2canvas } = await import('html2canvas');
                     const pageCanvas = await html2canvas(clonedPage, {
                         scale: 2,
                         useCORS: true,
@@ -1378,6 +1378,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         if (!coverImage || modelImages.length === 0) return;
         setDownloadingType('zip');
         try {
+            const { default: JSZip } = await import('jszip');
             const zip = new JSZip();
             const fetchAndAdd = async (url: string, filename: string) => {
                 const response = await fetch(url);
