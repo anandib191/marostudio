@@ -4,6 +4,7 @@ import { HeroBanner } from './HeroBanner';
 // import { FeaturesSection } from './FeaturesSection'; // COMMENTED: "Create Professional Photoshoots & Visuals Without a Studio" section - uncomment to restore
 import { StatisticsSection } from './StatisticsSection';
 import { WhyAIStudioSection } from './WhyAIStudioSection';
+import { QualityComparisonSection } from './QualityComparisonSection';
 import { GenerateContentSection } from './GenerateContentSection';
 import { HowItWorksSection } from './HowItWorksSection';
 import { FloatingGallerySection } from './FloatingGallerySection';
@@ -36,6 +37,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onBookDemo })
 
       {/* Why MARO Studio Section */}
       <WhyAIStudioSection />
+
+      {/* 4K Quality Comparison Section */}
+      <QualityComparisonSection />
 
       {/* Generate Content Section */}
       <GenerateContentSection />

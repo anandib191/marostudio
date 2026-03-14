@@ -1,34 +1,33 @@
 import React from 'react';
 
 const row1 = [
-    '/assets/images/hero-carousel/a1/webp/a1-1.webp',
-    '/assets/images/hero-carousel/a2/webp/a2-1.webp',
-    '/assets/images/hero-carousel/a3/webp/a3-1.webp',
-    '/assets/images/hero-carousel/a4/webp/a4-1.webp',
-    '/assets/images/hero-carousel/a5/webp/a5-1.webp',
-    '/assets/images/hero-carousel/a6/webp/a6-1.webp',
+    '/assets/images/hero-carousel/a10/webp/a10-1.webp',
+    '/assets/images/hero-carousel/a9/webp/a9-1.webp',
+    '/assets/images/hero-carousel/a8/webp/a8-1.webp',
     '/assets/images/hero-carousel/a7/webp/a7-1.webp',
+    '/assets/images/hero-carousel/a5/webp/a5-1.webp',
+    '/assets/images/hero-carousel/a4/webp/a4-1.webp',
+    '/assets/images/hero-carousel/a3/webp/a3-1.webp',
 ];
 
 const row2 = [
-    '/assets/images/hero-carousel/a1/webp/a1-2.webp',
-    '/assets/images/hero-carousel/a2/webp/a2-2.webp',
-    '/assets/images/hero-carousel/a3/webp/a3-2.webp',
-    '/assets/images/hero-carousel/a4/webp/a4-2.webp',
-    '/assets/images/hero-carousel/a5/webp/a5-2.webp',
-    '/assets/images/hero-carousel/a6/webp/a6-2.webp',
+    '/assets/images/hero-carousel/a10/webp/a10-2.webp',
+    '/assets/images/hero-carousel/a9/webp/a9-2.webp',
+    '/assets/images/hero-carousel/a8/webp/a8-2.webp',
     '/assets/images/hero-carousel/a7/webp/a7-2.webp',
+    '/assets/images/hero-carousel/a5/webp/a5-2.webp',
+    '/assets/images/hero-carousel/a4/webp/a4-2.webp',
+    '/assets/images/hero-carousel/a3/webp/a3-2.webp',
 ];
 
 const row3 = [
-    '/assets/images/image_carousel/fashion/webp/fashion-1.webp',
-    '/assets/images/image_carousel/accessories/webp/accessories-1.webp',
-    '/assets/images/image_carousel/marketing/webp/marketing-1.webp',
-    '/assets/images/image_carousel/product/webp/product-1.webp',
-    '/assets/images/image_carousel/fashion/webp/fashion-2.webp',
-    '/assets/images/image_carousel/accessories/webp/accessories-2.webp',
-    '/assets/images/image_carousel/marketing/webp/marketing-2.webp',
-    '/assets/images/image_carousel/product/webp/product-2.webp',
+    '/assets/images/hero-carousel/a10/webp/a10-3.webp',
+    '/assets/images/hero-carousel/a9/webp/a9-3.webp',
+    '/assets/images/hero-carousel/a8/webp/a8-3.webp',
+    '/assets/images/hero-carousel/a7/webp/a7-3.webp',
+    '/assets/images/hero-carousel/a5/webp/a5-3.webp',
+    '/assets/images/hero-carousel/a4/webp/a4-3.webp',
+    '/assets/images/hero-carousel/a3/webp/a3-3.webp',
 ];
 
 export const FloatingGallerySection: React.FC = () => {

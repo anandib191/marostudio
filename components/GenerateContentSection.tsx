@@ -15,8 +15,16 @@ export const GenerateContentSection: React.FC = () => {
 
   // Category configuration with folder mapping
   const categoryConfig = [
-    { name: 'Fashion Photography', folder: 'fashion' },
-    { name: 'Accessories Photography', folder: 'accessories' },
+    { name: 'Fashion Photography', folder: 'fashion', customImages: [
+      '/assets/images/hero-carousel/a8/webp/a8-1.webp?v=2',
+      '/assets/images/hero-carousel/a9/webp/a9-1.webp?v=2',
+      '/assets/images/hero-carousel/a1/webp/a1-1.webp?v=2',
+    ]},
+    { name: 'Accessories Photography', folder: 'accessories', customImages: [
+      '/assets/images/hero-carousel/a4/webp/a4-2.webp?v=2',
+      undefined,
+      '/assets/images/hero-carousel/a10/webp/a10-1.webp?v=2',
+    ]},
     { name: 'Product Photography', folder: 'product' },
     { name: 'Marketing & Ads', folder: 'marketing' },
   ];
@@ -30,6 +38,7 @@ export const GenerateContentSection: React.FC = () => {
       folder: string;
       category: string;
       imageNumber: number;
+      customImage?: string;
     }> = [];
 
     categoryConfig.forEach((config) => {
@@ -39,6 +48,7 @@ export const GenerateContentSection: React.FC = () => {
           folder: config.folder,
           category: config.name,
           imageNumber: i,
+          customImage: config.customImages?.[i - 1],
         });
       }
     });
@@ -215,7 +225,7 @@ export const GenerateContentSection: React.FC = () => {
         >
           {filteredImages.map((image, index) => {
             const isLoaded = loadedImages.has(image.id);
-            const webpPath = getWebPImagePath(image.folder, image.imageNumber);
+            const imageSrc = image.customImage || getWebPImagePath(image.folder, image.imageNumber);
 
             return (
               <SwiperSlide key={image.id}>
@@ -234,9 +244,9 @@ export const GenerateContentSection: React.FC = () => {
 
                     {/* Actual Image with Lazy Loading - WebP with fallback */}
                     <picture>
-                      <source srcSet={getWebPImagePath(image.folder, image.imageNumber)} type="image/webp" />
+                      <source srcSet={imageSrc} type="image/webp" />
                       <img
-                        src={webpPath}
+                        src={imageSrc}
                         alt={`${image.category} - Image ${image.imageNumber}`}
                         className={`carousel-image ${isLoaded ? 'loaded' : 'loading'}`}
                         loading="lazy"

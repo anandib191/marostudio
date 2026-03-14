@@ -19,8 +19,8 @@ const generationSchema = new mongoose.Schema(
     },
     quality: {
       type: String,
-      enum: ["2K", "4K"],
-      default: "2K",
+      enum: ["HD", "4K"],
+      default: "HD",
     },
     imageUrls: [
       {
