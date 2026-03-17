@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 // jsPDF, html2canvas, JSZip are loaded dynamically when needed (see download handlers)
 
 import { ImageUploader } from './ImageUploader';
@@ -66,112 +66,13 @@ interface CategoryNode {
     promptCategory?: Category;
 }
 
+// Legacy CATEGORY_DATA kept for backward compatibility with CategorySelection
 const CATEGORY_DATA: Record<string, CategoryNode> = {
     fashion: {
         name: 'Fashion',
         icon: FashionCrestIcon,
-        subCategories: {
-            women: {
-                name: 'Women',
-                icon: WomanCrestIcon,
-                promptCategory: 'women',
-                productTypes: [{ id: 'apparel', name: 'Apparel', icon: TshirtIcon }]
-            },
-            men: {
-                name: 'Men',
-                icon: ManCrestIcon,
-                promptCategory: 'men',
-                productTypes: [{ id: 'apparel', name: 'Apparel', icon: TshirtIcon }]
-            },
-            kids: {
-                name: 'Kids',
-                icon: KidsCrestIcon,
-                subCategories: {
-                    boy: {
-                        name: 'Boy',
-                        icon: BoyCrestIcon,
-                        promptCategory: 'kids',
-                        productTypes: [{ id: 'apparel', name: 'Apparel', icon: TshirtIcon }]
-                    },
-                    girl: {
-                        name: 'Girl',
-                        icon: GirlCrestIcon,
-                        promptCategory: 'kids',
-                        productTypes: [{ id: 'apparel', name: 'Apparel', icon: TshirtIcon }]
-                    }
-                }
-            }
-        }
-    },
-    accessories: {
-        name: 'Accessories',
-        icon: AccessoriesCrestIcon,
-        subCategories: {
-            women: {
-                name: 'Women',
-                icon: WomanCrestIcon,
-                subCategories: {
-                    purse: {
-                        name: 'Purse',
-                        icon: PurseIcon,
-                        promptCategory: 'women',
-                        productTypes: [{ id: 'purse', name: 'Purse', icon: PurseIcon }]
-                    },
-                    perfume: {
-                        name: 'Perfume',
-                        icon: PerfumeIcon,
-                        promptCategory: 'women',
-                        productTypes: [{ id: 'perfume', name: 'Perfume', icon: PerfumeIcon }]
-                    },
-                    ornaments: {
-                        name: 'Ornaments',
-                        icon: DiamondIcon,
-                        subCategories: {
-                            necklace: {
-                                name: 'Necklace',
-                                icon: DiamondIcon,
-                                promptCategory: 'women',
-                                productTypes: [{ id: 'jewelry', name: 'Necklace', icon: DiamondIcon }]
-                            },
-                            other: {
-                                name: 'Other',
-                                icon: SparklesIcon,
-                                promptCategory: 'women',
-                                productTypes: [{ id: 'other_ornament', name: 'Other', icon: SparklesIcon }]
-                            }
-                        }
-                    }
-                }
-            },
-            men: {
-                name: 'Men',
-                icon: ManCrestIcon,
-                promptCategory: 'men',
-                productTypes: [
-                    { id: 'watch', name: 'Watch', icon: WatchIcon },
-                    { id: 'belt', name: 'Belt', icon: BeltIcon },
-                    { id: 'perfume', name: 'Perfume', icon: PerfumeIcon }
-                ]
-            },
-            kids: {
-                name: 'Kids',
-                icon: KidsCrestIcon,
-                subCategories: {
-                    boy: {
-                        name: 'Boy',
-                        icon: BoyCrestIcon,
-                        promptCategory: 'kids',
-                        productTypes: [{ id: 'toys', name: 'Toys', icon: ToysIcon }]
-                    },
-                    girl: {
-                        name: 'Girl',
-                        icon: GirlCrestIcon,
-                        promptCategory: 'kids',
-                        productTypes: [{ id: 'toys', name: 'Toys', icon: ToysIcon }]
-                    }
-                }
-            }
-        }
+        promptCategory: 'women',
+        productTypes: [{ id: 'apparel', name: 'Apparel', icon: TshirtIcon }]
     },
     ecommerce: {
         name: 'E-commerce',
@@ -186,24 +87,153 @@ const CATEGORY_DATA: Record<string, CategoryNode> = {
     }
 };
 
+// ─── 3-Layer Dropdown Category Data ───
+interface DropdownCategoryItem {
+    label: string;
+    subcategories?: { label: string; items: string[] }[];
+    items?: string[]; // flat items for categories without a middle layer
+}
+
+const DROPDOWN_CATEGORIES: DropdownCategoryItem[] = [
+    {
+        label: 'Fashion',
+        subcategories: [
+            { label: 'Men', items: ['T-Shirts', 'Shirts', 'Jackets', 'Hoodies', 'Jeans', 'Trousers', 'Shorts', 'Blazers', 'Kurta', 'Sherwani', 'Ethnic wear', 'Nightwear', 'Activewear', 'Gym wear'] },
+            { label: 'Women', items: ['Tops', 'Shirts', 'Dresses', 'Saree', 'Lehenga', 'Kurtis', 'Co-ord sets', 'Gowns', 'Jeans', 'Skirts', 'Leggings', 'Jackets', 'Nightwear', 'Activewear', 'Gym wear'] },
+            { label: 'Kids', items: ['Boys T-shirts', 'Boys shirts', 'Boys jeans', 'Boys shorts', 'Girls dresses', 'Girls frocks', 'Girls tops', 'Girls skirts', 'School uniforms', 'Baby wear', 'Winter wear', 'Kids ethnic wear'] },
+        ],
+    },
+    {
+        label: 'Fashion Accessories',
+        subcategories: [
+            { label: 'Bags', items: ['Handbags', 'Sling bags', 'Backpacks', 'Laptop bags', 'Travel bags', 'Tote bags', 'Wallets', 'Clutches', 'Crossbody bags'] },
+            { label: 'Jewellery', items: [
+                'Gold Necklace', 'Gold Earrings', 'Gold Bangles', 'Gold Ring', 'Gold Chain', 'Gold Pendant',
+                'Diamond Necklace', 'Diamond Earrings', 'Diamond Ring', 'Diamond Bracelet', 'Diamond Pendant',
+                'Silver Necklace', 'Silver Earrings', 'Silver Ring', 'Silver Bracelet', 'Silver Anklet', 'Silver Chain',
+                'Bridal Set', 'Bridal Necklace', 'Bridal Earrings', 'Bridal Bangles', 'Maang Tikka', 'Nath (Nose Ring)',
+                'Kundan Set', 'Kundan Necklace', 'Kundan Earrings',
+                'Polki Set', 'Polki Necklace', 'Polki Earrings',
+                'Meenakari Jewellery', 'Temple Jewellery', 'Antique Jewellery',
+                'Mangalsutra', 'Toe Rings', 'Anklets', 'Choker', 'Rani Haar', 'Jhumkas',
+                'Brooch', 'Nose Pin', 'Bajuband (Armlet)', 'Kamarbandh (Waist Chain)',
+                'Pearl Necklace', 'Pearl Earrings', 'Pearl Set',
+                'Artificial Jewellery', 'Imitation Jewellery', 'Oxidised Jewellery',
+                'Platinum Ring', 'Platinum Chain', 'Rose Gold Jewellery',
+                'Men\'s Ring', 'Men\'s Bracelet', 'Men\'s Chain', 'Cufflinks',
+            ] },
+            { label: 'Watches', items: ['Smart watches', 'Analog watches', 'Digital watches', 'Luxury watches', 'Chronograph watches', 'Dress watches', 'Sports watches'] },
+            { label: 'Other Accessories', items: ['Sunglasses', 'Caps', 'Hats', 'Belts', 'Scarves', 'Hair accessories', 'Tie / Bow tie', 'Cufflinks', 'Pocket squares'] },
+        ],
+    },
+    {
+        label: 'Beauty & Personal Care',
+        subcategories: [
+            { label: 'Skincare', items: ['Face wash', 'Moisturizer', 'Serum', 'Sunscreen', 'Face mask', 'Toner', 'Scrub'] },
+            { label: 'Haircare', items: ['Hair oil', 'Shampoo', 'Conditioner', 'Hair serum', 'Hair mask', 'Hair spray'] },
+            { label: 'Makeup', items: ['Lipstick', 'Foundation', 'Concealer', 'Compact powder', 'Mascara', 'Eyeliner', 'Blush'] },
+            { label: 'Grooming', items: ['Trimmer', 'Razor', 'Beard oil', 'Shaving cream'] },
+        ],
+    },
+    {
+        label: 'Electronics',
+        items: ['Smartphones', 'Smart watches', 'Earbuds', 'Headphones', 'Speakers', 'Laptops', 'Tablets', 'Cameras', 'Gaming consoles', 'Smart home devices'],
+    },
+    {
+        label: 'Home & Living',
+        subcategories: [
+            { label: 'Home Decor', items: ['Lamps', 'Wall art', 'Mirrors', 'Vases', 'Artificial plants'] },
+            { label: 'Furniture', items: ['Chairs', 'Tables', 'Sofas', 'Beds', 'Cabinets'] },
+            { label: 'Kitchen', items: ['Cookware', 'Cutlery', 'Kitchen appliances', 'Storage containers', 'Coffee makers'] },
+        ],
+    },
+    {
+        label: 'Footwear',
+        subcategories: [
+            { label: 'Men', items: ['Sneakers', 'Formal shoes', 'Boots', 'Loafers', 'Sandals', 'Slippers'] },
+            { label: 'Women', items: ['Heels', 'Flats', 'Sneakers', 'Boots', 'Sandals', 'Slippers'] },
+            { label: 'Kids', items: ['School shoes', 'Sneakers', 'Sandals', 'Slippers'] },
+        ],
+    },
+    {
+        label: 'Sports & Fitness',
+        items: ['Yoga mats', 'Dumbbells', 'Resistance bands', 'Gym equipment', 'Sports shoes', 'Cycling gear', 'Sportswear'],
+    },
+    {
+        label: 'Toys & Baby Products',
+        items: ['Educational toys', 'Dolls', 'Action figures', 'Building blocks', 'Baby care products', 'Baby strollers', 'Baby bottles'],
+    },
+    {
+        label: 'Food & Beverages',
+        items: ['Packaged food', 'Snacks', 'Health supplements', 'Coffee', 'Tea', 'Protein powders'],
+    },
+    {
+        label: 'Automotive',
+        items: ['Car accessories', 'Bike accessories', 'Helmets', 'Car care products'],
+    },
+    {
+        label: 'Other',
+        items: ['Auto-detect by AI'],
+    },
+];
+
+// ─── Per-Category Config: which styles, default style, and toggle visibility ───
+interface CategoryConfig {
+    styleIds: string[];
+    defaultStyle: string;
+    showSameModel: boolean;
+}
+
+const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
+    // ─── Top-level category defaults ───
+    'Fashion': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic'], defaultStyle: 'vintage', showSameModel: true },
+    'Fashion Accessories': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'closeup'], defaultStyle: 'closeup', showSameModel: false },
+    'Beauty & Personal Care': { styleIds: ['modern', 'aesthetic', 'closeup', 'monochrome'], defaultStyle: 'aesthetic', showSameModel: false },
+    'Electronics': { styleIds: ['modern', 'cinematic', 'monochrome', 'closeup'], defaultStyle: 'modern', showSameModel: false },
+    'Home & Living': { styleIds: ['modern', 'vintage', 'aesthetic', 'cinematic'], defaultStyle: 'modern', showSameModel: false },
+    'Footwear': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'closeup'], defaultStyle: 'modern', showSameModel: true },
+    'Sports & Fitness': { styleIds: ['modern', 'cinematic', 'aesthetic'], defaultStyle: 'modern', showSameModel: true },
+    'Toys & Baby Products': { styleIds: ['modern', 'aesthetic', 'vintage'], defaultStyle: 'aesthetic', showSameModel: false },
+    'Food & Beverages': { styleIds: ['modern', 'aesthetic', 'closeup', 'vintage'], defaultStyle: 'closeup', showSameModel: false },
+    'Automotive': { styleIds: ['modern', 'cinematic', 'monochrome'], defaultStyle: 'modern', showSameModel: false },
+    'Other': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic', 'closeup'], defaultStyle: 'modern', showSameModel: true },
+
+    // ─── Sub-category overrides (Jewellery) ───
+    'Jewellery': { styleIds: ['closeup', 'modern', 'cinematic', 'aesthetic', 'vintage'], defaultStyle: 'closeup', showSameModel: false },
+
+    // ─── Sub-category overrides (Fashion) ───
+    'Men': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome'], defaultStyle: 'modern', showSameModel: true },
+    'Women': { styleIds: ['modern', 'cinematic', 'vintage', 'aesthetic', 'monochrome'], defaultStyle: 'vintage', showSameModel: true },
+    'Kids': { styleIds: ['modern', 'aesthetic', 'vintage'], defaultStyle: 'aesthetic', showSameModel: true },
+
+    // ─── Sub-category overrides (Beauty) ───
+    'Skincare': { styleIds: ['modern', 'aesthetic', 'closeup'], defaultStyle: 'aesthetic', showSameModel: false },
+    'Makeup': { styleIds: ['modern', 'aesthetic', 'closeup', 'cinematic'], defaultStyle: 'closeup', showSameModel: false },
+    'Haircare': { styleIds: ['modern', 'aesthetic', 'closeup'], defaultStyle: 'modern', showSameModel: false },
+    'Grooming': { styleIds: ['modern', 'cinematic', 'closeup'], defaultStyle: 'modern', showSameModel: false },
+
+    // ─── Sub-category overrides (Other) ───
+    'Bags': { styleIds: ['modern', 'cinematic', 'vintage', 'aesthetic'], defaultStyle: 'modern', showSameModel: false },
+    'Watches': { styleIds: ['modern', 'cinematic', 'closeup', 'monochrome'], defaultStyle: 'closeup', showSameModel: false },
+    'Home Decor': { styleIds: ['modern', 'vintage', 'aesthetic'], defaultStyle: 'aesthetic', showSameModel: false },
+    'Furniture': { styleIds: ['modern', 'vintage', 'cinematic'], defaultStyle: 'modern', showSameModel: false },
+    'Kitchen': { styleIds: ['modern', 'closeup', 'aesthetic'], defaultStyle: 'modern', showSameModel: false },
+};
+
+const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
+    styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic', 'closeup'],
+    defaultStyle: 'vintage',
+    showSameModel: true,
+};
+
 const OTHER_ORNAMENT_OPTIONS = ['Brooch', 'Mang tika', 'Nose pin', 'Finger ring', 'Ear rings', 'Ladies bracelet', 'Buckle'];
 
 const ASPECT_RATIOS: { id: AspectRatio; label: string; icon?: React.FC<{ className?: string }> }[] = [
-    { id: '9:16', label: '9:16 (Story)', icon: AspectRatio9x16Icon },
-    { id: '16:9', label: '16:9 (Cinema)', icon: AspectRatio16x9Icon },
-    { id: '1:1', label: '1:1 (Square)' },
-    { id: '4:5', label: '4:5 (Classic)' },
-    { id: '3:2', label: '3:2 (Camera)' },
-];
-
-const BACKGROUND_OPTIONS: { id: BackgroundType; label: string }[] = [
-    { id: 'studio', label: 'Neutral Studio' },
-    { id: 'white', label: 'Solid White' },
-    { id: 'black', label: 'Solid Black' },
-    { id: 'workspace', label: 'Lifestyle Workspace' },
-    { id: 'city', label: 'Urban / City' },
-    { id: 'historic', label: 'Historical / Heritage' },
-    { id: 'custom', label: 'Custom Prompt' },
+    { id: '9:16', label: 'Instagram Story (9:16)', icon: AspectRatio9x16Icon },
+    { id: '16:9', label: 'Cinematic / Web (16:9)', icon: AspectRatio16x9Icon },
+    { id: '1:1', label: 'Square Post (1:1)' },
+    { id: '4:5', label: 'Classic Social (4:5)' },
+    { id: '3:2', label: 'Camera / Print (3:2)' },
 ];
 
 const IMAGE_QUALITY_OPTIONS: { id: ImageQuality; label: string }[] = [
@@ -291,7 +321,11 @@ const CategorySelection: React.FC<{
     onSelectionComplete: (productTypes: ProductTypeOption[], promptCategory: Category) => void;
     onBack: () => void;
 }> = ({ onSelectionComplete, onBack }) => {
-    const [path, setPath] = useState<string[]>([]);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const pathParam = searchParams.get('category');
+    const path = pathParam ? pathParam.split(',') : [];
+
     const cycleIndex = useCycleIndex(3, 2500);
 
     const getCurrentNode = () => {
@@ -316,13 +350,20 @@ const CategorySelection: React.FC<{
         if (currentNode?.productTypes && currentNode.promptCategory) {
             onSelectionComplete(currentNode.productTypes, currentNode.promptCategory);
         } else if (currentNode?.subCategories) {
-            setPath(newPath);
+            setSearchParams({ category: newPath.join(',') });
         }
     };
 
+    // Keep goBack around in case it needs to be mapped later, but we are removing the visual button.
     const goBack = () => {
         if (path.length > 0) {
-            setPath(prev => prev.slice(0, -1));
+            const newPath = path.slice(0, -1);
+            if (newPath.length > 0) {
+                setSearchParams({ category: newPath.join(',') });
+            } else {
+                searchParams.delete('category');
+                setSearchParams(searchParams);
+            }
         } else {
             onBack();
         }
@@ -337,13 +378,6 @@ const CategorySelection: React.FC<{
     return (
         <div className="w-full max-w-6xl mx-auto animate-fade-in-up">
             <div className="text-center relative mb-10 md:mb-16">
-                <button
-                    onClick={goBack}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-500 hover:text-white transition-colors"
-                >
-                    <ArrowLeftIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline text-[10px] uppercase tracking-widest font-bold">Back</span>
-                </button>
                 <h2 className="font-serif-display text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tighter mb-4">{title}</h2>
                 <p className="text-neutral-500 font-light text-lg">{subtitle}</p>
             </div>
@@ -411,6 +445,8 @@ interface DetailsStepProps {
     onAspectRatioChange: (ratio: AspectRatio) => void;
     consistentCharacter: boolean;
     onConsistentCharacterChange: (enabled: boolean) => void;
+    useSameLocation: boolean;
+    onUseSameLocationChange: (enabled: boolean) => void;
     background: BackgroundType;
     onBackgroundChange: (bg: BackgroundType) => void;
     imageQuality: ImageQuality;
@@ -430,11 +466,6 @@ interface DetailsStepProps {
 
 const DetailsStep: React.FC<DetailsStepProps> = ({
     imageFiles,
-    productType,
-    productTypes,
-    onProductTypeChange,
-    apparelStyle,
-    onApparelStyleChange,
     productName,
     onProductNameChange,
     creatorName,
@@ -444,22 +475,16 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     onGenerate,
     onImageUpload,
     isLoading,
-    otherOrnamentType,
-    onOtherOrnamentTypeChange,
-    extraPrompt,
-    onExtraPromptChange,
     aspectRatio,
     onAspectRatioChange,
     consistentCharacter,
     onConsistentCharacterChange,
-    background,
-    onBackgroundChange,
+    useSameLocation,
+    onUseSameLocationChange,
     imageQuality,
     onImageQualityChange,
     numberOfImages,
     onNumberOfImagesChange,
-    customBackground,
-    onCustomBackgroundChange,
     remainingCredits,
     totalCredits,
     usedPhotoshootCredits,
@@ -468,12 +493,78 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     isAuthenticated,
     isPaidUser
 }) => {
-    // PRO feature gating
-    const PRO_QUALITY_IDS = ['4k'];
-    const PRO_STYLE_IDS = ['cinematic', 'vintage'];
-    const PRO_BACKGROUND_IDS = ['workspace', 'city', 'historic', 'custom'];
+    // PRO feature gating — all features unlocked for all users
+    const PRO_QUALITY_IDS: string[] = [];
+    const PRO_STYLE_IDS: string[] = [];
     const [shakeId, setShakeId] = useState<string | null>(null);
     const [proToast, setProToast] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [shakeUpload, setShakeUpload] = useState(false);
+    const uploadAreaRef = useRef<HTMLDivElement>(null);
+
+    // 3-layer category dropdown state
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+    const [selectedItem, setSelectedItem] = useState<string>('');
+
+    // Searchable dropdown state
+    const [categorySearch, setCategorySearch] = useState<string>('');
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+    const [isItemDropdownOpen, setIsItemDropdownOpen] = useState(false);
+    const [itemSearch, setItemSearch] = useState('');
+    const itemDropdownRef = useRef<HTMLDivElement>(null);
+
+    const [isSubcategoryDropdownOpen, setIsSubcategoryDropdownOpen] = useState(false);
+    const subcategoryDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Build flat search index: { itemLabel, categoryLabel, subcategoryLabel? }
+    const searchIndex = useMemo(() => {
+        const index: { item: string; category: string; subcategory: string }[] = [];
+        for (const cat of DROPDOWN_CATEGORIES) {
+            if (cat.subcategories) {
+                for (const sub of cat.subcategories) {
+                    for (const item of sub.items) {
+                        index.push({ item, category: cat.label, subcategory: sub.label });
+                    }
+                }
+            } else if (cat.items) {
+                for (const item of cat.items) {
+                    index.push({ item, category: cat.label, subcategory: '' });
+                }
+            }
+        }
+        return index;
+    }, []);
+
+    // Filter search results
+    const searchResults = useMemo(() => {
+        if (!categorySearch.trim()) return [];
+        const q = categorySearch.toLowerCase();
+        return searchIndex.filter(entry =>
+            entry.item.toLowerCase().includes(q) ||
+            entry.category.toLowerCase().includes(q) ||
+            entry.subcategory.toLowerCase().includes(q)
+        ).slice(0, 20); // cap at 20 results
+    }, [categorySearch, searchIndex]);
+
+    // Click outside to close
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
+                setIsCategoryDropdownOpen(false);
+            }
+            if (subcategoryDropdownRef.current && !subcategoryDropdownRef.current.contains(e.target as Node)) {
+                setIsSubcategoryDropdownOpen(false);
+            }
+            if (itemDropdownRef.current && !itemDropdownRef.current.contains(e.target as Node)) {
+                setIsItemDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const triggerProLock = (id: string) => {
         setShakeId(id);
@@ -481,295 +572,349 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
         setTimeout(() => setShakeId(null), 600);
         setTimeout(() => setProToast(false), 2500);
     };
-    const isOtherOrnament = productType === 'other_ornament';
-    const isApparel = productType === 'apparel';
     const hasImage = imageFiles.some(f => f);
 
-    // Build nav items for product type selector
-    const navItems: import('./ui/LimelightNav').NavItem[] = productTypes.map(p => ({
-        id: p.id,
-        icon: <p.icon />,
-        label: p.name,
-    }));
-    const activeProductTypeIndex = productTypes.findIndex(p => p.id === productType);
-    const handleTabChange = (index: number) => {
-        const newPt = productTypes[index];
-        if (newPt) onProductTypeChange(newPt.id);
+    // Derive subcategory and item options from the selected category
+    const activeCategoryData = DROPDOWN_CATEGORIES.find(c => c.label === selectedCategory);
+    const subcategoryOptions: string[] = activeCategoryData?.subcategories?.map(s => s.label) || [];
+    const activeSubcategoryData = activeCategoryData?.subcategories?.find(s => s.label === selectedSubcategory);
+    const itemOptions: string[] = activeSubcategoryData?.items || activeCategoryData?.items || [];
+    
+    // Filter item options for the third dropdown
+    const filteredItemOptions = useMemo(() => {
+        if (!itemSearch.trim()) return itemOptions;
+        const q = itemSearch.toLowerCase();
+        return itemOptions.filter(item => item.toLowerCase().includes(q));
+    }, [itemOptions, itemSearch]);
+
+    // Per-category config — sub-category overrides top-level category
+    const categoryConfig = selectedSubcategory
+        ? (CATEGORY_CONFIG[selectedSubcategory] || CATEGORY_CONFIG[selectedCategory] || DEFAULT_CATEGORY_CONFIG)
+        : selectedCategory
+            ? (CATEGORY_CONFIG[selectedCategory] || DEFAULT_CATEGORY_CONFIG)
+            : DEFAULT_CATEGORY_CONFIG;
+    const filteredStyles = STYLE_OPTIONS.filter(s => categoryConfig.styleIds.includes(s.id));
+
+    // Reset dependent dropdowns when parent changes + auto-set default style
+    const handleCategoryChange = (val: string) => {
+        setSelectedCategory(val);
+        setSelectedSubcategory('');
+        setSelectedItem('');
+        setCategorySearch('');
+        setIsCategoryDropdownOpen(false);
+        // Auto-set default style for the new category
+        const config = val ? (CATEGORY_CONFIG[val] || DEFAULT_CATEGORY_CONFIG) : DEFAULT_CATEGORY_CONFIG;
+        onStyleChange(config.defaultStyle);
+    };
+    const handleSubcategoryChange = (val: string) => {
+        setSelectedSubcategory(val);
+        setSelectedItem('');
+        setItemSearch('');
+        setIsItemDropdownOpen(false);
+        // Auto-set default style for the sub-category
+        const subConfig = CATEGORY_CONFIG[val] || CATEGORY_CONFIG[selectedCategory] || DEFAULT_CATEGORY_CONFIG;
+        onStyleChange(subConfig.defaultStyle);
+    };
+    // Handle search result selection — auto-fill all three layers
+    const handleSearchSelect = (entry: { item: string; category: string; subcategory: string }) => {
+        setSelectedCategory(entry.category);
+        setSelectedSubcategory(entry.subcategory);
+        setSelectedItem(entry.item);
+        setCategorySearch('');
+        setIsCategoryDropdownOpen(false);
+        setItemSearch('');
+        setIsItemDropdownOpen(false);
+        // Auto-set default style — prefer sub-category config
+        const config = CATEGORY_CONFIG[entry.subcategory] || CATEGORY_CONFIG[entry.category] || DEFAULT_CATEGORY_CONFIG;
+        onStyleChange(config.defaultStyle);
     };
 
     return (
         <div className="w-full max-w-7xl mx-auto animate-fade-in-up px-3 sm:px-4">
-            {/* Heading — smaller on mobile */}
+            {/* Heading */}
             <h2 className="font-serif-display text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-normal text-center mb-3 sm:mb-4">Bring Your Product to <span className="italic text-neutral-400">Life</span></h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                {/* ──── LEFT PANEL: Product Type + Upload ──── */}
+                {/* ──── LEFT PANEL: Upload ──── */}
                 <div className="space-y-2">
-                    {/* Product Type Selector */}
-                    {productTypes.length > 1 && (
-                        <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 px-3 py-2">
-                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-1.5 text-center">Product Type</p>
-                            <div className="flex justify-center">
-                                <LimelightNav
-                                    items={navItems}
-                                    defaultActiveIndex={activeProductTypeIndex}
-                                    onTabChange={handleTabChange}
-                                    className="bg-neutral-900/50 border-neutral-700/50"
-                                    iconClassName="w-5 h-5"
-                                    iconContainerClassName="px-3 py-2"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Apparel Style Toggle */}
-                    {isApparel && (
-                        <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 px-3 py-2 animate-fade-in">
-                            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-1.5 text-center">Apparel Style</p>
-                            <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/50">
-                                <button
-                                    onClick={() => onApparelStyleChange('general')}
-                                    className={`w-full px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded transition-all duration-300 ${apparelStyle === 'general' ? 'bg-neutral-900 text-gold-400 shadow-sm' : 'text-neutral-300 hover:bg-neutral-700'}`}
-                                >
-                                    General
-                                </button>
-                                <button
-                                    onClick={() => onApparelStyleChange('professional')}
-                                    className={`w-full px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded transition-all duration-300 ${apparelStyle === 'professional' ? 'bg-neutral-900 text-gold-400 shadow-sm' : 'text-neutral-300 hover:bg-neutral-700'}`}
-                                >
-                                    Professional
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Image Upload Area */}
-                    <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 p-2.5 sm:p-3">
-                        {isApparel ? (
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                                <div>
-                                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Front</p>
-                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
-                                </div>
-                                <div>
-                                    <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Back <span className="text-neutral-600">(Opt.)</span></p>
-                                    <ImageUploader onImageUpload={(file) => onImageUpload(file, 1)} initialPreview={imageFiles[1]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-neutral-500 mb-1 ml-0.5">Product Asset</p>
-                                <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/3]" />
-                            </div>
+                    {/* Image Upload Area — always Front + Back */}
+                    <div ref={uploadAreaRef} className={`bg-neutral-900/40 backdrop-blur-sm rounded-lg border p-2.5 sm:p-3 transition-all duration-300 ${shakeUpload ? 'border-red-500 animate-shake shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'border-white/5'}`}>
+                        {shakeUpload && (
+                            <p className="text-xs text-red-400 font-medium text-center mb-2 animate-fade-in">⚠ Please upload a product image first</p>
                         )}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div>
+                                <p className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold text-neutral-400 mb-1 ml-0.5">Front</p>
+                                <ImageUploader onImageUpload={(file) => onImageUpload(file, 0)} initialPreview={imageFiles[0]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold text-neutral-400 mb-1 ml-0.5">Back <span className="text-neutral-600">(Opt.)</span></p>
+                                <ImageUploader onImageUpload={(file) => onImageUpload(file, 1)} initialPreview={imageFiles[1]?.previewUrl} enableAnimation={true} aspectRatio="aspect-[4/5]" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* ──── RIGHT PANEL: Production Details ──── */}
-                <div className={`transition-all duration-500 ${hasImage ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'}`}>
-                    {!hasImage && (
-                        <div className="text-center py-1.5 sm:py-2 mb-2 rounded-lg bg-gold-500/5 border border-gold-500/10">
-                            <p className="text-xs sm:text-sm text-gold-400/80 font-medium"><span className="lg:hidden">↑</span><span className="hidden lg:inline">←</span> Upload a photo to unlock details</p>
-                        </div>
-                    )}
+                <div className="transition-all duration-500">
 
                     <div className="space-y-2.5 sm:space-y-3">
-                        {/* Identity + Label */}
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                        {/* ── Searchable 3-Layer Category Dropdown ── */}
+                        <div className="relative z-[60]">
+                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Product Category</label>
+                            <div className="grid grid-cols-1 gap-2">
+                                {/* Layer 1: Searchable Category */}
+                                <div className="relative z-[120]" ref={categoryDropdownRef}>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={isCategoryDropdownOpen ? categorySearch : selectedCategory}
+                                            onFocus={() => { setIsCategoryDropdownOpen(true); setCategorySearch(''); setIsItemDropdownOpen(false); setIsSubcategoryDropdownOpen(false); }}
+                                            onChange={(e) => setCategorySearch(e.target.value)}
+                                            placeholder="Search or select category..."
+                                            className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-500"
+                                            autoComplete="off"
+                                        />
+                                        <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                    </div>
+
+                                    {/* Dropdown panel */}
+                                    {isCategoryDropdownOpen && (
+                                        <div className="absolute z-[100] mt-1 w-full max-h-64 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
+                                            {categorySearch.trim() ? (
+                                                /* Search results — flat list of matching items */
+                                                searchResults.length > 0 ? (
+                                                    searchResults.map((entry, i) => (
+                                                        <button
+                                                            key={`${entry.category}-${entry.subcategory}-${entry.item}-${i}`}
+                                                            onClick={() => handleSearchSelect(entry)}
+                                                            className="w-full text-left px-3 py-2.5 hover:bg-white/10 transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
+                                                        >
+                                                            <span className="text-sm font-medium text-white">{entry.item}</span>
+                                                            <span className="text-[9px] text-neutral-400 ml-auto">{entry.category}{entry.subcategory ? ` › ${entry.subcategory}` : ''}</span>
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-3 py-4 text-center text-sm text-neutral-400">No results found</div>
+                                                )
+                                            ) : (
+                                                /* Default view — only top-level categories */
+                                                DROPDOWN_CATEGORIES.map(cat => (
+                                                    <button
+                                                        key={cat.label}
+                                                        onClick={() => handleCategoryChange(cat.label)}
+                                                        className={`w-full text-left px-3 py-2.5 text-xs sm:text-sm font-medium border-b border-white/5 transition-colors hover:bg-white/10 ${selectedCategory === cat.label ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
+                                                    >
+                                                        {cat.label}
+                                                    </button>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Layer 2: Subcategory (only if the selected category has subcategories) */}
+                                {selectedCategory && subcategoryOptions.length > 0 && (
+                                    <div className="relative z-[110] animate-fade-in" ref={subcategoryDropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsSubcategoryDropdownOpen(!isSubcategoryDropdownOpen); setIsCategoryDropdownOpen(false); setIsItemDropdownOpen(false); }}
+                                            className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-left text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30"
+                                        >
+                                            {selectedSubcategory || <span className="text-neutral-500">Select subcategory...</span>}
+                                        </button>
+                                        <ChevronDownIcon className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none transition-transform ${isSubcategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                                        {isSubcategoryDropdownOpen && (
+                                            <div className="absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
+                                                {subcategoryOptions.map(sub => (
+                                                    <button
+                                                        key={sub}
+                                                        onClick={() => {
+                                                            handleSubcategoryChange(sub);
+                                                            setIsSubcategoryDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-xs sm:text-sm font-medium border-b border-white/5 transition-colors hover:bg-white/10 ${selectedSubcategory === sub ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
+                                                    >
+                                                        {sub}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Layer 3: Item (show if category has flat items OR subcategory is selected) */}
+                                {selectedCategory && itemOptions.length > 0 && (subcategoryOptions.length === 0 || selectedSubcategory) && (
+                                    <div className="relative z-[100] animate-fade-in" ref={itemDropdownRef}>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={isItemDropdownOpen ? itemSearch : selectedItem}
+                                                onFocus={() => { setIsItemDropdownOpen(true); setItemSearch(''); setIsCategoryDropdownOpen(false); setIsSubcategoryDropdownOpen(false); }}
+                                                onChange={(e) => setItemSearch(e.target.value)}
+                                                placeholder="Search or select item..."
+                                                className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-500"
+                                                autoComplete="off"
+                                            />
+                                            <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                        </div>
+                                        
+                                        {/* Dropdown panel */}
+                                        {isItemDropdownOpen && (
+                                            <div className="absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
+                                                {/* Pinned special options */}
+                                                {(!itemSearch.trim() || 'ai detected'.includes(itemSearch.toLowerCase())) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedItem('AI Detected');
+                                                            setItemSearch('');
+                                                            setIsItemDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/10 transition-colors hover:bg-gold-500/10 flex items-center gap-2 ${selectedItem === 'AI Detected' ? 'text-gold-400 bg-gold-500/10' : 'text-gold-400/80'}`}
+                                                    >
+                                                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                                        AI Detected
+                                                    </button>
+                                                )}
+                                                {(!itemSearch.trim() || 'other'.includes(itemSearch.toLowerCase())) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedItem('Other');
+                                                            setItemSearch('');
+                                                            setIsItemDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/10 transition-colors hover:bg-white/10 flex items-center gap-2 ${selectedItem === 'Other' ? 'text-gold-400 bg-gold-500/10' : 'text-neutral-300'}`}
+                                                    >
+                                                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                                        Other
+                                                    </button>
+                                                )}
+                                                {/* Regular items */}
+                                                {filteredItemOptions.length > 0 ? (
+                                                    filteredItemOptions.map(item => (
+                                                        <button
+                                                            key={item}
+                                                            onClick={() => {
+                                                                setSelectedItem(item);
+                                                                setItemSearch('');
+                                                                setIsItemDropdownOpen(false);
+                                                            }}
+                                                            className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/5 last:border-0 transition-colors hover:bg-white/10 ${selectedItem === item ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
+                                                        >
+                                                            {item}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    !itemSearch.trim() ? null : <div className="px-3 py-4 text-center text-sm text-neutral-400">No matching items found</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Manual input when "Other" is selected */}
+                                {selectedItem === 'Other' && (
+                                    <div className="animate-fade-in">
+                                        <input
+                                            type="text"
+                                            value={productName}
+                                            onChange={(e) => onProductNameChange(e.target.value)}
+                                            placeholder="Enter product type (e.g. Kurta, Saree, Watch...)"
+                                            className="w-full bg-neutral-900/70 border border-gold-500/30 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 placeholder:text-neutral-500"
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Identity + Label — stacked on mobile */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             <div>
-                                <label htmlFor="creator-name-input" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Identity</label>
+                                <label htmlFor="creator-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Brand Name</label>
                                 <input
                                     id="creator-name-input"
                                     name="creatorName"
                                     type="text"
                                     value={creatorName}
                                     onChange={(e) => onCreatorNameChange(e.target.value)}
-                                    placeholder="Brand / Label"
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
+                                    placeholder="e.g. Nike, Apple..."
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-500"
                                 />
                             </div>
                             <div>
-                                <label htmlFor={isOtherOrnament ? "other-ornament-select" : "product-name-input"} className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Label</label>
-                                {isOtherOrnament ? (
-                                    <select
-                                        id="other-ornament-select"
-                                        name="otherOrnamentType"
-                                        value={otherOrnamentType}
-                                        onChange={(e) => onOtherOrnamentTypeChange(e.target.value)}
-                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
-                                    >
-                                        {OTHER_ORNAMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                    </select>
-                                ) : (
-                                    <input
-                                        id="product-name-input"
-                                        name="productName"
-                                        type="text"
-                                        value={productName}
-                                        onChange={(e) => onProductNameChange(e.target.value)}
-                                        placeholder="Product Name"
-                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
-                                    />
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Canvas + Environment */}
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                            <div>
-                                <label htmlFor="aspect-ratio-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Canvas</label>
-                                <div className="relative">
-                                    <select
-                                        id="aspect-ratio-select"
-                                        name="aspectRatio"
-                                        value={aspectRatio}
-                                        onChange={(e) => onAspectRatioChange(e.target.value as AspectRatio)}
-                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
-                                    >
-                                        {ASPECT_RATIOS.map((ratio) => (
-                                            <option key={ratio.id} value={ratio.id}>{ratio.label}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="background-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Environment</label>
-                                <div className="relative">
-                                    <select
-                                        id="background-select"
-                                        name="background"
-                                        value={background}
-                                        onChange={(e) => {
-                                            const val = e.target.value as BackgroundType;
-                                            if (PRO_BACKGROUND_IDS.includes(val) && !isPaidUser) {
-                                                e.target.value = background; // reset
-                                                triggerProLock(`bg-${val}`);
-                                                return;
-                                            }
-                                            onBackgroundChange(val);
-                                        }}
-                                        className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
-                                    >
-                                        {BACKGROUND_OPTIONS.map((opt) => {
-                                            const isProLocked = PRO_BACKGROUND_IDS.includes(opt.id) && !isPaidUser;
-                                            return (
-                                                <option key={opt.id} value={opt.id}>
-                                                    {opt.label}{isProLocked ? ' ✦ PRO' : ''}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Image Quality + Persona */}
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                            <div>
-                                <label htmlFor="image-quality-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Image Quality</label>
-                                <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/50">
-                                    {IMAGE_QUALITY_OPTIONS.map((opt) => {
-                                        const isProLocked = PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser;
-                                        const isActive = imageQuality === opt.id;
-                                        return (
-                                            <button
-                                                key={opt.id}
-                                                onClick={() => {
-                                                    if (isProLocked) { triggerProLock(`quality-${opt.id}`); return; }
-                                                    onImageQualityChange(opt.id as ImageQuality);
-                                                }}
-                                                className={`relative w-full px-2 py-1.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all duration-300 flex items-center justify-center gap-1 ${isActive && !isProLocked
-                                                    ? 'bg-neutral-900 text-gold-400 shadow-sm'
-                                                    : isProLocked
-                                                        ? 'text-neutral-600 cursor-not-allowed'
-                                                        : 'text-neutral-300 hover:bg-neutral-700'
-                                                    } ${shakeId === `quality-${opt.id}` ? 'animate-shake' : ''}`}
-                                            >
-                                                {opt.label}
-                                                {PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser && (
-                                                    <span className="text-[7px] font-black tracking-wider text-amber-500/80 bg-amber-500/10 px-1 py-px rounded">PRO</span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Persona</label>
-                                <button
-                                    onClick={() => onConsistentCharacterChange(!consistentCharacter)}
-                                    className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${consistentCharacter ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-neutral-900/50 border-white/5 text-neutral-500'}`}
-                                >
-                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">Lock</span>
-                                    <div className={`w-7 h-3.5 sm:w-8 sm:h-4 rounded-full relative flex-shrink-0 ${consistentCharacter ? 'bg-gold-600' : 'bg-neutral-700'}`}>
-                                        <div className={`absolute top-0.5 left-0.5 bg-white w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-transform ${consistentCharacter ? 'translate-x-3.5 sm:translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Number of Images */}
-                        <div>
-                            <label htmlFor="number-of-images-select" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Number of Images</label>
-                            <div className="relative">
-                                <select
-                                    id="number-of-images-select"
-                                    name="numberOfImages"
-                                    value={numberOfImages}
-                                    onChange={(e) => onNumberOfImagesChange(Number(e.target.value))}
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
-                                >
-                                    <option value={2}>2 Images</option>
-                                    <option value={4}>4 Images</option>
-                                    <option value={6}>6 Images</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
-                            </div>
-                            <p className="mt-1.5 text-[9px] sm:text-[10px] text-gold-400/80 font-medium tracking-wide">
-                                This will use <span className="text-gold-400 font-bold">{numberOfImages * (imageQuality === '4K' ? 40 : 20)}</span> Credits
-                            </p>
-                        </div>
-
-                        {background === 'custom' && (
-                            <div className="animate-fade-in">
-                                <label htmlFor="custom-background-input" className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Custom Background</label>
+                                <label htmlFor="product-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Product Name</label>
                                 <input
-                                    id="custom-background-input"
-                                    name="customBackground"
+                                    id="product-name-input"
+                                    name="productName"
                                     type="text"
-                                    value={customBackground}
-                                    onChange={(e) => onCustomBackgroundChange(e.target.value)}
-                                    placeholder="Describe the background..."
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none"
+                                    value={productName}
+                                    onChange={(e) => onProductNameChange(e.target.value)}
+                                    placeholder="e.g. Air Max 90..."
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-500"
                                 />
                             </div>
-                        )}
+                        </div>
 
-                        {/* Aesthetic Direction */}
+                        {/* Visual Style — Essential, always visible */}
                         <div>
-                            <label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-neutral-500 mb-1 block">Aesthetic Direction</label>
-                            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                                {STYLE_OPTIONS.map((style) => {
-                                    const isProLocked = PRO_STYLE_IDS.includes(style.id) && !isPaidUser;
+                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Visual Style</label>
+                            <div className="flex overflow-x-auto gap-2 sm:gap-3 pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                                {filteredStyles.map((style) => {
                                     const isActive = selectedStyle === style.id;
+                                    const gradients = [
+                                        'bg-gradient-to-br from-indigo-500/20 to-purple-500/20',
+                                        'bg-gradient-to-br from-emerald-500/20 to-teal-500/20',
+                                        'bg-gradient-to-br from-amber-500/20 to-orange-500/20',
+                                        'bg-gradient-to-br from-rose-500/20 to-pink-500/20',
+                                        'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
+                                        'bg-gradient-to-br from-neutral-500/20 to-neutral-400/20',
+                                    ];
+                                    const gradient = gradients[style.id.length % gradients.length];
+
                                     return (
                                         <button
                                             key={style.id}
-                                            onClick={() => {
-                                                if (isProLocked) { triggerProLock(`style-${style.id}`); return; }
-                                                onStyleChange(style.id);
-                                            }}
-                                            className={`relative py-1.5 sm:py-2 px-2 sm:px-3 rounded text-[9px] sm:text-[10px] uppercase tracking-wider font-bold border transition-all flex items-center justify-center gap-1.5 ${isActive && !isProLocked
-                                                ? 'bg-gold-600 text-white border-gold-500 shadow-sm shadow-gold-900/20'
-                                                : isProLocked
-                                                    ? 'bg-neutral-900/50 text-neutral-600 border-white/5 cursor-not-allowed'
-                                                    : 'bg-neutral-900/50 text-neutral-500 border-white/5 hover:border-white/20'
-                                                } ${shakeId === `style-${style.id}` ? 'animate-shake' : ''}`}
+                                            onClick={() => onStyleChange(style.id)}
+                                            className={`flex-shrink-0 flex flex-col items-center gap-1.5 group transition-all duration-300 w-[60px] sm:w-[72px]`}
                                         >
-                                            {style.name}
-                                            {isProLocked && (
+                                            <div className={`w-full aspect-square rounded-lg border-2 flex items-center justify-center text-[10px] sm:text-xs font-bold tracking-wide transition-all ${gradient} ${isActive
+                                                    ? 'border-gold-400 scale-105 shadow-[0_0_15px_rgba(250,204,21,0.15)]'
+                                                    : 'border-white/15 group-hover:bg-white/10 group-hover:border-white/30'
+                                                }`}>
+                                                <span className={`${isActive ? 'text-gold-400' : 'text-neutral-300 group-hover:text-white'} drop-shadow-md leading-tight text-center px-0.5`}>
+                                                    {style.name}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Image Quality — Essential, always visible (outside advanced) */}
+                        <div>
+                            <label htmlFor="image-quality-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Image Quality</label>
+                            <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/70 border border-white/10">
+                                {IMAGE_QUALITY_OPTIONS.map((opt) => {
+                                    const isProLocked = PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser;
+                                    const isActive = imageQuality === opt.id;
+                                    return (
+                                        <button
+                                            key={opt.id}
+                                            onClick={() => {
+                                                if (isProLocked) { triggerProLock(`quality-${opt.id}`); return; }
+                                                onImageQualityChange(opt.id as ImageQuality);
+                                            }}
+                                            className={`relative w-full px-2 py-1.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all duration-300 flex items-center justify-center gap-1 ${isActive && !isProLocked
+                                                ? 'bg-neutral-900 text-gold-400 shadow-sm'
+                                                : isProLocked
+                                                    ? 'text-neutral-600 cursor-not-allowed'
+                                                    : 'text-neutral-300 hover:bg-neutral-700'
+                                                } ${shakeId === `quality-${opt.id}` ? 'animate-shake' : ''}`}
+                                        >
+                                            {opt.label}
+                                            {PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser && (
                                                 <span className="text-[7px] font-black tracking-wider text-amber-500/80 bg-amber-500/10 px-1 py-px rounded">PRO</span>
                                             )}
                                         </button>
@@ -778,27 +923,99 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             </div>
                         </div>
 
-                        {/* PRO Toast Notification */}
-                        {proToast && (
-                            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
-                                <div className="bg-neutral-900/95 backdrop-blur-md border border-amber-500/30 rounded-lg px-5 py-3 shadow-xl shadow-black/40 flex items-center gap-3">
-                                    <span className="text-[9px] font-black tracking-wider text-amber-500 bg-amber-500/15 px-1.5 py-0.5 rounded">PRO</span>
-                                    <span className="text-sm text-neutral-300">Upgrade your plan to unlock this feature</span>
-                                    <button
-                                        onClick={() => navigate('/pricing')}
-                                        className="text-[9px] font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors ml-2"
-                                    >
-                                        View Plans →
-                                    </button>
-                                </div>
+                        {/* Format */}
+                        <div>
+                            <label htmlFor="aspect-ratio-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Format</label>
+                            <div className="relative">
+                                <select
+                                    id="aspect-ratio-select"
+                                    name="aspectRatio"
+                                    value={aspectRatio}
+                                    onChange={(e) => onAspectRatioChange(e.target.value as AspectRatio)}
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                >
+                                    {ASPECT_RATIOS.map((ratio) => (
+                                        <option key={ratio.id} value={ratio.id}>{ratio.label}</option>
+                                    ))}
+                                </select>
+                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none" />
                             </div>
-                        )}
+                        </div>
+
+                        {/* Toggles */}
+                        <div className="flex flex-col gap-1.5">
+                            {categoryConfig.showSameModel && (
+                                <button
+                                    onClick={() => onConsistentCharacterChange(!consistentCharacter)}
+                                    className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${consistentCharacter ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/70 border-white/15'}`}
+                                    title="Ensures the same person appears across multiple photos."
+                                >
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${consistentCharacter ? 'text-gold-400' : 'text-neutral-300'}`}>Keep Same Person</span>
+                                        <div className="relative group/tooltip">
+                                            <div className="flex items-center justify-center w-3 h-3 rounded-full border border-neutral-600 text-[8px] text-neutral-500 font-serif italic pb-px cursor-help">?</div>
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-neutral-800 border border-white/10 rounded-md text-[9px] text-neutral-300 font-normal normal-case tracking-normal whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">Uses the same AI model across all your photos</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-7 h-3.5 sm:w-8 sm:h-4 rounded-full relative flex-shrink-0 ${consistentCharacter ? 'bg-gold-600' : 'bg-neutral-700'}`}>
+                                        <div className={`absolute top-0.5 left-0.5 bg-white w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-transform ${consistentCharacter ? 'translate-x-3.5 sm:translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+                            )}
+                            <button
+                                onClick={() => onUseSameLocationChange(!useSameLocation)}
+                                className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${useSameLocation ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/70 border-white/15'}`}
+                                title="Keeps the background environment strictly consistent."
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${useSameLocation ? 'text-gold-400' : 'text-neutral-300'}`}>Keep Same Location</span>
+                                    <div className="relative group/tooltip">
+                                        <div className="flex items-center justify-center w-3 h-3 rounded-full border border-neutral-600 text-[8px] text-neutral-500 font-serif italic pb-px cursor-help">?</div>
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-neutral-800 border border-white/10 rounded-md text-[9px] text-neutral-300 font-normal normal-case tracking-normal whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">Keeps the same background scene in every photo</div>
+                                    </div>
+                                </div>
+                                <div className={`w-7 h-3.5 sm:w-8 sm:h-4 rounded-full relative flex-shrink-0 ${useSameLocation ? 'bg-gold-600' : 'bg-neutral-700'}`}>
+                                    <div className={`absolute top-0.5 left-0.5 bg-white w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-transform ${useSameLocation ? 'translate-x-3.5 sm:translate-x-4' : 'translate-x-0'}`} />
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Number of Images */}
+                        <div>
+                            <label htmlFor="number-of-images-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Number of Images</label>
+                            <div className="relative">
+                                <select
+                                    id="number-of-images-select"
+                                    name="numberOfImages"
+                                    value={numberOfImages}
+                                    onChange={(e) => onNumberOfImagesChange(Number(e.target.value))}
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                >
+                                    <option value={2}>2 Images</option>
+                                    <option value={4}>4 Images</option>
+                                    <option value={6}>6 Images</option>
+                                </select>
+                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none" />
+                            </div>
+                            <p className="mt-1.5 text-[9px] sm:text-[10px] text-gold-400/80 font-medium tracking-wide">
+                                This will use <span className="text-gold-400 font-bold">{numberOfImages * (imageQuality === '4K' ? 40 : 20)}</span> Credits
+                            </p>
+                        </div>
+
 
                         {/* Generate Button */}
                         <div className="pt-0.5 sm:pt-1">
                             {!isAuthenticated ? (
                                 <button
-                                    onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                                    onClick={() => {
+                                        if (!hasImage) {
+                                            setShakeUpload(true);
+                                            setTimeout(() => setShakeUpload(false), 1500);
+                                            uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            return;
+                                        }
+                                        navigate('/login', { state: { from: { pathname: '/studio' } } });
+                                    }}
                                     className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-orange-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 sm:gap-2"
                                 >
                                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -809,11 +1026,19 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             ) : (
                                 <>
                                     <button
-                                        onClick={onGenerate}
-                                        disabled={!hasImage || !creatorName || isLoading || (remainingCredits !== null && remainingCredits < (numberOfImages * (imageQuality === '4K' ? 40 : 20)))}
+                                        onClick={() => {
+                                            if (!hasImage) {
+                                                setShakeUpload(true);
+                                                setTimeout(() => setShakeUpload(false), 1500);
+                                                uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                return;
+                                            }
+                                            onGenerate();
+                                        }}
+                                        disabled={isLoading || (remainingCredits !== null && remainingCredits < (numberOfImages * (imageQuality === '4K' ? 40 : 20)))}
                                         className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 disabled:transform-none"
                                     >
-                                        {isLoading ? 'Processing...' : 'Generate Photoshoot'}
+                                        {isLoading ? 'Processing...' : `Generate Photoshoot — ${numberOfImages * (imageQuality === '4K' ? 40 : 20)} Credits`}
                                     </button>
                                     {totalCredits !== null && (
                                         <div className="mt-2 space-y-1.5">
@@ -898,7 +1123,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             return () => clearInterval(interval);
         }
     }, [fetchCredits]);
-    const [phase, setPhase] = useState<StudioPhase>('category');
+    const [phase, setPhase] = useState<StudioPhase>('details');
 
     // Notify parent of phase changes so sidebar can update step indicator
     useEffect(() => {
@@ -924,10 +1149,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
 
     const [promptCategory, setPromptCategory] = useState<Category | null>(null);
     const [currentProductTypes, setCurrentProductTypes] = useState<ProductTypeOption[]>([]);
-    const [productType, setProductType] = useState<ProductType>('jewelry');
+    const [productType, setProductType] = useState<ProductType>('apparel');
     const [productName, setProductName] = useState<string>('');
     const [creatorName, setCreatorName] = useState<string>('');
-    const [selectedStyle, setSelectedStyle] = useState<string>(STYLE_OPTIONS[0].id);
+    const [selectedStyle, setSelectedStyle] = useState<string>('vintage');
     const [loadingImages, setLoadingImages] = useState<string[]>([]);
     const [apparelStyle, setApparelStyle] = useState<ApparelStyle>('general');
     const [loadingMessage, setLoadingMessage] = useState<string>("");
@@ -935,6 +1160,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [extraPrompt, setExtraPrompt] = useState<string>('');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
     const [consistentCharacter, setConsistentCharacter] = useState<boolean>(false);
+    const [useSameLocation, setUseSameLocation] = useState<boolean>(false);
     const [background, setBackground] = useState<BackgroundType>('studio');
     const [imageQuality, setImageQuality] = useState<ImageQuality>('HD');
     const [numberOfImages, setNumberOfImages] = useState<number>(2);
@@ -1530,9 +1756,108 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         );
     };
 
+    // Track elapsed time for "stay tuned" message
+    const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        if (phase === 'generating') {
+            setGenerationStartTime(Date.now());
+            setElapsedSeconds(0);
+        } else {
+            setGenerationStartTime(null);
+            setElapsedSeconds(0);
+        }
+    }, [phase]);
+
+    useEffect(() => {
+        if (!generationStartTime) return;
+        const interval = setInterval(() => {
+            setElapsedSeconds(Math.floor((Date.now() - generationStartTime) / 1000));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [generationStartTime]);
+
     const renderPhaseContent = () => {
         if (phase === 'generating' || isLoading) {
-            return <LoadingScreen mode={'image'} imageUrl={imageFiles[0]?.previewUrl} generatedImages={loadingImages} message={loadingMessage} />;
+            const generatedCount = loadingImages.filter(Boolean).length;
+            const total = numberOfImages || 2;
+            return (
+                <div className="w-full max-w-4xl mx-auto animate-fade-in-up px-4">
+                    <h2 className="font-serif-display text-3xl sm:text-4xl md:text-5xl text-center mb-4 text-white tracking-tighter">
+                        Creating Your <span className="italic text-neutral-400">Photoshoot</span>
+                    </h2>
+                    <p className="text-center text-sm text-neutral-500 mb-10">
+                        {generatedCount < total
+                            ? `Generating image ${generatedCount + 1} of ${total}...`
+                            : 'Finishing up...'
+                        }
+                    </p>
+
+                    {/* Round placeholders grid */}
+                    <div className={`grid gap-4 sm:gap-6 mb-8 ${total <= 2 ? 'grid-cols-2 max-w-lg mx-auto' : total <= 4 ? 'grid-cols-2 sm:grid-cols-4 max-w-2xl mx-auto' : 'grid-cols-3 sm:grid-cols-3 max-w-2xl mx-auto'}`}>
+                        {Array.from({ length: total }, (_, i) => {
+                            const imageUrl = loadingImages[i];
+                            const isLoaded = !!imageUrl;
+                            const isCurrentlyLoading = !isLoaded && i === generatedCount;
+                            return (
+                                <div key={i} className="flex flex-col items-center gap-3">
+                                    <div className={`relative w-full aspect-square rounded-full overflow-hidden border-2 transition-all duration-700 ${
+                                        isLoaded
+                                            ? 'border-gold-400 shadow-[0_0_20px_rgba(250,204,21,0.2)]'
+                                            : isCurrentlyLoading
+                                                ? 'border-gold-500/50 animate-pulse'
+                                                : 'border-white/10'
+                                    }`}>
+                                        {isLoaded ? (
+                                            <img
+                                                src={imageUrl}
+                                                alt={`Generated image ${i + 1}`}
+                                                className="w-full h-full object-cover animate-fade-in"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-neutral-900/80 flex items-center justify-center">
+                                                {isCurrentlyLoading ? (
+                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 relative">
+                                                        <div className="absolute inset-0 rounded-full border-[3px] border-white/10"></div>
+                                                        <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-gold-500 animate-spin"></div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-lg sm:text-xl font-bold text-white/15">{i + 1}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-widest font-bold ${
+                                        isLoaded ? 'text-gold-400' : isCurrentlyLoading ? 'text-neutral-400' : 'text-neutral-600'
+                                    }`}>
+                                        {isLoaded ? '✓ Ready' : isCurrentlyLoading ? 'Processing...' : 'Queued'}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full max-w-md mx-auto mb-6">
+                        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-gold-500 to-gold-400 rounded-full transition-all duration-700 ease-out"
+                                style={{ width: `${Math.max(5, (generatedCount / total) * 100)}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stay tuned message after 40 seconds */}
+                    {elapsedSeconds >= 40 && generatedCount < total && (
+                        <div className="text-center animate-fade-in">
+                            <p className="text-xs sm:text-sm text-neutral-400 font-medium">
+                                ⏳ Sometimes it takes a bit longer — <span className="text-gold-400">stay tuned!</span>
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         switch (phase) {
@@ -1571,6 +1896,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                         onAspectRatioChange={setAspectRatio}
                         consistentCharacter={consistentCharacter}
                         onConsistentCharacterChange={setConsistentCharacter}
+                        useSameLocation={useSameLocation}
+                        onUseSameLocationChange={setUseSameLocation}
                         background={background}
                         onBackgroundChange={setBackground}
                         imageQuality={imageQuality}
