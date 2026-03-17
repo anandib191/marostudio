@@ -82,6 +82,7 @@ export const QualityComparisonSection: React.FC = () => {
               <img 
                 src="/old-pixels-hd.jpeg" 
                 alt="Standard HD Quality" 
+                loading="lazy"
                 className="w-full h-full object-cover object-center zoom-image-layer origin-center"
               />
               <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
@@ -99,6 +100,7 @@ export const QualityComparisonSection: React.FC = () => {
               <img 
                 src="/old-pixels-1767411677486.jpeg" 
                 alt="MARO Studio 4K Quality" 
+                loading="lazy"
                 className="w-full h-full object-cover object-center zoom-image-layer origin-center"
               />
               <div className="absolute top-4 left-4 bg-gold-500/20 backdrop-blur-md px-4 py-2 rounded-full border border-gold-500/50 flex items-center gap-2">

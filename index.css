@@ -1347,3 +1347,152 @@ hr,
       rgba(230, 183, 30, 0.3),
       transparent) !important;
 }
+/* ═══════════════════════════════════════════════════════════════
+   Studio Light Mode — applied to .studio-light wrapper (main content only)
+   Left sidebar always stays dark.
+   ═══════════════════════════════════════════════════════════════ */
+
+.studio-light {
+  background-color: #f9f9f7 !important;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.studio-light,
+.studio-light p,
+.studio-light span:not(.theme-icon),
+.studio-light label {
+  color: #1a1a1a !important;
+}
+
+.studio-light h1,
+.studio-light h2,
+.studio-light h3,
+.studio-light h4 {
+  color: #111 !important;
+}
+
+.studio-light .text-neutral-400,
+.studio-light .text-neutral-500 {
+  color: #6b7280 !important;
+}
+
+.studio-light .text-neutral-300 {
+  color: #4b5563 !important;
+}
+
+.studio-light .bg-neutral-900\/40,
+.studio-light .bg-neutral-900\/70,
+.studio-light .bg-neutral-900\/80,
+.studio-light .bg-neutral-900 {
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07) !important;
+}
+
+.studio-light .border-white\/10,
+.studio-light .border-white\/5,
+.studio-light .border-white\/15 {
+  border-color: #e5e7eb !important;
+}
+
+.studio-light input,
+.studio-light textarea,
+.studio-light select {
+  background-color: #f3f4f6 !important;
+  color: #111 !important;
+  border-color: #d1d5db !important;
+}
+
+.studio-light input::placeholder,
+.studio-light textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.studio-light .bg-neutral-800 {
+  background-color: #f3f4f6 !important;
+}
+
+.studio-light .border-dashed {
+  border-color: #d1d5db !important;
+  background-color: #f9fafb !important;
+}
+
+/* Studio light mode: override the global button color rule that forces white text */
+.studio-light button {
+  color: #1a1a1a !important;
+}
+
+/* Keep gold text for gold-colored elements in studio light */
+.studio-light button .text-gold-400,
+.studio-light .text-gold-400 {
+  color: #ca8a04 !important;
+}
+
+.studio-light .text-gold-400\/80 {
+  color: rgba(202, 138, 4, 0.8) !important;
+}
+
+/* Keep white text on gold/colored buttons */
+.studio-light button[class*="bg-gold"] {
+  color: #ffffff !important;
+}
+
+/* ─── Theme Toggle Button ─── */
+.theme-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(230, 183, 30, 0.35);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  color: #f8cd6b;
+}
+
+.studio-light .theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(230, 183, 30, 0.5) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12) !important;
+  color: #ae820d !important;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(230, 183, 30, 0.4);
+  border-color: rgba(230, 183, 30, 0.7);
+}
+
+.theme-icon {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle-btn:hover .theme-icon {
+  transform: rotate(20deg);
+}
+
+.theme-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 183, 30, 0.55) 0%, transparent 70%);
+  animation: theme-ripple-anim 0.65s ease-out forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes theme-ripple-anim {
+  0%   { transform: scale(0.3); opacity: 1; }
+  60%  { transform: scale(2.8); opacity: 0.6; }
+  100% { transform: scale(4.5); opacity: 0; }
+}

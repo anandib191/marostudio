@@ -17,7 +17,7 @@ import { notifyGenerationComplete } from '../utils/notification';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; onStepChange?: (step: number) => void; }> = ({ onExit, onContentGenerated, onStepChange }) => {
+export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated: () => void; onStepChange?: (step: number) => void; isLight?: boolean; }> = ({ onExit, onContentGenerated, onStepChange, isLight }) => {
     const navigate = useNavigate();
     const [imageFile, setImageFile] = useState<ImageFile | null>(null);
     const [logoFile, setLogoFile] = useState<ImageFile | null>(null);
