@@ -1123,7 +1123,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             return () => clearInterval(interval);
         }
     }, [fetchCredits]);
-    const [phase, setPhase] = useState<StudioPhase>('details');
+    const [phase, setPhase] = useState<StudioPhase>('category');
 
     // Notify parent of phase changes so sidebar can update step indicator
     useEffect(() => {

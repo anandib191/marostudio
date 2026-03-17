@@ -112,7 +112,7 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
 /**
  * Generates an image using the Joingy API, with 4K or 2K quality
  */
-const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = '2K'): Promise<string> => {
+const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'HD'): Promise<string> => {
     // Route to 4K API if quality is 4K
     if (imageQuality === '4K') {
         return generate4KImage(imageFile, prompt, aspectRatio);
@@ -170,7 +170,7 @@ const generateWithRetry = async (
     prompt: string,
     aspectRatio: AspectRatio,
     referenceImageSource?: string,
-    imageQuality: ImageQuality = '2K'
+    imageQuality: ImageQuality = 'HD'
 ): Promise<string> => {
     let lastError: Error | unknown;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -212,7 +212,7 @@ export const generateCatalogueImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = '2K',
+    imageQuality: ImageQuality = 'HD',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
@@ -333,7 +333,7 @@ export const generateOtherProductImages = async (
     consistentCharacter: boolean = false,
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
-    imageQuality: ImageQuality = '2K',
+    imageQuality: ImageQuality = 'HD',
     numberOfImages: number = 2
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     const config = promptsConfig || ECOMMERCE_PROMPTS.other;
