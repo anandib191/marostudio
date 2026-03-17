@@ -16,6 +16,7 @@ interface LoadingScreenProps {
     generatedImages?: string[];
     mode: LoadingMode;
     message?: string;
+    totalImages?: number;
 }
 
 const BackgroundSparkles = () => (
@@ -31,7 +32,7 @@ const BackgroundSparkles = () => (
 );
 
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ imageUrl, generatedImages = [], message }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ imageUrl, generatedImages = [], message, totalImages }) => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [visibleImageIndex, setVisibleImageIndex] = useState(0);
   
@@ -58,6 +59,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ imageUrl, generate
   }, [allImages.length]);
   
   const currentMessage = message || loadingMessages[messageIndex];
+  const generatedCount = generatedImages.filter(Boolean).length;
+  const total = totalImages || 0;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex flex-col items-center justify-center z-[100] animate-fade-in p-4 overflow-hidden">
@@ -91,6 +94,25 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ imageUrl, generate
                 </div>
               )}
           </div>
+
+          {/* Progress indicator */}
+          {total > 0 && (
+            <div className="w-full max-w-xs flex flex-col items-center gap-2">
+                <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-gradient-to-r from-gold-500 to-gold-400 rounded-full transition-all duration-700 ease-out"
+                        style={{ width: `${Math.max(5, (generatedCount / total) * 100)}%` }}
+                    />
+                </div>
+                <p className="text-[11px] text-neutral-400 font-medium tracking-wide">
+                    {generatedCount < total 
+                        ? `Generating image ${generatedCount + 1} of ${total}...`
+                        : 'Finishing up...'
+                    }
+                    <span className="text-neutral-600 ml-2">~{Math.max(10, (total - generatedCount) * 15)}s remaining</span>
+                </p>
+            </div>
+          )}
 
           <div className="h-6 relative w-full max-w-sm overflow-hidden text-center">
               <p key={currentMessage} className="absolute inset-0 text-white text-lg font-medium animate-fade-in-up">

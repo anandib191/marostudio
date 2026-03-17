@@ -383,7 +383,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
 
     return (
         <div className="w-full max-w-5xl mx-auto animate-fade-in-up">
-            <div className="relative text-center mb-10">
+            <div className="relative text-center mb-4">
                 <button
                     onClick={onExit}
                     className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
@@ -392,33 +392,33 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     <ArrowLeftIcon className="w-5 h-5" />
                     <span className="hidden sm:inline">Back</span>
                 </button>
-                <h2 className="font-serif-display text-3xl sm:text-4xl font-bold text-white">Marketing Studio</h2>
-                <p className="mt-2 text-neutral-300">Create promotional posters in a snap.</p>
+                <h2 className="font-serif-display text-2xl sm:text-3xl font-bold text-white">Marketing Studio</h2>
+                <p className="mt-1 text-sm text-neutral-300">Create promotional posters in a snap.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                <div className="bg-neutral-900/40 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl space-y-3">
                     <div>
-                        <h3 className="font-semibold text-lg text-white mb-4 text-center">1. Upload Your Product</h3>
-                        <ImageUploader onImageUpload={handleImageUpload} initialPreview={imageFile?.previewUrl} />
+                        <h3 className="font-semibold text-sm text-white mb-2 text-center">1. Upload Your Product</h3>
+                        <ImageUploader onImageUpload={handleImageUpload} initialPreview={imageFile?.previewUrl} aspectRatio="aspect-[4/3]" />
                     </div>
 
                     <div>
-                        <h3 className="font-semibold text-lg text-white mb-4 text-center">2. Upload Your Logo (Optional)</h3>
-                        <div className="max-w-xs mx-auto">
+                        <h3 className="font-semibold text-sm text-white mb-2 text-center">2. Upload Your Logo (Optional)</h3>
+                        <div className="max-w-[120px] mx-auto">
                             <ImageUploader
                                 onImageUpload={handleLogoUpload}
                                 initialPreview={logoFile?.previewUrl}
                                 aspectRatio="aspect-square"
                                 title="UPLOAD LOGO"
-                                subtitle="Recommended: PNG with transparent background"
+                                subtitle="PNG recommended"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label htmlFor="extra-details-textarea" className="font-semibold text-lg text-white mb-4 text-center block">
-                            <h3>3. Add Extra Details (optional)</h3>
+                        <label htmlFor="extra-details-textarea" className="font-semibold text-sm text-white mb-2 text-center block">
+                            <h3>3. Extra Details (optional)</h3>
                         </label>
                         <textarea
                             id="extra-details-textarea"
@@ -426,8 +426,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             value={extraDetails}
                             onChange={(e) => setExtraDetails(e.target.value)}
                             placeholder="e.g., Summer Sale, 20% Off, New Arrival"
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-3 px-4 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
-                            rows={2}
+                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2 px-3 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                            rows={1}
                         />
                     </div>
 
@@ -480,8 +480,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     )}
                 </div>
 
-                <div className="bg-neutral-900/40 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl">
-                    <h3 className="font-semibold text-lg text-white mb-4 text-center">4. Your Generated Poster</h3>
+                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
+                    <h3 className="font-semibold text-sm text-white mb-2 text-center">4. Your Generated Poster</h3>
                     <div className="w-full aspect-[4/5] bg-neutral-800/50 rounded-lg flex items-center justify-center border-2 border-dashed border-neutral-700">
                         {generatedPoster ? (
                             <div className="group relative w-full h-full">

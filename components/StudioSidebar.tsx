@@ -62,11 +62,11 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
 
     return (
         <aside
-            className="hidden lg:flex flex-col w-[240px] flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-white/[0.05] bg-black/40 backdrop-blur-xl"
+            className="hidden lg:flex flex-col w-[240px] flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-white/10 bg-black"
         >
             {/* Studio switcher */}
             <div className="px-4 pt-8 pb-4">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600 mb-3">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-500 mb-3">
                     Studio
                 </p>
                 <div className="flex flex-col gap-1">
@@ -74,17 +74,17 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                         onClick={() => onSelectStudio('photo')}
                         className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all text-xs font-medium ${previewStudio === 'photo'
                             ? 'bg-gold-500/10 text-gold-400'
-                            : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
+                            : 'text-neutral-400 hover:text-white hover:bg-white/[0.05]'
                             }`}
                     >
-                        <CameraIcon className={`w-3.5 h-3.5 flex-shrink-0 ${previewStudio === 'photo' ? 'text-gold-500' : ''}`} />
+                        <CameraIcon className={`w-3.5 h-3.5 flex-shrink-0 ${previewStudio === 'photo' ? 'text-gold-400' : ''}`} />
                         Photo Shoot
                     </button>
                     <button
                         onClick={() => onSelectStudio('marketing')}
                         className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all text-xs font-medium ${previewStudio === 'marketing'
                             ? 'bg-amber-500/10 text-amber-400'
-                            : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
+                            : 'text-neutral-400 hover:text-white hover:bg-white/[0.05]'
                             }`}
                     >
                         <SparklesIcon className={`w-3.5 h-3.5 flex-shrink-0 ${previewStudio === 'marketing' ? 'text-amber-400' : ''}`} />
@@ -94,11 +94,11 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             </div>
 
             {/* Divider */}
-            <div className="mx-4 border-t border-white/[0.05]" />
+            <div className="mx-4 border-t border-white/10" />
 
             {/* Steps */}
             <nav className="flex-1 px-4 py-5">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600 mb-3">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-500 mb-3">
                     Steps
                 </p>
                 <div className="flex flex-col gap-0.5">
@@ -117,7 +117,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                   flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left
                   transition-all duration-150
                   ${isActive ? (isPhoto ? 'bg-gold-500/[0.08] text-gold-400' : 'bg-amber-500/[0.08] text-amber-400') : ''}
-                  ${isCompleted ? 'text-neutral-300 hover:bg-white/[0.04] cursor-pointer' : ''}
+                  ${isCompleted ? 'text-neutral-400 hover:bg-white/[0.05] cursor-pointer' : ''}
                   ${isPreview || (!isActive && !isCompleted) ? 'text-neutral-600 cursor-default' : ''}
                 `}
                             >
@@ -125,13 +125,13 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                                 <span className={`
                   flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold
                   ${isCompleted
-                                        ? 'bg-transparent text-neutral-500'
+                                        ? 'bg-transparent text-neutral-400'
                                         : isActive
-                                            ? isPhoto ? 'bg-gold-500 text-black' : 'bg-amber-500 text-black'
-                                            : 'border border-neutral-700 text-neutral-700'}
+                                            ? isPhoto ? 'bg-gold-500 text-white' : 'bg-amber-500 text-white'
+                                            : 'border border-neutral-700 text-neutral-600'}
                 `}>
                                     {isCompleted
-                                        ? <svg className="w-3 h-3 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ? <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                         </svg>
                                         : index + 1
@@ -154,8 +154,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                     <button
                         onClick={() => navigate('/previously-generated')}
                         className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] transition-all ${location.pathname === '/previously-generated'
-                                ? 'bg-gold-500/10 text-gold-400 font-semibold border border-gold-500/20'
-                                : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                            ? 'bg-gold-500/10 text-gold-400 font-semibold border border-gold-500/20'
+                            : 'text-neutral-400 hover:text-white hover:bg-white/[0.05] border border-transparent'
                             }`}
                     >
                         <svg className={`w-3.5 h-3.5 flex-shrink-0 ${location.pathname === '/previously-generated' ? 'text-gold-400' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,7 +163,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                         </svg>
                         <span className="flex-1 text-left">Previously Generated</span>
                         {cachedCount > 0 && (
-                            <span className="px-1.5 py-0.5 bg-gold-500/20 text-gold-400 text-[9px] font-bold rounded-full">
+                            <span className="px-1.5 py-0.5 bg-gold-500/20 text-gold-600 text-[9px] font-bold rounded-full">
                                 {cachedCount}
                             </span>
                         )}
@@ -171,7 +171,7 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                 )}
                 <button
                     onClick={onExit}
-                    className="flex items-center gap-2 px-3 py-2 text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-[11px] text-neutral-500 hover:text-white transition-colors"
                 >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
