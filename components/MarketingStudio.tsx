@@ -382,61 +382,52 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     }
 
     return (
-        <div className="w-full max-w-5xl mx-auto animate-fade-in-up">
-            <div className="relative text-center mb-4">
-                <button
-                    onClick={onExit}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
-                    aria-label="Go back to studio selection"
-                >
-                    <ArrowLeftIcon className="w-5 h-5" />
-                    <span className="hidden sm:inline">Back</span>
-                </button>
-                <h2 className="font-serif-display text-2xl sm:text-3xl font-bold text-white">Marketing Studio</h2>
-                <p className="mt-1 text-sm text-neutral-300">Create promotional posters in a snap.</p>
+        <div className="w-full max-w-5xl mx-auto animate-fade-in-up px-2 sm:px-4">
+            <div className="text-center mb-6 sm:mb-8">
+                <h2 className="font-serif-display text-2xl sm:text-3xl md:text-4xl font-bold text-white">Marketing <span className="italic text-neutral-400">Studio</span></h2>
+                <p className="mt-1.5 text-xs sm:text-sm text-neutral-400">Create promotional posters in a snap.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
+                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 sm:p-6 rounded-2xl border border-white/10 shadow-2xl space-y-4">
                     <div>
-                        <h3 className="font-semibold text-sm text-white mb-2 text-center">1. Upload Your Product</h3>
+                        <h3 className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-2">Upload Your Product</h3>
                         <ImageUploader onImageUpload={handleImageUpload} initialPreview={imageFile?.previewUrl} aspectRatio="aspect-[4/3]" />
                     </div>
 
-                    <div>
-                        <h3 className="font-semibold text-sm text-white mb-2 text-center">2. Upload Your Logo (Optional)</h3>
-                        <div className="max-w-[120px] mx-auto">
+                    <div className="grid grid-cols-[auto_1fr] gap-3 sm:gap-4 items-start">
+                        <div className="w-[80px] sm:w-[100px]">
+                            <h3 className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-2">Logo</h3>
                             <ImageUploader
                                 onImageUpload={handleLogoUpload}
                                 initialPreview={logoFile?.previewUrl}
                                 aspectRatio="aspect-square"
-                                title="UPLOAD LOGO"
-                                subtitle="PNG recommended"
+                                title="LOGO"
+                                subtitle="PNG"
                             />
                         </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="extra-details-textarea" className="font-semibold text-sm text-white mb-2 text-center block">
-                            <h3>3. Extra Details (optional)</h3>
-                        </label>
-                        <textarea
-                            id="extra-details-textarea"
-                            name="extraDetails"
-                            value={extraDetails}
-                            onChange={(e) => setExtraDetails(e.target.value)}
-                            placeholder="e.g., Summer Sale, 20% Off, New Arrival"
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-2 px-3 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
-                            rows={1}
-                        />
+                        <div>
+                            <label htmlFor="extra-details-textarea" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-2 block">
+                                Extra Details (optional)
+                            </label>
+                            <textarea
+                                id="extra-details-textarea"
+                                name="extraDetails"
+                                value={extraDetails}
+                                onChange={(e) => setExtraDetails(e.target.value)}
+                                placeholder="e.g., Summer Sale, 20% Off, New Arrival"
+                                className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-2 px-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-gold-500/30 resize-none"
+                                rows={3}
+                            />
+                        </div>
                     </div>
 
                     {!isAuthenticated ? (
                         <button
                             onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
-                            className="w-full text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                            className="w-full text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-3 sm:py-3.5 px-8 rounded-xl shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             LOG IN TO GENERATE
@@ -446,13 +437,13 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                             <button
                                 onClick={handleGenerate}
                                 disabled={!imageFile || isLoading || (remainingCredits !== null && remainingCredits < 20)}
-                                className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                                className="w-full text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-neutral-600 disabled:to-neutral-700 disabled:cursor-not-allowed font-bold py-3 sm:py-3.5 px-8 rounded-xl shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                             >
-                                <SparklesIcon className="w-5 h-5" />
+                                <SparklesIcon className="w-4 h-4" />
                                 GENERATE POSTER
                             </button>
                             {remainingCredits !== null && (
-                                <div className="mt-3 space-y-2">
+                                <div className="space-y-2">
                                     <UnifiedCreditsSummaryBox
                                         totalCredits={totalCredits}
                                         usedPhotoshootCredits={usedPhotoshootCredits}
@@ -466,9 +457,9 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                                                 e.stopPropagation();
                                                 navigate('/pricing');
                                             }}
-                                            className="w-full text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-semibold py-3 px-8 rounded-lg shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
+                                            className="w-full text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold py-3 px-8 rounded-xl shadow-lg shadow-orange-900/30 transition-all duration-300 flex items-center justify-center gap-2"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                             </svg>
                                             Purchase Plan to Get Credits
@@ -480,22 +471,25 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                     )}
                 </div>
 
-                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
-                    <h3 className="font-semibold text-sm text-white mb-2 text-center">4. Your Generated Poster</h3>
-                    <div className="w-full aspect-[4/5] bg-neutral-800/50 rounded-lg flex items-center justify-center border-2 border-dashed border-neutral-700">
+                <div className="bg-neutral-900/40 backdrop-blur-xl p-4 sm:p-6 rounded-2xl border border-white/10 shadow-2xl">
+                    <h3 className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-3 text-center">Generated Poster</h3>
+                    <div className="w-full aspect-[4/5] bg-neutral-900/70 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden">
                         {generatedPoster ? (
                             <div className="group relative w-full h-full">
-                                <img src={generatedPoster} alt="Generated marketing poster" className="w-full h-full object-contain rounded-md" />
+                                <img src={generatedPoster} alt="Generated marketing poster" className="w-full h-full object-contain" />
                                 <button
                                     onClick={handleDownload}
-                                    className="absolute top-3 right-3 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100"
+                                    className="absolute top-3 right-3 p-2.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100 border border-white/10"
                                     aria-label="Download poster"
                                 >
                                     <DownloadIcon />
                                 </button>
                             </div>
                         ) : (
-                            <p className="text-neutral-400 text-sm">Your poster will appear here</p>
+                            <div className="flex flex-col items-center gap-2">
+                                <svg className="w-8 h-8 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <p className="text-neutral-500 text-xs sm:text-sm">Your poster will appear here</p>
+                            </div>
                         )}
                     </div>
                 </div>

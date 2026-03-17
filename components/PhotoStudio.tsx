@@ -499,6 +499,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     const [shakeId, setShakeId] = useState<string | null>(null);
     const [proToast, setProToast] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [shakeUpload, setShakeUpload] = useState(false);
+    const uploadAreaRef = useRef<HTMLDivElement>(null);
 
     // 3-layer category dropdown state
     const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -513,6 +515,9 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
     const [isItemDropdownOpen, setIsItemDropdownOpen] = useState(false);
     const [itemSearch, setItemSearch] = useState('');
     const itemDropdownRef = useRef<HTMLDivElement>(null);
+
+    const [isSubcategoryDropdownOpen, setIsSubcategoryDropdownOpen] = useState(false);
+    const subcategoryDropdownRef = useRef<HTMLDivElement>(null);
 
     // Build flat search index: { itemLabel, categoryLabel, subcategoryLabel? }
     const searchIndex = useMemo(() => {
@@ -549,6 +554,9 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
         const handleClickOutside = (e: MouseEvent) => {
             if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
                 setIsCategoryDropdownOpen(false);
+            }
+            if (subcategoryDropdownRef.current && !subcategoryDropdownRef.current.contains(e.target as Node)) {
+                setIsSubcategoryDropdownOpen(false);
             }
             if (itemDropdownRef.current && !itemDropdownRef.current.contains(e.target as Node)) {
                 setIsItemDropdownOpen(false);
@@ -630,7 +638,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                 {/* ──── LEFT PANEL: Upload ──── */}
                 <div className="space-y-2">
                     {/* Image Upload Area — always Front + Back */}
-                    <div className="bg-neutral-900/40 backdrop-blur-sm rounded-lg border border-white/5 p-2.5 sm:p-3">
+                    <div ref={uploadAreaRef} className={`bg-neutral-900/40 backdrop-blur-sm rounded-lg border p-2.5 sm:p-3 transition-all duration-300 ${shakeUpload ? 'border-red-500 animate-shake shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'border-white/5'}`}>
+                        {shakeUpload && (
+                            <p className="text-xs text-red-400 font-medium text-center mb-2 animate-fade-in">⚠ Please upload a product image first</p>
+                        )}
                         <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <div>
                                 <p className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold text-neutral-400 mb-1 ml-0.5">Front</p>
@@ -645,36 +656,31 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                 </div>
 
                 {/* ──── RIGHT PANEL: Production Details ──── */}
-                <div className={`transition-all duration-500 ${hasImage ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'}`}>
-                    {!hasImage && (
-                        <div className="text-center py-1.5 sm:py-2 mb-2 rounded-lg bg-gold-500/5 border border-gold-500/10">
-                            <p className="text-xs sm:text-sm text-gold-400/80 font-medium"><span className="lg:hidden">↑</span><span className="hidden lg:inline">←</span> Upload a photo to unlock details</p>
-                        </div>
-                    )}
+                <div className="transition-all duration-500">
 
                     <div className="space-y-2.5 sm:space-y-3">
                         {/* ── Searchable 3-Layer Category Dropdown ── */}
-                        <div>
-                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1 block">Product Category</label>
+                        <div className="relative z-[60]">
+                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Product Category</label>
                             <div className="grid grid-cols-1 gap-2">
                                 {/* Layer 1: Searchable Category */}
-                                <div className="relative" ref={categoryDropdownRef}>
+                                <div className="relative z-[120]" ref={categoryDropdownRef}>
                                     <div className="relative">
                                         <input
                                             type="text"
                                             value={isCategoryDropdownOpen ? categorySearch : selectedCategory}
-                                            onFocus={() => { setIsCategoryDropdownOpen(true); setCategorySearch(''); }}
+                                            onFocus={() => { setIsCategoryDropdownOpen(true); setCategorySearch(''); setIsItemDropdownOpen(false); setIsSubcategoryDropdownOpen(false); }}
                                             onChange={(e) => setCategorySearch(e.target.value)}
                                             placeholder="Search or select category..."
-                                            className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-600"
+                                            className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-500"
                                             autoComplete="off"
                                         />
-                                        <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                        <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                     </div>
 
                                     {/* Dropdown panel */}
                                     {isCategoryDropdownOpen && (
-                                        <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-neutral-900 border border-white/10 rounded-lg shadow-2xl shadow-black/60 animate-fade-in">
+                                        <div className="absolute z-[100] mt-1 w-full max-h-64 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
                                             {categorySearch.trim() ? (
                                                 /* Search results — flat list of matching items */
                                                 searchResults.length > 0 ? (
@@ -682,14 +688,14 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                         <button
                                                             key={`${entry.category}-${entry.subcategory}-${entry.item}-${i}`}
                                                             onClick={() => handleSearchSelect(entry)}
-                                                            className="w-full text-left px-3 py-2 hover:bg-white/5 transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
+                                                            className="w-full text-left px-3 py-2.5 hover:bg-white/10 transition-colors flex items-center gap-2 border-b border-white/5 last:border-0"
                                                         >
-                                                            <span className="text-sm text-white">{entry.item}</span>
-                                                            <span className="text-[9px] text-neutral-600 ml-auto">{entry.category}{entry.subcategory ? ` › ${entry.subcategory}` : ''}</span>
+                                                            <span className="text-sm font-medium text-white">{entry.item}</span>
+                                                            <span className="text-[9px] text-neutral-400 ml-auto">{entry.category}{entry.subcategory ? ` › ${entry.subcategory}` : ''}</span>
                                                         </button>
                                                     ))
                                                 ) : (
-                                                    <div className="px-3 py-4 text-center text-sm text-neutral-600">No results found</div>
+                                                    <div className="px-3 py-4 text-center text-sm text-neutral-400">No results found</div>
                                                 )
                                             ) : (
                                                 /* Default view — only top-level categories */
@@ -697,7 +703,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                     <button
                                                         key={cat.label}
                                                         onClick={() => handleCategoryChange(cat.label)}
-                                                        className={`w-full text-left px-3 py-2.5 text-xs sm:text-sm font-medium border-b border-white/5 transition-colors hover:bg-white/5 ${selectedCategory === cat.label ? 'text-gold-400 bg-gold-500/5' : 'text-neutral-300'}`}
+                                                        className={`w-full text-left px-3 py-2.5 text-xs sm:text-sm font-medium border-b border-white/5 transition-colors hover:bg-white/10 ${selectedCategory === cat.label ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
                                                     >
                                                         {cat.label}
                                                     </button>
@@ -709,40 +715,81 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
                                 {/* Layer 2: Subcategory (only if the selected category has subcategories) */}
                                 {selectedCategory && subcategoryOptions.length > 0 && (
-                                    <div className="relative animate-fade-in">
-                                        <select
-                                            value={selectedSubcategory}
-                                            onChange={(e) => handleSubcategoryChange(e.target.value)}
-                                            className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    <div className="relative z-[110] animate-fade-in" ref={subcategoryDropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsSubcategoryDropdownOpen(!isSubcategoryDropdownOpen); setIsCategoryDropdownOpen(false); setIsItemDropdownOpen(false); }}
+                                            className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-left text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30"
                                         >
-                                            <option value="">Select Subcategory</option>
-                                            {subcategoryOptions.map(sub => (
-                                                <option key={sub} value={sub}>{sub}</option>
-                                            ))}
-                                        </select>
-                                        <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                                            {selectedSubcategory || <span className="text-neutral-500">Select subcategory...</span>}
+                                        </button>
+                                        <ChevronDownIcon className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none transition-transform ${isSubcategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                                        {isSubcategoryDropdownOpen && (
+                                            <div className="absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
+                                                {subcategoryOptions.map(sub => (
+                                                    <button
+                                                        key={sub}
+                                                        onClick={() => {
+                                                            handleSubcategoryChange(sub);
+                                                            setIsSubcategoryDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-xs sm:text-sm font-medium border-b border-white/5 transition-colors hover:bg-white/10 ${selectedSubcategory === sub ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
+                                                    >
+                                                        {sub}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Layer 3: Item (show if category has flat items OR subcategory is selected) */}
                                 {selectedCategory && itemOptions.length > 0 && (subcategoryOptions.length === 0 || selectedSubcategory) && (
-                                    <div className="relative animate-fade-in" ref={itemDropdownRef}>
+                                    <div className="relative z-[100] animate-fade-in" ref={itemDropdownRef}>
                                         <div className="relative">
                                             <input
                                                 type="text"
                                                 value={isItemDropdownOpen ? itemSearch : selectedItem}
-                                                onFocus={() => { setIsItemDropdownOpen(true); setItemSearch(''); }}
+                                                onFocus={() => { setIsItemDropdownOpen(true); setItemSearch(''); setIsCategoryDropdownOpen(false); setIsSubcategoryDropdownOpen(false); }}
                                                 onChange={(e) => setItemSearch(e.target.value)}
                                                 placeholder="Search or select item..."
-                                                className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-600"
+                                                className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 pr-8 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/30 placeholder:text-neutral-500"
                                                 autoComplete="off"
                                             />
-                                            <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                            <svg className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                         </div>
                                         
                                         {/* Dropdown panel */}
                                         {isItemDropdownOpen && (
-                                            <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-neutral-900 border border-white/10 rounded-lg shadow-2xl shadow-black/60 animate-fade-in">
+                                            <div className="absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto bg-neutral-950 border border-white/15 rounded-lg shadow-2xl shadow-black/80 animate-fade-in">
+                                                {/* Pinned special options */}
+                                                {(!itemSearch.trim() || 'ai detected'.includes(itemSearch.toLowerCase())) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedItem('AI Detected');
+                                                            setItemSearch('');
+                                                            setIsItemDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/10 transition-colors hover:bg-gold-500/10 flex items-center gap-2 ${selectedItem === 'AI Detected' ? 'text-gold-400 bg-gold-500/10' : 'text-gold-400/80'}`}
+                                                    >
+                                                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                                        AI Detected
+                                                    </button>
+                                                )}
+                                                {(!itemSearch.trim() || 'other'.includes(itemSearch.toLowerCase())) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedItem('Other');
+                                                            setItemSearch('');
+                                                            setIsItemDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/10 transition-colors hover:bg-white/10 flex items-center gap-2 ${selectedItem === 'Other' ? 'text-gold-400 bg-gold-500/10' : 'text-neutral-300'}`}
+                                                    >
+                                                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                                        Other
+                                                    </button>
+                                                )}
+                                                {/* Regular items */}
                                                 {filteredItemOptions.length > 0 ? (
                                                     filteredItemOptions.map(item => (
                                                         <button
@@ -752,16 +799,30 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                                 setItemSearch('');
                                                                 setIsItemDropdownOpen(false);
                                                             }}
-                                                            className={`w-full text-left px-3 py-2 text-sm border-b border-white/5 last:border-0 transition-colors hover:bg-white/5 ${selectedItem === item ? 'text-gold-400 bg-gold-500/5' : 'text-neutral-200'}`}
+                                                            className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b border-white/5 last:border-0 transition-colors hover:bg-white/10 ${selectedItem === item ? 'text-gold-400 bg-gold-500/10' : 'text-white'}`}
                                                         >
                                                             {item}
                                                         </button>
                                                     ))
                                                 ) : (
-                                                    <div className="px-3 py-4 text-center text-sm text-neutral-600">No matching items found</div>
+                                                    !itemSearch.trim() ? null : <div className="px-3 py-4 text-center text-sm text-neutral-400">No matching items found</div>
                                                 )}
                                             </div>
                                         )}
+                                    </div>
+                                )}
+
+                                {/* Manual input when "Other" is selected */}
+                                {selectedItem === 'Other' && (
+                                    <div className="animate-fade-in">
+                                        <input
+                                            type="text"
+                                            value={productName}
+                                            onChange={(e) => onProductNameChange(e.target.value)}
+                                            placeholder="Enter product type (e.g. Kurta, Saree, Watch...)"
+                                            className="w-full bg-neutral-900/70 border border-gold-500/30 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 placeholder:text-neutral-500"
+                                            autoFocus
+                                        />
                                     </div>
                                 )}
                             </div>
@@ -770,7 +831,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                         {/* Identity + Label — stacked on mobile */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             <div>
-                                <label htmlFor="creator-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1.5 block">Brand Name</label>
+                                <label htmlFor="creator-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Brand Name</label>
                                 <input
                                     id="creator-name-input"
                                     name="creatorName"
@@ -778,11 +839,11 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                     value={creatorName}
                                     onChange={(e) => onCreatorNameChange(e.target.value)}
                                     placeholder="e.g. Nike, Apple..."
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-500"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="product-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1.5 block">Product Name</label>
+                                <label htmlFor="product-name-input" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Product Name</label>
                                 <input
                                     id="product-name-input"
                                     name="productName"
@@ -790,14 +851,14 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                     value={productName}
                                     onChange={(e) => onProductNameChange(e.target.value)}
                                     placeholder="e.g. Air Max 90..."
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-700"
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all placeholder:text-neutral-500"
                                 />
                             </div>
                         </div>
 
                         {/* Visual Style — Essential, always visible */}
                         <div>
-                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1.5 block">Visual Style</label>
+                            <label className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1.5 block">Visual Style</label>
                             <div className="flex overflow-x-auto gap-2 sm:gap-3 pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                                 {filteredStyles.map((style) => {
                                     const isActive = selectedStyle === style.id;
@@ -819,9 +880,9 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                         >
                                             <div className={`w-full aspect-square rounded-lg border-2 flex items-center justify-center text-[10px] sm:text-xs font-bold tracking-wide transition-all ${gradient} ${isActive
                                                     ? 'border-gold-400 scale-105 shadow-[0_0_15px_rgba(250,204,21,0.15)]'
-                                                    : 'border-white/5 group-hover:bg-white/5 group-hover:border-white/20'
+                                                    : 'border-white/15 group-hover:bg-white/10 group-hover:border-white/30'
                                                 }`}>
-                                                <span className={`${isActive ? 'text-gold-400' : 'text-neutral-500 group-hover:text-neutral-300'} drop-shadow-md leading-tight text-center px-0.5`}>
+                                                <span className={`${isActive ? 'text-gold-400' : 'text-neutral-300 group-hover:text-white'} drop-shadow-md leading-tight text-center px-0.5`}>
                                                     {style.name}
                                                 </span>
                                             </div>
@@ -833,8 +894,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
                         {/* Image Quality — Essential, always visible (outside advanced) */}
                         <div>
-                            <label htmlFor="image-quality-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1 block">Image Quality</label>
-                            <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/50">
+                            <label htmlFor="image-quality-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Image Quality</label>
+                            <div className="flex gap-1 p-0.5 rounded-md bg-neutral-800/70 border border-white/10">
                                 {IMAGE_QUALITY_OPTIONS.map((opt) => {
                                     const isProLocked = PRO_QUALITY_IDS.includes(opt.id) && !isPaidUser;
                                     const isActive = imageQuality === opt.id;
@@ -864,20 +925,20 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
                         {/* Format */}
                         <div>
-                            <label htmlFor="aspect-ratio-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1 block">Format</label>
+                            <label htmlFor="aspect-ratio-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Format</label>
                             <div className="relative">
                                 <select
                                     id="aspect-ratio-select"
                                     name="aspectRatio"
                                     value={aspectRatio}
                                     onChange={(e) => onAspectRatioChange(e.target.value as AspectRatio)}
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
                                 >
                                     {ASPECT_RATIOS.map((ratio) => (
                                         <option key={ratio.id} value={ratio.id}>{ratio.label}</option>
                                     ))}
                                 </select>
-                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none" />
                             </div>
                         </div>
 
@@ -886,11 +947,11 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             {categoryConfig.showSameModel && (
                                 <button
                                     onClick={() => onConsistentCharacterChange(!consistentCharacter)}
-                                    className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${consistentCharacter ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/50 border-white/5'}`}
+                                    className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${consistentCharacter ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/70 border-white/15'}`}
                                     title="Ensures the same person appears across multiple photos."
                                 >
                                     <div className="flex items-center gap-1.5">
-                                        <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${consistentCharacter ? 'text-gold-400' : 'text-neutral-500'}`}>Keep Same Person</span>
+                                        <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${consistentCharacter ? 'text-gold-400' : 'text-neutral-300'}`}>Keep Same Person</span>
                                         <div className="relative group/tooltip">
                                             <div className="flex items-center justify-center w-3 h-3 rounded-full border border-neutral-600 text-[8px] text-neutral-500 font-serif italic pb-px cursor-help">?</div>
                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-neutral-800 border border-white/10 rounded-md text-[9px] text-neutral-300 font-normal normal-case tracking-normal whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">Uses the same AI model across all your photos</div>
@@ -903,11 +964,11 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             )}
                             <button
                                 onClick={() => onUseSameLocationChange(!useSameLocation)}
-                                className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${useSameLocation ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/50 border-white/5'}`}
+                                className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${useSameLocation ? 'bg-gold-500/10 border-gold-500/30' : 'bg-neutral-900/70 border-white/15'}`}
                                 title="Keeps the background environment strictly consistent."
                             >
                                 <div className="flex items-center gap-1.5">
-                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${useSameLocation ? 'text-gold-400' : 'text-neutral-500'}`}>Keep Same Location</span>
+                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${useSameLocation ? 'text-gold-400' : 'text-neutral-300'}`}>Keep Same Location</span>
                                     <div className="relative group/tooltip">
                                         <div className="flex items-center justify-center w-3 h-3 rounded-full border border-neutral-600 text-[8px] text-neutral-500 font-serif italic pb-px cursor-help">?</div>
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-neutral-800 border border-white/10 rounded-md text-[9px] text-neutral-300 font-normal normal-case tracking-normal whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">Keeps the same background scene in every photo</div>
@@ -921,20 +982,20 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
                         {/* Number of Images */}
                         <div>
-                            <label htmlFor="number-of-images-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 mb-1 block">Number of Images</label>
+                            <label htmlFor="number-of-images-select" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-1 block">Number of Images</label>
                             <div className="relative">
                                 <select
                                     id="number-of-images-select"
                                     name="numberOfImages"
                                     value={numberOfImages}
                                     onChange={(e) => onNumberOfImagesChange(Number(e.target.value))}
-                                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
+                                    className="w-full bg-neutral-900/70 border border-white/15 rounded-md py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white focus:outline-none appearance-none"
                                 >
                                     <option value={2}>2 Images</option>
                                     <option value={4}>4 Images</option>
                                     <option value={6}>6 Images</option>
                                 </select>
-                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-600 pointer-events-none" />
+                                <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none" />
                             </div>
                             <p className="mt-1.5 text-[9px] sm:text-[10px] text-gold-400/80 font-medium tracking-wide">
                                 This will use <span className="text-gold-400 font-bold">{numberOfImages * (imageQuality === '4K' ? 40 : 20)}</span> Credits
@@ -946,7 +1007,15 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                         <div className="pt-0.5 sm:pt-1">
                             {!isAuthenticated ? (
                                 <button
-                                    onClick={() => navigate('/login', { state: { from: { pathname: '/studio' } } })}
+                                    onClick={() => {
+                                        if (!hasImage) {
+                                            setShakeUpload(true);
+                                            setTimeout(() => setShakeUpload(false), 1500);
+                                            uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            return;
+                                        }
+                                        navigate('/login', { state: { from: { pathname: '/studio' } } });
+                                    }}
                                     className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gradient-to-r from-orange-500 via-gold-500 to-gold-500 hover:from-orange-600 hover:via-gold-600 hover:to-gold-600 font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-orange-950/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 sm:gap-2"
                                 >
                                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -957,8 +1026,16 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                             ) : (
                                 <>
                                     <button
-                                        onClick={onGenerate}
-                                        disabled={!hasImage || isLoading || (remainingCredits !== null && remainingCredits < (numberOfImages * (imageQuality === '4K' ? 40 : 20)))}
+                                        onClick={() => {
+                                            if (!hasImage) {
+                                                setShakeUpload(true);
+                                                setTimeout(() => setShakeUpload(false), 1500);
+                                                uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                return;
+                                            }
+                                            onGenerate();
+                                        }}
+                                        disabled={isLoading || (remainingCredits !== null && remainingCredits < (numberOfImages * (imageQuality === '4K' ? 40 : 20)))}
                                         className="w-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white bg-gold-700 hover:bg-gold-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg shadow-gold-950/40 transition-all transform hover:-translate-y-0.5 disabled:transform-none"
                                     >
                                         {isLoading ? 'Processing...' : `Generate Photoshoot — ${numberOfImages * (imageQuality === '4K' ? 40 : 20)} Credits`}
@@ -1679,9 +1756,108 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         );
     };
 
+    // Track elapsed time for "stay tuned" message
+    const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        if (phase === 'generating') {
+            setGenerationStartTime(Date.now());
+            setElapsedSeconds(0);
+        } else {
+            setGenerationStartTime(null);
+            setElapsedSeconds(0);
+        }
+    }, [phase]);
+
+    useEffect(() => {
+        if (!generationStartTime) return;
+        const interval = setInterval(() => {
+            setElapsedSeconds(Math.floor((Date.now() - generationStartTime) / 1000));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [generationStartTime]);
+
     const renderPhaseContent = () => {
         if (phase === 'generating' || isLoading) {
-            return <LoadingScreen mode={'image'} imageUrl={imageFiles[0]?.previewUrl} generatedImages={loadingImages} message={loadingMessage} totalImages={numberOfImages} />;
+            const generatedCount = loadingImages.filter(Boolean).length;
+            const total = numberOfImages || 2;
+            return (
+                <div className="w-full max-w-4xl mx-auto animate-fade-in-up px-4">
+                    <h2 className="font-serif-display text-3xl sm:text-4xl md:text-5xl text-center mb-4 text-white tracking-tighter">
+                        Creating Your <span className="italic text-neutral-400">Photoshoot</span>
+                    </h2>
+                    <p className="text-center text-sm text-neutral-500 mb-10">
+                        {generatedCount < total
+                            ? `Generating image ${generatedCount + 1} of ${total}...`
+                            : 'Finishing up...'
+                        }
+                    </p>
+
+                    {/* Round placeholders grid */}
+                    <div className={`grid gap-4 sm:gap-6 mb-8 ${total <= 2 ? 'grid-cols-2 max-w-lg mx-auto' : total <= 4 ? 'grid-cols-2 sm:grid-cols-4 max-w-2xl mx-auto' : 'grid-cols-3 sm:grid-cols-3 max-w-2xl mx-auto'}`}>
+                        {Array.from({ length: total }, (_, i) => {
+                            const imageUrl = loadingImages[i];
+                            const isLoaded = !!imageUrl;
+                            const isCurrentlyLoading = !isLoaded && i === generatedCount;
+                            return (
+                                <div key={i} className="flex flex-col items-center gap-3">
+                                    <div className={`relative w-full aspect-square rounded-full overflow-hidden border-2 transition-all duration-700 ${
+                                        isLoaded
+                                            ? 'border-gold-400 shadow-[0_0_20px_rgba(250,204,21,0.2)]'
+                                            : isCurrentlyLoading
+                                                ? 'border-gold-500/50 animate-pulse'
+                                                : 'border-white/10'
+                                    }`}>
+                                        {isLoaded ? (
+                                            <img
+                                                src={imageUrl}
+                                                alt={`Generated image ${i + 1}`}
+                                                className="w-full h-full object-cover animate-fade-in"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-neutral-900/80 flex items-center justify-center">
+                                                {isCurrentlyLoading ? (
+                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 relative">
+                                                        <div className="absolute inset-0 rounded-full border-[3px] border-white/10"></div>
+                                                        <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-gold-500 animate-spin"></div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-lg sm:text-xl font-bold text-white/15">{i + 1}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-widest font-bold ${
+                                        isLoaded ? 'text-gold-400' : isCurrentlyLoading ? 'text-neutral-400' : 'text-neutral-600'
+                                    }`}>
+                                        {isLoaded ? '✓ Ready' : isCurrentlyLoading ? 'Processing...' : 'Queued'}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full max-w-md mx-auto mb-6">
+                        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-gold-500 to-gold-400 rounded-full transition-all duration-700 ease-out"
+                                style={{ width: `${Math.max(5, (generatedCount / total) * 100)}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stay tuned message after 40 seconds */}
+                    {elapsedSeconds >= 40 && generatedCount < total && (
+                        <div className="text-center animate-fade-in">
+                            <p className="text-xs sm:text-sm text-neutral-400 font-medium">
+                                ⏳ Sometimes it takes a bit longer — <span className="text-gold-400">stay tuned!</span>
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         switch (phase) {

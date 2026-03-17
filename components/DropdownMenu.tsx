@@ -190,8 +190,9 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ onClose, activeSecti
                 })}
                 <button 
                   onClick={() => { (location.pathname === '/studio' ? navigate('/studio', { state: { start: true }, replace: true }) : navigate('/studio')); onClose(); }}
-                  className="mt-4 w-full text-white bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 font-semibold py-3 px-4 rounded-full transition-all duration-300 transform hover:scale-105 btn-glow"
+                  className="mt-6 w-full text-black bg-gradient-to-r from-gold-400 via-yellow-400 to-gold-500 hover:from-gold-500 hover:via-yellow-500 hover:to-gold-600 font-bold text-base py-3.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-[0_0_25px_rgba(250,204,21,0.3)] border-2 border-gold-300/50 flex items-center justify-center gap-2"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   Launch Studio
                 </button>
             </nav>
