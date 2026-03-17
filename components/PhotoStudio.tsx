@@ -1124,7 +1124,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             return () => clearInterval(interval);
         }
     }, [fetchCredits]);
-    const [phase, setPhase] = useState<StudioPhase>('category');
+    const [phase, setPhase] = useState<StudioPhase>('details');
 
     // Notify parent of phase changes so sidebar can update step indicator
     useEffect(() => {
@@ -1148,8 +1148,8 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [viewMode, setViewMode] = useState<ViewMode>('gallery');
     const catalogueRef = useRef<HTMLDivElement>(null);
 
-    const [promptCategory, setPromptCategory] = useState<Category | null>(null);
-    const [currentProductTypes, setCurrentProductTypes] = useState<ProductTypeOption[]>([]);
+    const [promptCategory, setPromptCategory] = useState<Category | null>('women');
+    const [currentProductTypes, setCurrentProductTypes] = useState<ProductTypeOption[]>(CATEGORY_DATA.fashion.productTypes || []);
     const [productType, setProductType] = useState<ProductType>('apparel');
     const [productName, setProductName] = useState<string>('');
     const [creatorName, setCreatorName] = useState<string>('');
