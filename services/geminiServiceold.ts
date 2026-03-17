@@ -8,6 +8,18 @@ import { ECOMMERCE_PROMPTS } from "./prompts/ecommerce";
 import { STYLE_OPTIONS } from "./styles";
 import { PROFESSIONAL_APPAREL_PROMPTS } from "./prompts/professionalApparel";
 
+/**
+ * Fisher-Yates shuffle: returns a new array with elements in random order.
+ */
+function shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 if (!process.env.API_KEY) {
     console.warn("API_KEY environment variable not set. AI features will not work until it is configured.");
 }
@@ -229,7 +241,7 @@ export const generateCatalogueImages = async (
         const backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
 
         const isBackViewOptional = productType === 'apparel' && (apparelStyle === 'professional' || category === 'women' || category === 'men');
-        let activePhotoPrompts = [...photoPrompts];
+        let activePhotoPrompts = shuffleArray([...photoPrompts]);
 
         if (isBackViewOptional && !backImage) {
             activePhotoPrompts.pop();

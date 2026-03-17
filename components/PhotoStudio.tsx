@@ -601,17 +601,71 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
             : DEFAULT_CATEGORY_CONFIG;
     const filteredStyles = STYLE_OPTIONS.filter(s => categoryConfig.styleIds.includes(s.id));
 
-    // Derive promptCategory from the top-level selected category label
-    const derivedCategory = (cat: string, sub: string): Category => {
-        const c = sub || cat;
-        if (c === 'Men') return 'men';
-        if (c === 'Women') return 'women';
-        if (c === 'Kids' || c === 'Boys' || c === 'Girls') return 'kids';
-        if (cat === 'Fashion') return 'women'; // default fashion to women
+    // Derive promptCategory from the top-level selected category label + subcategory
+    const derivedCategory = (cat: string, sub: string, item?: string): Category => {
+        // Fashion → men/women/kids based on subcategory
+        if (cat === 'Fashion') {
+            if (sub === 'Men') return 'men';
+            if (sub === 'Women') return 'women';
+            if (sub === 'Kids') return 'kids';
+            return 'women'; // default fashion to women
+        }
+        // Fashion Accessories
+        if (cat === 'Fashion Accessories') {
+            if (sub === 'Jewellery') return 'women'; // women.jewelry prompts
+            if (sub === 'Bags') return 'women';       // women.purse prompts
+            if (sub === 'Watches') return 'men';       // men.watch prompts
+            if (sub === 'Other Accessories') {
+                // Belts → men.belt, rest → ecommerce.other
+                if (item && item.toLowerCase().includes('belt')) return 'men';
+                return 'ecommerce';
+            }
+            return 'ecommerce';
+        }
+        // Beauty & Personal Care → women (perfume prompts)
+        if (cat === 'Beauty & Personal Care') return 'women';
+        // Footwear → based on subcategory
+        if (cat === 'Footwear') {
+            if (sub === 'Men') return 'men';
+            if (sub === 'Women') return 'women';
+            if (sub === 'Kids') return 'kids';
+            return 'ecommerce';
+        }
+        // Toys & Baby Products → kids
+        if (cat === 'Toys & Baby Products') return 'kids';
+        // Electronics, Home & Living, Sports, Food, Automotive, Other → ecommerce
         return 'ecommerce';
     };
-    const derivedProductType = (cat: string): ProductType => {
+    const derivedProductType = (cat: string, sub?: string, item?: string): ProductType => {
+        // Fashion → apparel
         if (cat === 'Fashion') return 'apparel';
+        // Fashion Accessories — map to specific prompt keys
+        if (cat === 'Fashion Accessories') {
+            if (sub === 'Jewellery') return 'jewelry';
+            if (sub === 'Bags') return 'purse';
+            if (sub === 'Watches') return 'watch';
+            if (sub === 'Other Accessories') {
+                if (item && item.toLowerCase().includes('belt')) return 'belt';
+                return 'other';
+            }
+            return 'other';
+        }
+        // Beauty & Personal Care → perfume prompts
+        if (cat === 'Beauty & Personal Care') return 'perfume';
+        // Electronics → electronics prompts
+        if (cat === 'Electronics') return 'electronics';
+        // Home & Living → map by subcategory
+        if (cat === 'Home & Living') {
+            if (sub === 'Kitchen') return 'home-and-kitchen';
+            if (sub === 'Furniture') return 'furniture';
+            if (sub === 'Home Decor') return 'home-and-kitchen'; // closest match
+            return 'other';
+        }
+        // Footwear → apparel prompts (model wearing the footwear)
+        if (cat === 'Footwear') return 'apparel';
+        // Toys & Baby Products → toys
+        if (cat === 'Toys & Baby Products') return 'toys';
+        // Sports & Fitness, Food & Beverages, Automotive, Other → other (dynamic prompts)
         return 'other';
     };
 
@@ -626,8 +680,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
         const config = val ? (CATEGORY_CONFIG[val] || DEFAULT_CATEGORY_CONFIG) : DEFAULT_CATEGORY_CONFIG;
         onStyleChange(config.defaultStyle);
         // Notify parent about category change
-        const dCat = derivedCategory(val, '');
-        const dProd = derivedProductType(val);
+        const dCat = derivedCategory(val, '', '');
+        const dProd = derivedProductType(val, '', '');
         onCategoryChange?.(dCat, dProd);
     };
     const handleSubcategoryChange = (val: string) => {
@@ -639,8 +693,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
         const subConfig = CATEGORY_CONFIG[val] || CATEGORY_CONFIG[selectedCategory] || DEFAULT_CATEGORY_CONFIG;
         onStyleChange(subConfig.defaultStyle);
         // Notify parent
-        const dCat = derivedCategory(selectedCategory, val);
-        const dProd = derivedProductType(selectedCategory);
+        const dCat = derivedCategory(selectedCategory, val, '');
+        const dProd = derivedProductType(selectedCategory, val, '');
         onCategoryChange?.(dCat, dProd);
     };
     // Handle search result selection — auto-fill all three layers
@@ -656,8 +710,8 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
         const config = CATEGORY_CONFIG[entry.subcategory] || CATEGORY_CONFIG[entry.category] || DEFAULT_CATEGORY_CONFIG;
         onStyleChange(config.defaultStyle);
         // Notify parent
-        const dCat = derivedCategory(entry.category, entry.subcategory);
-        const dProd = derivedProductType(entry.category);
+        const dCat = derivedCategory(entry.category, entry.subcategory, entry.item);
+        const dProd = derivedProductType(entry.category, entry.subcategory, entry.item);
         onCategoryChange?.(dCat, dProd);
     };
 
@@ -801,6 +855,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                             setSelectedItem('AI Detected');
                                                             setItemSearch('');
                                                             setIsItemDropdownOpen(false);
+                                                            // Re-derive with item context
+                                                            const dCat = derivedCategory(selectedCategory, selectedSubcategory, 'AI Detected');
+                                                            const dProd = derivedProductType(selectedCategory, selectedSubcategory, 'AI Detected');
+                                                            onCategoryChange?.(dCat, dProd);
                                                         }}
                                                         className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-gold-50' : 'border-white/10 hover:bg-gold-500/10'} ${selectedItem === 'AI Detected' ? 'text-gold-400 bg-gold-500/10' : 'text-gold-400/80'}`}
                                                     >
@@ -814,6 +872,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                             setSelectedItem('Other');
                                                             setItemSearch('');
                                                             setIsItemDropdownOpen(false);
+                                                            // Re-derive with item context
+                                                            const dCat2 = derivedCategory(selectedCategory, selectedSubcategory, 'Other');
+                                                            const dProd2 = derivedProductType(selectedCategory, selectedSubcategory, 'Other');
+                                                            onCategoryChange?.(dCat2, dProd2);
                                                         }}
                                                         className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/10 hover:bg-white/10'} ${selectedItem === 'Other' ? 'text-gold-400 bg-gold-500/10' : isLight ? 'text-neutral-600' : 'text-neutral-300'}`}
                                                     >
@@ -830,6 +892,10 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                                 setSelectedItem(item);
                                                                 setItemSearch('');
                                                                 setIsItemDropdownOpen(false);
+                                                                // Re-derive with item context (e.g. for Belt detection)
+                                                                const dCat3 = derivedCategory(selectedCategory, selectedSubcategory, item);
+                                                                const dProd3 = derivedProductType(selectedCategory, selectedSubcategory, item);
+                                                                onCategoryChange?.(dCat3, dProd3);
                                                             }}
                                                             className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b last:border-0 transition-colors ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/5 hover:bg-white/10'} ${selectedItem === item ? 'text-gold-400 bg-gold-500/10' : isLight ? 'text-neutral-700' : 'text-white'}`}
                                                         >
