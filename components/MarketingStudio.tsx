@@ -13,6 +13,7 @@ import { LoadingScreen } from './LoadingScreen';
 import { UnifiedCreditsSummaryBox } from './UnifiedCreditsSummaryBox';
 import { addToCache, getCachedItems } from '../utils/cacheManager';
 import { toast } from 'react-toastify';
+import { notifyGenerationComplete } from '../utils/notification';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -146,6 +147,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
             const poster = await generateMarketingPoster(imageFile, extraDetails, logoFile);
             setGeneratedPoster(poster);
             onContentGenerated();
+            notifyGenerationComplete('Marketing Poster');
 
             // Add poster to cache for "Previously Generated" page
             // Convert URL to data URL if needed (for persistence in localStorage)

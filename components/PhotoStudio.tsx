@@ -40,6 +40,7 @@ import { GirlCrestIcon } from './icons/GirlCrestIcon';
 import { FurnitureIcon } from './icons/FurnitureIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { UnifiedCreditsSummaryBox } from './UnifiedCreditsSummaryBox';
+import { notifyGenerationComplete } from '../utils/notification';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { AspectRatio16x9Icon } from './icons/AspectRatio16x9Icon';
 import { AspectRatio9x16Icon } from './icons/AspectRatio9x16Icon';
@@ -1302,6 +1303,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
             setModelImages(result.modelImages);
             setPhase('results');
             onContentGenerated();
+            notifyGenerationComplete('Photoshoot');
 
             // Add images to cache for "Previously Generated" page
             // Convert remote URLs to data URLs for persistence in localStorage
