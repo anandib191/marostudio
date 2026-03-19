@@ -1,34 +1,33 @@
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, joyful, full-body editorial photo of a child model wearing the provided clothing item.
-CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the clothing. This includes its design, color, pattern, texture, and fit. It is a fixed, unchangeable element placed onto the model.
-MODEL & STYLE: A happy, expressive child model. Their pose should be playful and natural, like a candid moment of fun.
-BACKGROUND & ATMOSPHERE: A clean, well-lit, and colorful studio background with fun, simple props like oversized colorful blocks, balloons, or a paper moon.
-LIGHTING: Professional, clear, and soft studio lighting that makes the scene feel cheerful and vibrant.
-OUTPUT SPECIFICATIONS: High-resolution, sharp, editorial quality suitable for a children's fashion catalogue. The clothing is the star.
+TASK: Generate an ultra-realistic, joyful fashion editorial of a child model wearing the provided garment.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
+DYNAMIC DIRECTION: Study the garment's character (playful, formal, school, seasonal). Select a child model archetype, age, expression, and pose that perfectly match the product's spirit. Build a wholesome, imaginative world that THIS garment belongs to.
+LIGHTING & ATMOSPHERE: Professional, soft fashion-grade illumination that creates a cheerful, vibrant, and natural mood.
+QUALITY CONTROL: NO visible camera gear, light stands, studio umbrellas, or photographers. Focus on pure childhood joy. 
 `;
 
 const APPAREL_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic photo of a child wearing the provided garment, playing outdoors.
-  CRITICAL RULE: The clothing item must be used **EXACTLY AS IS**.
-  MODEL & STYLE: A child running through a beautiful green park on a clear day, captured in a moment of pure joy. The pose is candid and full of motion.
-  BACKGROUND & ATMOSPHERE: A beautiful, safe outdoor setting. The lighting is clear and natural daylight, creating a happy and energetic mood.
-  OUTPUT SPECIFICATIONS: High-resolution, heartwarming, and full of life.
+  TASK: Generate an ultra-realistic, joyous "Nature Exploration" editorial of a child wearing the provided garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: "Discovery". Choose a beautiful, sun-drenched outdoor setting (e.g., a flower meadow, a dappled forest path, or a coastal rockpool). The child's pose should be candid and full of wonder.
+  LIGHTING: Vibrant, natural-feeling illumination.
+  QUALITY CONTROL: Zero visible cameras or equipment. Focus on pure, unedited childhood magic.
   `,
   `
-  TASK: Generate an ultra-realistic lifestyle photo of children playing together, wearing items from the collection including the provided garment.
-  CRITICAL RULE: The main child model's garment must be used with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A small group of diverse children laughing and playing together with simple toys (like a ball or building blocks) in a cheerful playroom or backyard.
-  BACKGROUND & ATMOSPHERE: A cheerful and clean play environment. The focus is on the interaction and friendship between the children.
-  OUTPUT SPECIFICATIONS: A wholesome, relatable shot that shows the clothes are perfect for play.
+  TASK: Generate a dynamic, ultra-realistic "Playtime Portrait" of children wearing the provided garment.
+  CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Create a unique, heartwarming scene of friendship and interaction. Choose a diverse group of child models whose energy matches the garment. The scene should feel like a real, captured moment of life.
+  LIGHTING: Natural, bright, atmospheric illumination.
+  QUALITY CONTROL: Zero technical artifacts. No equipment or gear visible.
   `,
   `
-  TASK: Generate an ultra-realistic, close-up shot focusing on a cute detail of the provided clothing item.
-  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**. Its original fabric texture, pattern, and details must be preserved.
-  MODEL & STYLE: The shot is tightly cropped on a specific part of the garment as worn by a child, for example, an embroidered animal on a pocket, a unique button, or a fun pattern on a sleeve.
-  LIGHTING & BACKGROUND: Soft, natural light. The background is simple and blurred.
-  OUTPUT SPECIFICATIONS: A charming, detail-oriented shot that highlights the quality and design of the clothing.
+  TASK: Generate a dramatic, ultra-realistic "Artisan Detail" macro shot focusing on the provided garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Choose a charming, unconventional crop that highlights the garment's most beautiful detail (e.g., an embroidered patch, a wooden toggle, or a hand-stitched seam). Use a thin depth of field to make it feel tactile and precious.
+  LIGHTING: Soft, directional light that grazes the texture.
+  QUALITY CONTROL: NO visible technical artifacts.
   `,
   `
   TASK: Generate an ultra-realistic photo of a child wearing the provided garment in a relaxed, cozy setting.
@@ -118,6 +117,14 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
+  TASK: Generate an ultra-realistic, seasonal "Festive Moment" of a child wearing the provided garment.
+  CRITICAL RULE: Use the garment **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Study the festive potential of the garment. Create a unique celebration scene (e.g., a garden party, a twilight lantern festival, or a joyful indoor holiday). The child's interaction with the environment (e.g., blowing bubbles, holding a sparkler, or laughing with friends) should feel spontaneous and unique.
+  LIGHTING: Warm, atmospheric ambient lighting with a soft, magical glow.
+  QUALITY CONTROL: Zero visible technical equipment. Pure celebratory joy.
+  `,
+
+  `
   TASK: Generate an ultra-realistic photo of a child wearing the provided garment at a cultural or seasonal festival.
   CRITICAL RULE: The clothing item must be used **EXACTLY AS IS**. It is a fixed, unchangeable element.
   MODEL & STYLE: A delighted child at a festive outdoor event — a fair, a carnival, or a holiday market. They hold cotton candy, a small flag, or a festive treat. The garment is appropriate for the occasion and clearly displayed.
@@ -128,20 +135,20 @@ const APPAREL_PHOTO_PROMPTS = [
 
 // --- TOYS PROMPTS ---
 const TOYS_COVER_PROMPT = `
-TASK: Create a magical, enchanting product photoshoot stage for a toy.
-IMPORTANT INSTRUCTION: You will be given an image containing a toy. Your primary and most critical task is to use the **exact toy** from the provided image. **DO NOT ALTER THE TOY IN ANY WAY.** This includes its design, colors, or features.
-SCENE: Place this unaltered toy in a magical, miniature world that relates to its theme. For example, a toy car on a race track made of candy, or a doll in a fairy-tale forest. The background should be dreamy and out-of-focus.
-LIGHTING: Soft, whimsical, and clear, with soft bokeh effects to create a sense of wonder.
-GOAL: The final composition should feel imaginative and enchanting, making the original toy the hero of its own little story.
+TASK: Create a magical, enchanting product stage for a toy.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact toy** from the provided image **WITHOUT A SINGLE ALTERATION**.
+SCENE & ATMOSPHERE: Build a miniature, imaginative world that relates to the toy's theme (e.g., a galactic void, a fairytale forest, or a candy racetrack). The background should be a dreamy, high-fashion blur of color and wonder.
+LIGHTING: Whimsical, volumetric light with soft bokeh effects that create a sense of magic and scale.
+QUALITY CONTROL: NO visible technical equipment, light stands, or camera gear. Pure imaginative storytelling.
 `;
 
 const TOYS_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic, close-up shot of a child's face lit with joy as they play with the provided toy.
-  CRITICAL RULE: The toy from the user's image must be used **EXACTLY AS IS**.
-  MODEL & STYLE: A tightly cropped shot on a child's happy, wondrous expression as they interact with the toy. The toy is held close to them and is also in sharp focus.
-  BACKGROUND & ATMOSPHERE: The background is simple and softly blurred, keeping all attention on the child and the toy.
-  OUTPUT SPECIFICATIONS: High-resolution, emotional, and heartwarming.
+  TASK: Generate an ultra-realistic, emotional "Moment of Wonder" portrait centered on the child and provided toy.
+  CRITICAL RULE: The toy **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Focus on the visceral connection between the child and the toy. Use a tight, cinematic framing that captures the sparkle in the child's eyes and the toy's unchangeable detail.
+  LIGHTING: Ethereal, soft-focused illumination.
+  QUALITY CONTROL: Zero visible cameras or gear.
   `,
   `
   TASK: Generate an ultra-realistic photo from the toy's perspective, looking up at a happy child.
@@ -151,11 +158,11 @@ const TOYS_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: A creative, unique, and engaging shot.
   `,
   `
-  TASK: Generate an ultra-realistic lifestyle photo of a child's hands actively playing with the provided toy.
-  CRITICAL RULE: You **MUST** use the toy from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A close-up, top-down shot of a child's hands and the toy on a clean floor or playmat. The child is actively engaged in building, arranging, or interacting with the toy.
-  BACKGROUND & ATMOSPHERE: A clean and simple play area.
-  OUTPUT SPECIFICATIONS: A detailed, candid shot that clearly shows how the toy is used.
+  TASK: Generate a candid, ultra-realistic "Moment of Discovery" featuring a child's hands and the provided toy.
+  CRITICAL RULE: The toy must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Close-up, top-down or cinematic angle focusing on the hands. The setting should be a clean, inviting play surface (wood, textured mat, or grass) that complements the toy's colors. The interaction should feel real and exploratory.
+  LIGHTING: Soft, natural illumination that highlights the toy's specific materials.
+  QUALITY CONTROL: Zero visible technical gear.
   `,
   `
   TASK: Generate an ultra-realistic photo of the provided toy in a "real-life" adventure setting.
@@ -242,6 +249,14 @@ const TOYS_PHOTO_PROMPTS = [
   MODEL & STYLE: A child wearing a makeshift cape (a towel or blanket) holds the toy aloft, as if it's a magical artifact or sidekick in their superhero adventure. Their expression is one of fierce determination and joy. The shot captures them mid-action — a jump, a pose, a power stance.
   BACKGROUND & ATMOSPHERE: An open living room or backyard. Dynamic, bright lighting that feels heroic and fun.
   OUTPUT SPECIFICATIONS: High-resolution, energetic, and full of imagination and adventure.
+  `,
+
+  `
+  TASK: Generate an ultra-realistic "Seasonal Adventure" for the provided toy.
+  CRITICAL RULE: The toy **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Place the toy in an extreme, story-driven seasonal environment (e.g., a snowy peak, a desert dune, or a rain-drenched mossy forest). The scene should feel epic and cinematic, treating the toy as the legendary hero of its journey.
+  LIGHTING: Dramatic, volumetric light suited to the weather — cool winter blue, warm desert gold, or misty forest green.
+  QUALITY CONTROL: NO visible cameras or gear. Pure cinematic adventure.
   `,
 
   `

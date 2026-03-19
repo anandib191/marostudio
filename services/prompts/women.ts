@@ -1,70 +1,66 @@
 const JEWELRY_COVER_PROMPT = `
-TASK: Create a luxurious product photoshoot stage for a piece of jewelry.
-IMPORTANT INSTRUCTION: You will be given an image containing a piece of jewelry. Your primary and most critical task is to use the **exact jewelry** from the provided image. **DO NOT ALTER THE JEWELRY IN ANY WAY.** This means:
-- **NO** changes to its shape, design, or structure.
-- **NO** changes to its materials, textures, or metal type.
-- **NO** changes to the color, clarity, or cut of any gemstones, including diamonds.
-The jewelry must be presented **AS IS**.
-SCENE: Place this unaltered jewelry elegantly on a dark, textured rock surface. The background should feature a subtle, out-of-focus silhouette of an ancient, grand temple under a dark, moody sky.
-LIGHTING: The lighting must be dramatic and cinematic, creating strong, clear highlights on the jewelry's intricate details and metallic shine, perfectly preserving its original form and material.
-GOAL: The final composition should feel epic, high-end, and like a commercial advertisement, with the original jewelry as the untouched centerpiece.
+TASK: Create a masterful, high-end editorial product stage for a piece of jewelry.
+CRITICAL RULE — NON-NEGOTIABLE: You are provided with an image of a piece of jewelry. Your absolute priority is to render the **exact jewelry** from that image **WITHOUT A SINGLE ALTERATION**. The design, gemstones, metal texture, and intricate details must remain pristine and completely untouched.
+SCENE & ATMOSPHERE: Study the jewelry's character (traditional, modern, bridal, minimalist). Build a high-fashion, atmospheric stage that elevates THIS specific item. Use premium textures like raw obsidian, silk, or architectural marble. The background should be a deeply blurred, sophisticated environment that creates a sense of scale and luxury (e.g., an ancient palace corridor, a moonlit garden, or a high-fashion gallery).
+LIGHTING: Volumetric, professional fashion-grade illumination. Use soft, focused sculpting light to create radiant highlights and defined shadows that make the product pop. 
+QUALITY CONTROL: NO visible camera equipment, light stands, umbrellas, or photographers in the scene or reflections.
 `;
 
 const JEWELRY_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic close-up portrait of a woman wearing the provided jewelry.
-  CRITICAL RULE: The jewelry from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the jewelry. This includes its design, materials, and the precise color of all gemstones. It is a fixed element.
-  MODEL & STYLE: The model is an elegant woman with vintage Hollywood waves, clear contoured skin, and bold red lips. Her nails are polished in deep red.
-  BACKGROUND & ATMOSPHERE: Soft, out-of-focus lights sparkle in the blurred background, creating a red-carpet atmosphere.
-  OUTPUT SPECIFICATIONS: High-resolution, cinematic, timeless, and sophisticated.
+  TASK: Generate an ultra-realistic, high-fashion editorial portrait of a woman wearing the provided jewelry.
+  CRITICAL RULE: The jewelry must be used **EXACTLY AS IS** — no alterations to design, stones, or metal. It is a fixed, unchangeable element.
+  DYNAMIC DIRECTION: Choose a model archetype, ethnicity, and styling that perfectly complements the specific design of the uploaded jewelry. If it's traditional, match with a heritage look; if modern, use an edgy, contemporary aesthetic. The pose should be candid and expressive, showcasing the jewelry's interaction with skin and attire.
+  LIGHTING & ATMOSPHERE: High-fashion cinematic lighting that creates depth and drama. A blurred, sophisticated background (like a moonlit terrace or a private lounge) that adds narrative without distraction.
+  QUALITY CONTROL: Ensure zero visible camera gear or studio equipment. Focus on pure visual storytelling.
   `,
 
   `
-  TASK: Generate a dramatic, black and white, ultra-realistic close-up portrait of a woman wearing the provided jewelry.
-  CRITICAL RULE: The jewelry from the user's image must be used **EXACTLY AS IS**, without any modifications to its design, shape, or details. Even in this black and white scene, you must preserve the jewelry's original form and texture faithfully. It is a fixed element.
-  MODEL & STYLE: A mysterious woman with flawless skin, intense smoky eyes, black matte lips, and wind-swept strands across her face. Gothic elegance.
-  LIGHTING & ATMOSPHERE: Dark, moody cinematic lighting with high contrast. Luxurious and surreal.
-  OUTPUT SPECIFICATIONS: The final image must be black and white, but the jewelry should be showcased prominently and accurately.
+  TASK: Generate a dramatic, black and white high-fashion portrait featuring the provided jewelry.
+  CRITICAL RULE: The jewelry MUST NOT BE CHANGED. Preserve its original form and texture faithfully.
+  DYNAMIC DIRECTION: Create a moody, evocative scene. Choose a model with a striking, unique look that suits the jewelry's weight and style. The shot should feel like it belongs in an avant-garde fashion magazine. 
+  LIGHTING: Intense, high-contrast chiaroscuro lighting that sculpts the model's features and the jewelry. 
+  QUALITY CONTROL: No visible strobe lights or photographers. The final output is purely monochrome, with the jewelry as the sharp, luminous focal point.
   `,
 
   `
-  TASK: Generate an ultra-realistic medium-close portrait of a woman in a saree, adorned with the provided jewelry.
-  CRITICAL RULE: You **MUST** use the jewelry from the user's image with **ZERO ALTERATIONS**. Do not change its design, its materials, or the color of its gemstones. It must be presented exactly as it appears in the original photo.
-  MODEL & STYLE: A graceful woman in a soft pastel pink embroidered saree, draped beautifully. Her makeup is natural with soft rosy tones, and her hair is styled in gentle waves.
-  BACKGROUND & ATMOSPHERE: A serene garden setup with pastel flowers and a soft, clear daylight glow, creating a romantic and traditional atmosphere.
-  OUTPUT SPECIFICATIONS: The jewelry should be displayed with delicate elegance, remaining completely unchanged.
+  TASK: Generate an ultra-realistic, heritage-inspired portrait of a woman wearing the provided jewelry, elegantly integrated into a traditional attire.
+  CRITICAL RULE: Use the jewelry from the user's image with **ZERO ALTERATIONS**.
+  DYNAMIC DIRECTION: Study the jewelry's cultural cues. Select a saree or ethnic outfit (e.g., silk, embroidered, or sheer) that harmonizes with the product. The model's styling — hair, makeup, bindi — should feel authentic to the heritage theme. The pose should be graceful and regal.
+  LIGHTING & ATMOSPHERE: A lush, sun-dappled courtyard or a grand traditional manor. Use warm, natural daylight filtering through architectural details.
+  QUALITY CONTROL: Pure editorial result. No equipment visible.
   `,
 
   `
-  TASK: Generate an ultra-realistic, high-fashion portrait of an Indian woman in bridal attire wearing the provided jewelry.
-  CRITICAL RULE: The jewelry from the user's image is the main subject and **MUST NOT BE CHANGED**. Its original design, materials, and gemstone colors must be preserved with perfect accuracy. Treat it as an unchangeable object placed on the model.
-  MODEL & STYLE: A graceful woman in a three-quarter pose. She wears a luxurious green and gold embroidered saree. Her makeup is bold with deep red lips, perfectly sculpted brows, and dramatic eyeliner. Her skin should have a clear, natural complexion.
-  LIGHTING & BACKGROUND: A pitch-dark background. The lighting is moody, cinematic, and silver-toned, designed to make the original jewelry sparkle and highlight its details.
-  OUTPUT SPECIFICATIONS: High-fashion editorial style. Timeless, regal, and mysterious.
+  TASK: Generate an ultra-realistic, cinematic bridal-themed portrait wearing the provided jewelry.
+  CRITICAL RULE: The jewelry is the unchangeable centerpiece. Preserve its design, color, and materials perfectly.
+  DYNAMIC DIRECTION: Create a high-stakes, regal bridal moment. Choose a bridal outfit (e.g., heavily embroidered lehenga or saree) that matches the grandeur of the jewelry. The model's expression should be poised and mysterious. 
+  LIGHTING & BACKGROUND: A dark, moody, opulent setting. Use soft, directional "rim" lighting to trace the silhouette and make the jewelry's stones sparkle intensely. 
+  QUALITY CONTROL: No visible studio gear. Each generation should feel like a different, unique high-end wedding campaign.
   `,
 
   `
-  TASK: Generate an ultra-realistic, glamorous portrait of a woman in a gown wearing the provided jewelry.
-  CRITICAL RULE: It is absolutely essential that the jewelry from the provided image is used **WITHOUT ANY MODIFICATION**. Do not redraw it, do not change the colors of the stones, do not alter the metal. The jewelry must be an exact copy of the one in the user's image.
-  MODEL & STYLE: An elegant woman with softly curled brown hair styled in vintage Hollywood waves. She wears a deep crimson off-shoulder satin gown with voluminous sleeves. Her makeup is flawless with subtle eyeliner and nude peach lips.
-  BACKGROUND & ATMOSPHERE: A dark, luxurious setting with golden accents, evoking regal cinematic grandeur.
-  OUTPUT SPECIFICATIONS: High-resolution, glamorous, aristocratic elegance.
+  TASK: Generate an ultra-realistic, glamorous gala-style portrait of a woman wearing the provided jewelry.
+  CRITICAL RULE: The jewelry from the user's image must be used **WITHOUT ANY MODIFICATION**.
+  DYNAMIC DIRECTION: Imagine a "Night at the Opera" or a "Red Carpet Event". Select a luxurious evening gown (satin, velvet, or silk) in a color that makes the jewelry stand out. The model's look and pose should radiate aristocratic elegance.
+  BACKGROUND & ATMOSPHERE: A grand, out-of-focus ballroom or a darkened luxury foyer with marble and gold accents. 
+  QUALITY CONTROL: Zero visible photographers or flashes. High-end, clean editorial focus.
   `,
 
   `
-  TASK: Generate an ultra-realistic, contemporary fashion portrait of a woman wearing the provided jewelry with a modern power suit.
-  CRITICAL RULE: The jewelry from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter its design, materials, gemstones, or metal in any way. It is a fixed element.
-  MODEL & STYLE: A confident woman with a slicked-back bun, sharp contoured makeup, and sculpted brows. She wears a tailored ivory double-breasted blazer with nothing underneath, showcasing the jewelry against bare skin. Her expression is intense and authoritative.
-  BACKGROUND & ATMOSPHERE: A sleek, modern glass-and-steel penthouse interior with floor-to-ceiling windows showing a twilight cityscape.
-  OUTPUT SPECIFICATIONS: High-resolution, editorial, powerful, and contemporary.
+  TASK: Generate an ultra-realistic, contemporary fashion portrait featuring the provided jewelry.
+  CRITICAL RULE: The jewelry must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Think "Modern Power Styling". Choose a model with a sharp, confident look and a slicked-back hairstyle. Select a tailored, high-fashion outfit (like a power suit or a minimalist blazer) that provides a clean canvas for the jewelry. The pose should be intense and authoritative.
+  BACKGROUND & ATMOSPHERE: A sleek, architectural interior or a high-rise office with a blurred twilight cityscape. 
+  QUALITY CONTROL: Ensure no visible studio lights or umbrellas. The overall mood should be powerful and modern.
   `,
 
   `
-  TASK: Generate an ultra-realistic tropical luxury portrait of a woman adorned with the provided jewelry.
-  CRITICAL RULE: The jewelry from the user's image must be used **EXACTLY AS IS**, without any modifications to its design, shape, materials, or gemstone colors. It is a fixed element.
-  MODEL & STYLE: A radiant woman with sun-kissed skin, beachy textured waves in her hair, and dewy natural makeup with bronzed cheeks and glossy lips. She wears a flowing white linen off-shoulder dress. The jewelry catches natural sunlight beautifully.
-  BACKGROUND & ATMOSPHERE: A luxurious overwater villa terrace in the Maldives, with crystal-clear turquoise water visible behind her. Golden hour lighting creates a warm, dreamy glow.
-  OUTPUT SPECIFICATIONS: High-resolution, aspirational, warm, and radiant luxury.
+  TASK: Generate an ultra-realistic, tropical luxury portrait wearing the provided jewelry.
+  CRITICAL RULE: Use the jewelry **EXACTLY AS IS** — no changes to metal or stones.
+  DYNAMIC DIRECTION: Create a "Resort Glamour" moment. Choose a model with a sun-kissed, radiant look and beachy hair. Select a flowing, elegant resort-wear outfit (like a white linen dress or a silk kaftan) that catches the warm light.
+  BACKGROUND & ATMOSPHERE: A luxurious coastal setting or an overwater villa. Use golden-hour, natural sunlight to create a warm, dreamy glow and beautiful highlights on the jewelry.
+  QUALITY CONTROL: No visible camera gear or artifacts.
   `,
 
   `
@@ -76,11 +72,11 @@ const JEWELRY_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic minimalist studio portrait focusing entirely on the provided jewelry.
-  CRITICAL RULE: The jewelry from the user's image is the sole focus and **MUST NOT BE CHANGED**. Its design, materials, and gemstone colors must be preserved with absolute accuracy.
-  MODEL & STYLE: A woman with flawless porcelain skin, minimal no-makeup makeup, and her hair pulled tightly back so nothing distracts from the jewelry. Her shoulders are bare, and the shot is tightly cropped around the jewelry, her neck, and décolletage.
-  BACKGROUND & ATMOSPHERE: A pure, seamless soft grey gradient background. The lighting is clean, precise, and studio-quality with a single soft key light and a subtle rim light to make the jewelry sparkle.
-  OUTPUT SPECIFICATIONS: High-resolution, minimalist, product-focused beauty shot.
+  TASK: Generate an ultra-realistic, minimalist product-focused beauty portrait for the provided jewelry.
+  CRITICAL RULE: The jewelry is the sole focus and **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Stripped-back, raw beauty. Choose a model with a clean, striking look and a simple, pulled-back hairstyle to avoid distraction. The shot is a tight crop focusing on the jewelry against the model's skin. 
+  LIGHTING & ATMOSPHERE: Clean, volumetric light that reveals every detail of the jewelry. The background is a soft, seamless gradient that makes the product pop.
+  QUALITY CONTROL: Absolutely NO visible light stands, softboxes, or technical equipment. Pure product focus.
   `,
 
   `
@@ -134,30 +130,27 @@ const JEWELRY_PHOTO_PROMPTS = [
 
 // --- PURSE PROMPTS ---
 const PURSE_COVER_PROMPT = `
-TASK: Create a luxurious product photoshoot stage for a women's purse.
-IMPORTANT INSTRUCTION: You will be given an image containing a purse. Your primary and most critical task is to use the **exact purse** from the provided image. **DO NOT ALTER THE PURSE IN ANY WAY.** This means:
-- **NO** changes to its shape, design, or structure.
-- **NO** changes to its materials, textures, color, or hardware (clasps, zippers, straps).
-The purse must be presented **AS IS**.
-SCENE: Place this unaltered purse on a minimalist marble pedestal. The background should be a soft, out-of-focus high-end boutique interior with warm, ambient lighting.
-LIGHTING: The lighting must be soft yet focused, creating beautiful, clear highlights on the purse's material and metallic hardware, perfectly preserving its original form and texture.
-GOAL: The final composition should feel elegant, sophisticated, and like a luxury brand advertisement, with the original purse as the untouched centerpiece.
+TASK: Create a masterful, high-end editorial product stage for a women's purse.
+CRITICAL RULE: Use the **exact purse** from the provided image. **DO NOT ALTER THE PURSE IN ANY WAY.**
+SCENE & ATMOSPHERE: Study the purse's material, color, and style (luxury, casual, vintage). Build a sophisticated, minimalist stage that elevates this specific product. Use high-end textures like polished marble, architectural surfaces, or soft bokeh boutique interiors.
+LIGHTING: Volumetric, directional light that flawlessly sculpts the purse's form and highlights its material texture and hardware.
+QUALITY CONTROL: NO visible camera equipment, light stands, or technical artifacts. The result must be a clean, premium advertisement.
 `;
 
 const PURSE_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic, full-body street style photo of a fashion-forward woman carrying the provided purse.
-  CRITICAL RULE: The purse from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the purse. This includes its design, materials, color, and hardware. It is a fixed, unchangeable element.
-  MODEL & STYLE: A stylish woman in an oversized beige trench coat, wide-leg jeans, and white sneakers. She is walking confidently down a chic city street (like in Paris or New York). The purse is held naturally in her hand.
-  BACKGROUND & ATMOSPHERE: A blurred city street with classic architecture. The lighting is clear and natural, like a sunny afternoon.
-  OUTPUT SPECIFICATIONS: High-resolution, candid, editorial fashion magazine style.
+  TASK: Generate an ultra-realistic, high-fashion "Daylight Luxury" editorial for the purse.
+  CRITICAL RULE: The purse **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: "Urban Sophistication". Choose a model archetype and chic outfit (e.g., a trench coat, silk midi skirt, or tailored separates) that suits the purse's style. The setting is a sun-drenched city street, a boutique storefront, or a cafe terrace. The model carries the purse naturally and confidently.
+  LIGHTING: Bright, natural-feeling daylight with soft, flattering shadows.
+  QUALITY CONTROL: Zero visible cameras or equipment. A clean, premium lifestyle shot.
   `,
   `
-  TASK: Generate a dramatic, ultra-realistic medium shot of a woman at an elegant evening event, showcasing the provided purse.
-  CRITICAL RULE: The purse from the user's image must be used **EXACTLY AS IS**, without any modifications to its design, shape, or details. It is a fixed element.
-  MODEL & STYLE: An elegant woman in a classic black silk slip dress. Her hair is in a sleek updo, and her makeup is glamorous. She is holding the purse as a clutch or by its top handle.
-  LIGHTING & ATMOSPHERE: Dim, moody lighting inside a luxurious venue, like an art gallery opening or a high-end restaurant. A soft spotlight highlights the woman and the purse.
-  OUTPUT SPECIFICATIONS: The final image must be cinematic, sophisticated, and exude nighttime glamour, with the purse as a key accessory.
+  TASK: Generate a cinematic, ultra-realistic medium shot of a woman at an elegant event, showcasing the provided purse.
+  CRITICAL RULE: The purse must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: "Evening Sophistication". Choose a model with an elegant, refined look and an upscale evening outfit (silk dress, sequined gown, or chic separates) that pairs beautifully with the purse. The pose should be graceful, holding the purse naturally.
+  LIGHTING & ATMOSPHERE: Atmospheric, low-key lighting in a luxurious venue. Soft highlights should define the model and the purse. 
+  QUALITY CONTROL: No visible photographers or flashes. Pure nighttime glamour.
   `,
   `
     TASK: Generate an ultra-realistic close-up product photo featuring the provided purse.  
@@ -268,15 +261,11 @@ const PURSE_PHOTO_PROMPTS = [
 
 // --- PERFUME PROMPTS ---
 const PERFUME_COVER_PROMPT = `
-TASK: Create a luxurious, atmospheric product photoshoot stage for a perfume bottle.
-IMPORTANT INSTRUCTION: You will be given an image containing a perfume bottle. Your primary and most critical task is to use the **exact perfume bottle** from the provided image. **DO NOT ALTER THE BOTTLE IN ANY WAY.** This means:
-- **NO** changes to its shape, glass texture, or design.
-- **NO** changes to its label, branding, or typography.
-- **NO** changes to the color of the liquid, or the design of the cap/atomizer.
-The perfume bottle must be presented **AS IS**.
-SCENE: Place this unaltered bottle on a sleek, reflective surface like wet slate or a dark mirror. The background should be abstract and moody, with draped silk fabric and soft, out-of-focus bokeh lights.
-LIGHTING: Dramatic and artistic. Use soft backlighting to create a 'halo' effect around the bottle, highlighting its silhouette and making the liquid inside appear luminous.
-GOAL: The final composition should be elegant, mysterious, and high-end, suitable for a luxury fragrance campaign, with the original bottle as the untouched centerpiece.
+TASK: Create a masterful, high-end editorial product stage for a women's perfume bottle.
+CRITICAL RULE: Use the **exact perfume bottle** from the provided image **WITHOUT A SINGLE ALTERATION**.
+SCENE & ATMOSPHERE: Study the bottle's design (floral, minimalist, avant-garde). Build a sophisticated, evocative world around it. Use premium elements like silk drapes, floating flower petals, architectural glass, or reflecting water pools. The background should be a deeply blurred, high-fashion environment.
+LIGHTING: Ethereal, volumetric light that creates a "glow" from within the bottle. Use soft highlights and luminous shadows to define the glass and liquid.
+QUALITY CONTROL: NO visible camera gear, light stands, or technical equipment. Pure luxury advertisement.
 `;
 
 const PERFUME_PHOTO_PROMPTS = [
@@ -296,20 +285,27 @@ const PERFUME_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: Cinematic and elegant, perfect for an evening fragrance advertisement.
   `,
   `
-  TASK: Create a high-end, ultra-realistic fashion perfume advertisement in a single, unified frame.
-  CRITICAL RULE: The perfume bottle from the user's image must appear EXACTLY AS IS—no label, color, or shape changes. It must remain in full natural color even though the rest of the image is black & white.
-  MODEL & STYLE: A confident, stylish woman in a perfectly tailored black suit and crisp white shirt, slightly unbuttoned for effortless chic. Soft, natural yet glamorous makeup and loosely waved hair.
-  POSE & EXPRESSION: Seated casually in a modern interior, leaning back with relaxed poise. She holds the perfume bottle elegantly in one hand near her chest so that it is fully visible and perfectly lit.
-  SCENE & COMPOSITION: Tight, vertical crop focusing on her from waist up. No empty white side space—just a strong, cinematic portrait where the colored bottle stands out as the central accent.
-  LIGHTING & ATMOSPHERE: Dramatic black-and-white studio lighting with soft highlights and rich shadows, giving a timeless luxury feel. The perfume bottle remains vividly colored to create striking contrast.
-  OUTPUT SPECIFICATIONS: High-resolution, fashion-editorial quality suitable for magazine or billboard. The entire scene is monochrome except the full-color perfume bottle, which appears sharp, glossy, and photorealistic.
+    TASK: Create a high-end, ultra-realistic fashion perfume advertisement in a single, unified frame.
+    CRITICAL RULE: The perfume bottle from the user's image must appear EXACTLY AS IS—no label, color, or shape changes. It must remain in full natural color even though the rest of the image is black & white.
+    MODEL & STYLE: A confident, stylish woman in a perfectly tailored black suit and crisp white shirt, slightly unbuttoned for effortless chic. Soft, natural yet glamorous makeup and loosely waved hair.
+    POSE & EXPRESSION: Seated casually in a modern interior, leaning back with relaxed poise. She holds the perfume bottle elegantly in one hand near her chest so that it is fully visible and perfectly lit.
+    SCENE & COMPOSITION: Tight, vertical crop focusing on her from waist up. No empty white side space—just a strong, cinematic portrait where the colored bottle stands out as the central accent.
+    LIGHTING & ATMOSPHERE: Dramatic black-and-white studio lighting with soft highlights and rich shadows, giving a timeless luxury feel. The perfume bottle remains vividly colored to create striking contrast.
+    OUTPUT SPECIFICATIONS: High-resolution, fashion-editorial quality suitable for magazine or billboard. The entire scene is monochrome except the full-color perfume bottle, which appears sharp, glossy, and photorealistic.
   `,
   `
-  TASK: Generate an ultra-realistic, close-up shot of a model's hands elegantly holding the provided perfume bottle.
+  TASK: Generate an ultra-realistic close-up shot of a model's hands elegantly holding the provided perfume bottle.
   CRITICAL RULE: The perfume bottle is the focus and **MUST NOT BE CHANGED**. Its original design and label must be preserved with perfect accuracy. Treat it as an unchangeable object.
   MODEL & STYLE: A woman with flawless skin and a perfect, clean, neutral-colored manicure holds the bottle delicately. She is wearing the sleeve of a cream-colored silk blouse. The shot is tightly cropped to focus on the interaction between the hands and the bottle.
   LIGHTING & BACKGROUND: Soft, diffused studio lighting. The background is simple, out-of-focus, and non-distracting.
   OUTPUT SPECIFICATIONS: Graceful, sophisticated, and tactile, highlighting the product's elegance.
+  `,
+  `
+  TASK: Create a masterful, ultra-realistic "Liquid Essence" fragrance advertisement.
+  CRITICAL RULE: The perfume bottle must be used **WITHOUT ANY MODIFICATION**.
+  DYNAMIC DIRECTION: Study the bottle's design. Surround it with artistic, dynamic elements like swirling perfume mist, crystalline water ripples, or floating botanical fragments that match its "scent soul" (e.g., woody, floral, fresh).
+  LIGHTING & ATMOSPHERE: Ethereal, volumetric lighting. A deep, blurred background of a luxury lab or a moonlit garden.
+  QUALITY CONTROL: NO visible studio gear, light stands, or camera artifacts. Pure sensory storytelling.
   `,
   `
   TASK: Generate an ultra-realistic, abstract photo featuring the provided perfume bottle with fabric and light play.
@@ -319,7 +315,7 @@ const PERFUME_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-resolution, artistic, and visually striking.
   `,
   `
-  TASK: Create an ultra-realistic, high-fashion beauty portrait of a woman tenderly kissing the provided perfume bottle.
+  TASK: Create a high-end, ultra-realistic fashion beauty portrait of a woman tenderly kissing the provided perfume bottle.
   CRITICAL RULE: The perfume bottle from the provided image must be used **WITHOUT ANY MODIFICATION**. Do not redraw it, change its label, or alter it in any way. The bottle must appear exactly as in the user’s photo.
   MODEL & STYLE: A sophisticated, modern woman with impeccable runway-style makeup—flawless luminous skin, subtly sculpted cheekbones, soft smoky eyes, and deep matte red lips. She closes her eyes in serene bliss as she gently kisses the bottle, conveying pure love for the fragrance. Her hair is styled in a sleek low chignon or loose glossy waves for a contemporary editorial look.
   WARDROBE & ACCESSORIES: Minimal yet luxurious—think a black silk slip dress, delicate diamond studs, or a single thin gold choker to emphasize elegance without distraction.
@@ -328,6 +324,13 @@ const PERFUME_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-resolution, magazine-cover quality, ideal for a luxury fragrance advertising campaign—minimalist, elegant, and timeless.
   `,
 
+  `
+  TASK: Generate an ultra-realistic, high-fashion fragrance campaign featuring the provided perfume bottle.
+  CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: "Scent of Elegance". Choose a model with a radiant, sophisticated look. Select a flowing, ethereal outfit (like a tulle gown or silk scarf) that suggests movement and fragrance. The model's interaction with the bottle should feel intimate and artistic.
+  LIGHTING & ATMOSPHERE: Soft, diffused daylight or golden-hour glow. A lush, blurred floral garden or a sun-drenched luxury interior.
+  QUALITY CONTROL: Zero visible cameras or equipment. Focus on pure sensory allure.
+  `,
   `
   TASK: Generate an ultra-realistic, spring garden editorial photo featuring the provided perfume bottle.
   CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the bottle.
@@ -403,20 +406,20 @@ const PERFUME_PHOTO_PROMPTS = [
 
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a model wearing the provided clothing item.
-CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the clothing. This includes its design, color, pattern, texture, and fit. It is a fixed, unchangeable element placed onto the model.
-DYNAMIC DIRECTION: Study the garment's style, color, and character carefully. Choose a model archetype, pose, setting, and mood that feels authentically suited to THIS specific product — do not default to a generic or repeated look. The model's age, body type, skin tone, hair, expression, and pose should all feel unique and creatively matched to the garment's world.
-LIGHTING: Choose lighting that best compliments the garment's texture and color palette — dramatic, soft, golden, or studio as appropriate.
-OUTPUT SPECIFICATIONS: High-resolution, sharp, editorial quality. The clothing is the absolute star of the image. Every generation should feel fresh and distinctly creative.
+TASK: Generate an ultra-realistic, pinnacle-fashion editorial of a female model wearing the provided garment.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
+DYNAMIC DIRECTION: Study the garment's character (bridal, streetwear, ethnic, couture). Select a model archetype, age, styling, and pose that perfectly match the product's soul. Build a world that THIS garment belongs to — avoid generic setups.
+LIGHTING & ATMOSPHERE: High-fashion, volumetric illumination tailored to the garment's texture. Use light to sculpt the drape and fabric realistically.
+QUALITY CONTROL: NO visible camera gear, light stands, seamless paper rolls, or photographers. 
 `;
 
 const APPAREL_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic fashion photo of a woman wearing the provided garment.
-  CRITICAL RULE: The clothing item from the user's image must be used **EXACTLY AS IS** — no alterations to design, color, pattern, texture, or fit. It is a fixed, unchangeable element.
-  DYNAMIC DIRECTION: Study the garment's aesthetic (casual, formal, ethnic, boho, contemporary, etc.) and build a scene that naturally belongs to its world. Choose a unique location — urban, coastal, rural, architectural, or natural — that complements the garment. The model's skin tone, body type, hair, makeup, and expression should feel authentic and creatively matched to this specific piece. The pose should feel candid and alive — not a repeated catalog stance.
-  ATMOSPHERE: Background, lighting, and color grade should cohesively reflect the garment's spirit. Each generation must feel like a fresh, distinct creative direction.
-  OUTPUT SPECIFICATIONS: High-resolution, editorial fashion quality — compelling visual storytelling, not just product display.
+  TASK: Generate a dynamic, ultra-realistic fashion editorial of a woman wearing the provided garment.
+  CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Create a high-stakes, unique scene suited to the garment's aesthetic (e.g., an urban rooftop, a wild coastline, a brutalist staircase, or a lush botanic conservatory). Choose a model whose look and energy amplify the garment's character. The pose should be candid and full of life.
+  LIGHTING: Cinematic, non-technical illumination. Use natural or atmospheric light to create depth.
+  QUALITY CONTROL: Zero technical artifacts. No equipment or gear visible.
   `,
   `
   TASK: Generate an ultra-realistic lifestyle photo of a woman wearing the provided garment.
@@ -466,7 +469,7 @@ const APPAREL_PHOTO_PROMPTS = [
   `
   TASK: Generate an ultra-realistic, rainy city editorial photo of a woman wearing the provided garment.
   CRITICAL RULE: The clothing **MUST NOT BE CHANGED** — preserve its original design, color, pattern, and texture perfectly.
-  DYNAMIC DIRECTION: The model walks confidently through a rain-soaked city street. The wet pavement creates beautiful reflections. She may carry a transparent umbrella or let the light rain add to the drama. The garment should be styled to look intentional in this weather — showing the model's confidence.
+  DYNAMIC DIRECTION: The model walks confidently through a rain-soaked city street. The wet pavement creates beautiful reflections. She may carry a transparent umbrella or let the light add to the drama. The garment should be styled to look intentional in this weather — showing the model's confidence.
   ATMOSPHERE: Moody, cinematic, with a cool blue-grey color palette accented by warm shop-window light. The city is atmospheric and alive.
   OUTPUT SPECIFICATIONS: High-resolution, editorial, dramatic, and movie-like.
   `,
@@ -488,11 +491,10 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, festival or concert lifestyle photo of a woman wearing the provided garment.
-  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
-  DYNAMIC DIRECTION: The model is at an outdoor event — a music festival, a garden party, or a cultural celebration. She is animated — dancing, laughing, or moving through the crowd with joy. The garment should feel perfectly suited to the occasion. Accessories should be fun and expressive — layered bracelets, a crossbody bag, statement sunglasses.
-  ATMOSPHERE: Vibrant, energetic, colorful. Natural daylight with warm, festive tones.
-  OUTPUT SPECIFICATIONS: High-resolution, joyful, spirited, and lifestyle-driven.
+  TASK: Generate a minimalist, high-end "Sculptural Fashion" editorial of a woman wearing the garment.
+  CRITICAL RULE: Preserve the garment perfectly.
+  DYNAMIC DIRECTION: Focused, artistic, and clean. Use a model with a striking, statuesque look. The background is a sophisticated, textured solid (like plaster, raw concrete, or deep velvet) that complements the garment's color. The lighting should be sharp and directional to define the garment's silhouette.
+  QUALITY CONTROL: NO visible studio equipment, paper rolls, or light stands. Pure minimalist excellence.
   `,
 
   `
@@ -616,6 +618,13 @@ const DYNAMIC_ORNAMENT_PHOTO_PROMPTS = [
   MODEL & STYLE: A regal woman with kohl-lined eyes, a decorative bindi, and deep berry-toned lips. Her hair is adorned with jasmine flowers. She wears a rich royal blue velvet kurta with gold zardosi embroidery.
   BACKGROUND & ATMOSPHERE: A dimly lit palatial marble corridor with ornate arched doorways and flickering brass oil lamps.
   OUTPUT SPECIFICATIONS: High-resolution, regal, heritage-rich, and deeply atmospheric.
+  `,
+  (name: string) => `
+  TASK: Generate an ultra-realistic, high-fashion beauty portrait of a woman wearing the providing jewelry.
+  CRITICAL RULE: The jewelry **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Study the jewelry's aesthetic (classic, modern, ethnic). Choose a model archetype and styling that perfectly complements the piece. The pose should be intimate and sophisticated, with an artistic focus on the jewelry's interaction with the skin and hair.
+  LIGHTING: Cinematic, non-technical illumination. Soft, diffused highlights that capture the sparkle and texture.
+  QUALITY CONTROL: NO visible camera gear, light stands, or studio artifacts. Pure luxury excellence.
   `,
   (name: string) => `
   TASK: Generate an ultra-realistic minimalist studio portrait focusing entirely on the provided ${name}.

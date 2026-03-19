@@ -1,13 +1,13 @@
 
-const CRITICAL_AD_RULE = "TASK: Transform the provided image into a high-end advertisement. The model, clothing, and/or product in the image are the main subject and MUST remain EXACTLY the same, without any alterations. Only the background, lighting, and overall atmosphere should be modified to create a compelling ad.";
+const CRITICAL_AD_RULE = "TASK: Transform the provided image into a high-end advertisement. The model, clothing, and/or product in the image are the main subject and MUST remain EXACTLY the same, without any alterations. Build an immersive, premium world around this unchangeable hero.";
 
 const AD_VARIATIONS = [
   // Variation 1: Social Media Post
-  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this as a clean, vibrant social media post. Enhance the background to be modern and minimalist, perhaps with a soft color gradient or abstract shapes. The lighting should be bright and optimistic. The final image must look professional, eye-catching, and ready for an Instagram feed.`,
+  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this as a clean, vibrant social media post. Build a modern, minimalist environment (e.g., soft color gradients or organic geometric shapes). Use bright, optimistic, volumetric lighting. The result must be professional, eye-catching, and ready for an Instagram feed.\n- QUALITY CONTROL: NO visible technical artifacts, camera gear, or light stands.`,
   // Variation 2: Luxury Magazine Ad
-  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this for a luxury magazine advertisement. The background should be transformed into something more atmospheric and sophisticated—think moody architectural details, a soft-focus cityscape at night, or an elegant interior. The lighting should be cinematic and dramatic, with high contrast. The mood should be exclusive and aspirational.`,
+  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this for a luxury magazine advertisement. Build a highly atmospheric and sophisticated environment (e.g., moody architectural details, a blurred cityscape at night, or an elegant interior). Use cinematic, non-technical illumination with high contrast. The mood should be exclusive and aspirational.\n- QUALITY CONTROL: Zero visible cameras or equipment.`,
   // Variation 3: E-commerce Banner
-  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this as a clean, professional e-commerce banner. The background should be simple, non-distracting, and complementary to the product. Use soft studio lighting to ensure the product is perfectly lit and the main focus. The composition should feel polished and ready for a website homepage.`,
+  `${CRITICAL_AD_RULE}\n- ADAPTATION: Re-imagine this as a clean, professional e-commerce banner. The background should be simple, non-distracting, and architecturally complementary. Use soft, volumetric illumination to ensure the product is the absolute hero. The composition should be polished and ready for a flagship homepage.\n- QUALITY CONTROL: Absolutely no technical equipment or light stands visible.`,
 ];
 
 export const AD_PROMPTS = {

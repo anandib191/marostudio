@@ -1,54 +1,54 @@
 // --- PROFESSIONAL APPAREL PROMPTS (E-commerce/Studio Style) ---
 
 const PROFESSIONAL_APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a model wearing the provided clothing item for a brand's hero image.
-CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the clothing. This includes its design, color, pattern, texture, and fit. It is a fixed, unchangeable element placed onto the model.
-MODEL & STYLE: A graceful and confident fashion model. Their pose should be strong, elegant, and suitable for a magazine cover or website banner. Hair and makeup should be clean, professional, and high-fashion, complementing the garment without being distracting.
-BACKGROUND & LIGHTING: The background must be a clean, professional studio setting. The specific color and mood should be determined by the style modifier provided at the end of the prompt. Lighting must be professional studio quality, creating soft, flattering shadows and highlighting the texture and drape of the fabric.
-OUTPUT SPECIFICATIONS: High-resolution, sharp, editorial quality. The clothing is the absolute star of the image.
+TASK: Generate an ultra-realistic, high-fashion flagship editorial of a model wearing the provided garment.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
+DYNAMIC DIRECTION: Study the garment's character. Select a model archetype, styling, and pose that creates a world-class, aspirational image. The background should be a sophisticated, blurred architectural or high-end setting that makes the product pop. 
+LIGHTING: Breathtaking, volumetric illumination tailored to the fabric. Sculpt the drape and texture with non-technical, cinematic light.
+QUALITY CONTROL: NO visible camera gear, light stands, paper rolls, or studio artifacts. Pure luxury excellence.
 `;
 
 const PROFESSIONAL_APPAREL_PHOTO_PROMPTS = [
   // 1. Front View
   `
-  TASK: Generate an ultra-realistic, full-body studio photo of a model wearing the provided garment, seen from the front.
-  CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**, without any alterations.
-  MODEL & POSE: The model should have a neutral, professional pose, standing straight and facing forward to clearly display the garment's design and fit from the front.
-  BACKGROUND & LIGHTING: The background must be a simple, clean studio environment. Adhere to the following based on the style modifier: For "Modern" or "Aesthetic" styles, use a seamless, pure white background (#FFFFFF). For "Cinematic" style, use a dark grey or black background. For "Vintage" style, use a warm, off-white or light yellowish cream-colored background. For "Monochrome", use a neutral grey background. The lighting should be even and professional, minimizing harsh shadows to clearly show the product.
-  OUTPUT: A clean, high-quality e-commerce style image.
+  TASK: Generate an ultra-realistic, high-fashion "Statuesque" portrait of a model wearing the provided garment, seen from the front.
+  CRITICAL RULE: The garment MUST NOT BE CHANGED.
+  DYNAMIC DIRECTION: Create a clean, powerful composition. The background is a sophisticated solid (like raw plaster, matte metal, or deep charcoal) that makes the garment the absolute hero. The pose is strong and editorial.
+  LIGHTING: Precise, volumetric illumination that defines the product's structure without any visible gear.
+  QUALITY CONTROL: Zero visible studio equipment or artifacts. Pure minimalist excellence.
   `,
   // 2. Three-Quarter View
   `
-  TASK: Generate an ultra-realistic, full-body studio photo of a model wearing the provided garment, seen from a three-quarter angle.
-  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS**.
-  MODEL & POSE: The model should be posed at a three-quarter turn to the camera, showcasing the garment's silhouette and fit from the side and front simultaneously. The pose should be natural and elegant.
-  BACKGROUND & LIGHTING: The background must be a simple, clean studio environment. Adhere to the following based on the style modifier: For "Modern" or "Aesthetic" styles, use a seamless, pure white background (#FFFFFF). For "Cinematic" style, use a dark grey or black background. For "Vintage" style, use a warm, off-white or light yellowish cream-colored background. For "Monochrome", use a neutral grey background. Professional lighting is required.
-  OUTPUT: A standard, professional e-commerce style image.
+  TASK: Generate an ultra-realistic, three-quarter view editorial of a model wearing the provided garment.
+  CRITICAL RULE: Use the garment **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: "The Side-Profile Silhouette". Position the model at an elegant three-quarter turn to showcase the drape and fit from multiple angles. Choose a sophisticated, slightly blurred interior or architectural setting.
+  LIGHTING: Cinematic, non-technical illumination that defines the silhouette beautifully.
+  QUALITY CONTROL: Zero visible cameras, light stands, or technical artifacts. Pure high-fashion result.
   `,
   // 3. Detail Shot
   `
-  TASK: Generate a dramatic, ultra-realistic medium-close-up shot focusing on the specific details and texture of the provided clothing item.
-  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**. Its original fabric texture, pattern, and details (buttons, seams, etc.) must be preserved with perfect accuracy.
-  MODEL & POSE: The shot should be tightly cropped on the garment, worn by a model in a simple pose that highlights a key feature (e.g., neckline, cuff, fabric pattern). The model's face may be partially or completely out of frame.
-  BACKGROUND & LIGHTING: The background must be a simple, clean studio environment. Adhere to the following based on the style modifier: For "Modern" or "Aesthetic" styles, use a seamless, pure white background (#FFFFFF). For "Cinematic" style, use a dark grey or black background. For "Vintage" style, use a warm, off-white or light yellowish cream-colored background. For "Monochrome", use a neutral grey background. Lighting should be specifically directed to emphasize the material's texture.
-  OUTPUT: A high-fashion, sharp focus shot perfect for showcasing product quality.
+  TASK: Generate a dramatic, ultra-realistic "Material Soul" macro shot focusing on the provided garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Choose an artistic crop and angle that best reveals the product's texture, pattern, and construction. Use a thin depth of field to make the detail explode against a soft, mood-rich background.
+  LIGHTING: Directional, volumetric light that grazes the surface to reveal every micro-texture.
+  QUALITY CONTROL: NO visible technical gear or light stands. Pure tactile luxury.
   `,
   // 4. Dynamic/Posed Shot
   `
-  TASK: Generate an ultra-realistic, full-body studio photo of a model in a more dynamic or expressive pose wearing the provided garment.
-  CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION**.
-  MODEL & POSE: The model should be in a pose that conveys personality or movement, such as hands on hips, a slight lean, or a walking motion, while still clearly presenting the garment. For the "Aesthetic" style, the poses should be more artistic and varied.
-  BACKGROUND & LIGHTING: The background must be a simple, clean studio environment. Adhere to the following based on the style modifier: For "Modern" or "Aesthetic" styles, use a seamless, pure white background (#FFFFFF). For "Cinematic" style, use a dark grey or black background. For "Vintage" style, use a warm, off-white or light yellowish cream-colored background. For "Monochrome", use a neutral grey background. Lighting can be slightly more dramatic to match the pose.
-  OUTPUT: An engaging, editorial-style studio shot.
+  TASK: Generate an ultra-realistic, dynamic "Kinetic" editorial of a model wearing the provided garment.
+  CRITICAL RULE: Use the garment **WITHOUT ANY MODIFICATION**.
+  DYNAMIC DIRECTION: "Life in Motion". Choose a pose that conveys energy — a stride, a turn, or a leaning gesture. The background should be a vivid, high-end location (e.g., a gallery staircase, a sunlit terrace, or a modern corridor) captured with a professional depth of field. 
+  LIGHTING: Volumetric, atmospheric light that tracks the movement.
+  QUALITY CONTROL: NO visible technical gear or light stands. Pure creative excellence.
   `,
   // 5. Back View
   `
-  TASK: Generate an ultra-realistic, full-body studio photo showing the back view of a model wearing the provided garment. (If a back view image is provided, use it; otherwise, infer the back from the front view).
-  CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. It is critical to accurately represent how the garment fits and is constructed from the back.
-  MODEL & POSE: The model should be standing with their back to the camera, or in a slight turn looking over their shoulder, to clearly display the garment's design from the back.
-  BACKGROUND & LIGHTING: The background must be a simple, clean studio environment. Adhere to the following based on the style modifier: For "Modern" or "Aesthetic" styles, use a seamless, pure white background (#FFFFFF). For "Cinematic" style, use a dark grey or black background. For "Vintage" style, use a warm, off-white or light yellowish cream-colored background. For "Monochrome", use a neutral grey background. The lighting must be clean and even.
-  OUTPUT: A clear, informative product shot for e-commerce.
-  `
+  TASK: Generate an ultra-realistic, three-quarter back view editorial of a model wearing the provided garment.
+  CRITICAL RULE: Use the garment **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Focus on the back construction and fit. Choose an elegant, looking-over-the-shoulder pose. The background is a sophisticated, blurred depth of field in a high-end environment.
+  LIGHTING: Soft, volumetric illumination.
+  QUALITY CONTROL: Absolutely no technical equipment or camera gear visible.
+  `,
 ];
 
 export const PROFESSIONAL_APPAREL_PROMPTS = {

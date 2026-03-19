@@ -1376,7 +1376,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 setProductName(nameToUse);
                 result = await generateOtherProductImages(imageFiles[0], nameToUse, selectedStyle, onImageGenerated, DYNAMIC_ORNAMENT_PROMPTS_CONFIG, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages);
             } else {
-                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages);
+                result = await generateCatalogueImages(imageFiles, promptCategory, productType, selectedStyle, onImageGenerated, apparelStyle, extraPrompt, aspectRatio, consistentCharacter, background, customBackground, imageQuality, numberOfImages, productName);
             }
 
             setCoverImage(result.coverImage);

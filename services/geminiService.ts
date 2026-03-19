@@ -213,7 +213,8 @@ export const generateCatalogueImages = async (
     background: BackgroundType = 'studio',
     customBackgroundPrompt?: string,
     imageQuality: ImageQuality = 'HD',
-    numberOfImages: number = 2
+    numberOfImages: number = 2,
+    itemName?: string
 ): Promise<{ coverImage: string; modelImages: string[] }> => {
     try {
         const frontImage = imageFiles.find((_f, i) => i === 0 && _f);
@@ -225,12 +226,33 @@ export const generateCatalogueImages = async (
 
         const primaryImage = frontImage || backImage!;
 
+        // --- SUB-CATEGORY / ITEM MAPPING OVERRIDES ---
+        let effectiveProductType: string = productType;
+        
+        if (itemName) {
+            const lowerItem = itemName.toLowerCase();
+            // Force Saree to apparel as requested
+            if (category === 'women' && (lowerItem === 'saree' || lowerItem.includes('saree'))) {
+                effectiveProductType = 'apparel';
+            } 
+            // Map Ornaments/Jewelry properly
+            else if (lowerItem.includes('jewelry') || lowerItem.includes('jewellery') || lowerItem.includes('ornament') || 
+                     lowerItem.includes('gold') || lowerItem.includes('diamond') || lowerItem.includes('silver') || 
+                     lowerItem.includes('bridal')) {
+                effectiveProductType = 'jewelry';
+            }
+            // Map Perfume properly
+            else if (lowerItem === 'perfume' || lowerItem.includes('perfume')) {
+                effectiveProductType = 'perfume';
+            }
+        }
+
         let prompts;
-        if (productType === 'apparel' && apparelStyle === 'professional' && (category === 'women' || category === 'men' || category === 'kids')) {
+        if (effectiveProductType === 'apparel' && apparelStyle === 'professional' && (category === 'women' || category === 'men' || category === 'kids')) {
             prompts = PROFESSIONAL_PROMPT_MAP[category].apparel;
         } else {
             const categoryPrompts = PROMPT_MAP[category];
-            prompts = categoryPrompts[productType as keyof typeof categoryPrompts];
+            prompts = categoryPrompts[effectiveProductType as keyof typeof categoryPrompts];
         }
 
         if (!prompts) {
@@ -241,7 +263,7 @@ export const generateCatalogueImages = async (
         const styleModifier = STYLE_OPTIONS.find(s => s.id === styleId)?.promptModifier || '';
         const backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
 
-        const isBackViewOptional = productType === 'apparel' && (apparelStyle === 'professional' || category === 'women' || category === 'men');
+        const isBackViewOptional = effectiveProductType === 'apparel' && (apparelStyle === 'professional' || category === 'women' || category === 'men');
         let activePhotoPrompts = [...photoPrompts];
 
         if (isBackViewOptional && !backImage) {
@@ -262,19 +284,55 @@ export const generateCatalogueImages = async (
         const generatedImages: string[] = [];
         let referenceImageForConsistency: string | undefined = undefined;
 
+        // Determine Jewelry Focus Instruction based on itemName
+        let jewelryFocusInstruction = "";
+        if (effectiveProductType === "jewelry" && itemName) { // Use effectiveProductType
+            const lowerItem = itemName.toLowerCase();
+            if (lowerItem.includes("ring") || lowerItem.includes("band")) {
+                jewelryFocusInstruction = "FOCUS: Extreme macro focus on the hand and fingers, showcasing the ring's interaction with the skin.";
+            } else if (lowerItem.includes("neck") || lowerItem.includes("pendant") || lowerItem.includes("chain") || lowerItem.includes("choker")) {
+                jewelryFocusInstruction = "FOCUS: Tight editorial crop on the neck and collarbone, highlighting the drape and sparkle of the necklace.";
+            } else if (lowerItem.includes("ear") || lowerItem.includes("jhumka") || lowerItem.includes("stud")) {
+                jewelryFocusInstruction = "FOCUS: Precise macro focus on the ear and jawline, capturing the detailed craftsmanship and dangle of the earring.";
+            } else if (lowerItem.includes("bracelet") || lowerItem.includes("bangle") || lowerItem.includes("wrist")) {
+                jewelryFocusInstruction = "FOCUS: Macro focus on the wrist and forearm, highlighting the jewelry's fit and movement.";
+            } else {
+                jewelryFocusInstruction = "FOCUS: Professional editorial closeup that best showcases the specific jewelry item provided.";
+            }
+        }
+
+        const processedPrompts = finalPromptList.map((p: string, index: number) => {
+            let currentPrompt = p;
+            if (jewelryFocusInstruction) {
+                currentPrompt = `${jewelryFocusInstruction}\n${currentPrompt}`;
+            }
+            
+            const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.";
+            let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
+            
+            if (consistentCharacter && index > 0) {
+                finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. Follow the new pose, gesture, scene, and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
+            }
+            return finalPrompt;
+        });
+
         if (consistentCharacter) {
-            for (let index = 0; index < finalPromptList.length; index++) {
-                const prompt = finalPromptList[index];
+            for (let index = 0; index < processedPrompts.length; index++) {
+                const finalPrompt = processedPrompts[index];
                 let imageToUse = primaryImage;
 
-                if (backImage && isBackViewOptional && index === finalPromptList.length - 1) {
+                if (backImage && isBackViewOptional && index === processedPrompts.length - 1) {
                     imageToUse = backImage;
                 }
 
-                const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
-
                 try {
-                    const image = await generateWithRetry(imageToUse, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
+                    const image = await generateWithRetry(
+                        imageToUse, 
+                        finalPrompt, 
+                        aspectRatio, 
+                        index > 0 ? referenceImageForConsistency : undefined, 
+                        imageQuality
+                    );
                     onImageGenerated(image, index);
                     generatedImages.push(image);
 
@@ -282,24 +340,22 @@ export const generateCatalogueImages = async (
                         referenceImageForConsistency = image;
                     }
                 } catch (err) {
-                    console.error("Image generation failed. Please try again.");
+                    console.error(`Image ${index} generation failed:`, err);
                 }
             }
         } else {
-            const promises = finalPromptList.map(async (prompt, index) => {
+            const promises = processedPrompts.map(async (finalPrompt, index) => {
                 let imageToUse = primaryImage;
-                if (backImage && isBackViewOptional && index === finalPromptList.length - 1) {
+                if (backImage && isBackViewOptional && index === processedPrompts.length - 1) {
                     imageToUse = backImage;
                 }
-
-                const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
 
                 try {
                     const image = await generateWithRetry(imageToUse, finalPrompt, aspectRatio, undefined, imageQuality);
                     onImageGenerated(image, index);
                     return image;
                 } catch (err) {
-                    console.error("Image generation failed. Please try again.");
+                    console.error(`Image ${index} generation failed:`, err);
                     return null;
                 }
             });

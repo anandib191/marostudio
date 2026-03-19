@@ -1,19 +1,19 @@
 // --- WATCH PROMPTS ---
 const WATCH_COVER_PROMPT = `
-TASK: Create a luxurious product photoshoot stage for a men's watch.
-IMPORTANT INSTRUCTION: You will be given an image containing a watch. Your primary and most critical task is to use the **exact watch** from the provided image. **DO NOT ALTER THE WATCH IN ANY WAY.** This includes its design, materials, watch face, and strap. It must be presented **AS IS**.
-SCENE: Place this unaltered watch on a rugged, natural element like a piece of dark, polished wood or a dark slate rock. The background should be a blurred, sophisticated setting like a modern office with city views or a mountain landscape at dusk.
-LIGHTING: The lighting must be dramatic and focused, creating crisp highlights on the watch's metallic details and glass face, preserving its original form.
-GOAL: The final composition should feel masculine, powerful, and high-end, with the original watch as the untouched centerpiece.
+TASK: Create a masterful, high-end editorial product stage for a men's watch.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact watch** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, materials, watch face, and strap must remain pristine.
+SCENE & ATMOSPHERE: Study the watch's character (classic, sport, tactical, luxury). Build an immersive, high-fashion world that THIS specific item belongs to. Use premium textures like brushed titanium, dark slate, carbon fiber, or polished mahogany. The background should be a deeply blurred, sophisticated environment.
+LIGHTING: Volumetric, directional light that creates crisp highlights and defined shadows, sculpting the watch's form and highlighting its materials.
+QUALITY CONTROL: NO visible camera gear, light stands, or technical artifacts. Pure flagship luxury campaign result.
 `;
 
 const WATCH_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic, close-up editorial shot of a man wearing the provided watch with a bespoke tailored suit.
-  CRITICAL RULE: The watch from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the watch. It is a fixed, unchangeable element.
-  MODEL & STYLE: A sophisticated man adjusting his French cuff. The watch sits perfectly on his wrist, peeking out elegantly. The fabric of the suit is rich and textured (e.g., subtle houndstooth or premium wool).
-  LIGHTING & ATMOSPHERE: High-end studio lighting, crisp and directional, replicating the polished look of a luxury menswear campaign.
-  OUTPUT SPECIFICATIONS: Premium, high-end editorial fashion photography, ultra-detailed focus on the worn watch.
+  TASK: Generate an ultra-realistic, pinnacle-fashion editorial of a man wearing the provided watch.
+  CRITICAL RULE: Use the watch **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: "Modern Masculinity". Choose a model archetype and styling (e.g., bespoke tailoring, minimalist luxury, or rugged heritage) that perfectly matches the watch's character. The pose should be a candid, high-end "adjustment" or "moment of pause" that feels intentional and powerful.
+  LIGHTING & ATMOSPHERE: Cinematic, non-technical illumination. A blurred, sophisticated environment like a glass-walled office, a luxury car interior, or a private lounge.
+  QUALITY CONTROL: Zero visible cameras or studio gear. Pure visual storytelling.
   `,
   `
   TASK: Generate an ultra-realistic, luxury lifestyle photoshoot of a man's wrist wearing the provided watch while gripping a leather steering wheel.
@@ -37,11 +37,11 @@ const WATCH_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: Contemporary, elegant, avant-garde formal luxury.
   `,
   `
-  TASK: Generate an ultra-realistic, high-fashion levitating product shot of the provided watch.
-  CRITICAL RULE: It is absolutely essential that the watch from the provided image is used **WITHOUT ANY MODIFICATION**.
-  SCENE & STYLE: The watch appears to be floating perfectly in mid-air against a seamless, deep matte black background. A scattering of fine gold dust or metallic particles is suspended around it, catching the light.
-  LIGHTING & ATMOSPHERE: Dual side-lighting to flawlessly sculpt the edges of the watch, with a subtle golden glow illuminating the floating particles.
-  OUTPUT SPECIFICATIONS: Magical, high-resolution, hypnotic and exclusive showcase.
+  TASK: Generate an ultra-realistic, avant-garde "Zero-G" product showcase featuring the provided watch.
+  CRITICAL RULE: The watch **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Create a breathtaking, surrealist showcase. The watch appears to be floating in a void of pure luxury. Use elements like liquid metallic particles, crystalline fragments, or light beams that swirl around the product.
+  LIGHTING & ATMOSPHERE: Masterful, volumetric lighting that sculptures every edge of the watch. The background is a sophisticated, dark matte void.
+  QUALITY CONTROL: Absolutely NO technical equipment visible. The result must feel like a hypnotic, high-res digital art masterpiece.
   `,
   `
   TASK: Generate an ultra-realistic, sophisticated still-life photoshoot of the provided watch in a study setting.
@@ -117,11 +117,11 @@ const WATCH_PHOTO_PROMPTS = [
 
 // --- PERFUME PROMPTS ---
 const PERFUME_COVER_PROMPT = `
-TASK: Create a luxurious, masculine product photoshoot stage for a men's perfume bottle.
-IMPORTANT INSTRUCTION: You will be given an image of a perfume bottle. Your primary and most critical task is to use the **exact perfume bottle** from the provided image. **DO NOT ALTER THE BOTTLE IN ANY WAY.** This includes its shape, label, and liquid color.
-SCENE: Place this unaltered bottle on a dark, textured surface like wet charcoal or a slab of concrete. The background should be abstract and moody, with elements like swirling smoke or dramatic water splashes.
-LIGHTING: Clear, high-contrast lighting. Use a single key light to sculpt the bottle's shape and create deep shadows.
-GOAL: The final composition should feel mysterious, sophisticated, and powerful, suitable for a luxury men's fragrance campaign.
+TASK: Create a masterful, high-end editorial product stage for a men's perfume bottle.
+CRITICAL RULE: Use the **exact perfume bottle** from the provided image **WITHOUT A SINGLE ALTERATION**.
+SCENE & ATMOSPHERE: Study the bottle's aesthetic (heavy glass, sharp lines, wood accents). Build a world of raw power and sophistication. Use elements like wet charcoal, volcanic rock, minimalist concrete, or swirling misty voids.
+LIGHTING: High-contrast, dramatic illumination that defines the bottle's silhouette and creates deep, meaningful shadows.
+QUALITY CONTROL: NO visible camera gear, light stands, or technical artifacts. A clean, premium luxury result.
 `;
 
 const PERFUME_PHOTO_PROMPTS = [
@@ -133,11 +133,11 @@ const PERFUME_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: Ultra-detailed, photorealistic, bold, and editorial—ready for a premium fragrance advertisement with clean negative space for branding.
   `,
   `
-  TASK: Generate a dramatic black and white portrait of a bearded man in a suit, holding the provided perfume bottle close to his face.  
-  CRITICAL RULE: The perfume bottle must be used **EXACTLY AS IS** and must be the only element in color.  
-  MODEL & STYLE: A confident man with a thick beard, sharp features, and intense gaze, dressed in a tailored suit with an open-collar shirt. The rest of the scene is monochrome.  
-  LIGHTING & ATMOSPHERE: High-contrast, clear black and white studio lighting, with shadows adding depth and drama.  
-  OUTPUT SPECIFICATIONS: Striking, masculine, bold, and modern.
+  TASK: Generate an ultra-realistic, dramatic monochrome portrait of a man, integrated with the provided perfume bottle.
+  CRITICAL RULE: The bottle must be used **EXACTLY AS IS** (the only element in color).
+  DYNAMIC DIRECTION: "Intense Essence". Choose a model with striking, rugged features and an intense gaze. The composition is a tightly cropped, high-contrast black and white portrait. The bottle is held prominently. 
+  LIGHTING: Chiaroscuro lighting with deep, rich shadows and sharp highlights.
+  QUALITY CONTROL: No visible strobe lights or photographers. A bold, modern, and artistic result.
   `,
   `
   TASK: Generate an ultra-realistic, high-fashion dark-fantasy fragrance advertisement featuring the provided perfume bottle.
@@ -161,7 +161,20 @@ const PERFUME_PHOTO_PROMPTS = [
   LIGHTING & BACKGROUND: Moody, cinematic lighting with soft golden highlights on their faces and dramatic shadows on the dark metallic elevator panels. Subtle reflections add depth and a sense of luxury.
   OUTPUT SPECIFICATIONS: Ultra-realistic, elegant, and sensuous. Every detail—from clothing texture to reflections on the elevator walls—must convey premium sophistication and timeless allure.
   `,
-
+  `
+  TASK: Generate an ultra-realistic, high-fashion "Urban Power" fragrance advertisement for the perfume bottle.
+  CRITICAL RULE: The perfume bottle **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: Choose a model archetype and sophisticated styling (e.g., a leather jacket or sharp topcoat) that matches the bottle's aesthetic. The setting is a blurred, moonlit city skyline or a modern architectural foyer. The model interacts with the bottle with confidence and poise.
+  LIGHTING: Cinematic, low-key lighting with deep shadows and sharp highlights.
+  QUALITY CONTROL: Zero visible cameras, light stands, or studio gear. Pure masculine allure.
+  `,
+  `
+  TASK: Generate an ultra-realistic, pinnacle-fashion fragrance campaign featuring the provided perfume bottle.
+  CRITICAL RULE: The bottle **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: "Essence of the Wild". Choose a model archetype and rugged/sophisticated styling (e.g., oversized knitwear or tailored linen) that suits the product. The setting is a dramatic natural landscape — a jagged cliff, a misty forest, or a vast desert at twilight. The composition is cinematic and grand.
+  LIGHTING: Atmospheric, natural-feeling illumination.
+  QUALITY CONTROL: Absolutely no technical equipment or camera gear visible. A breathtaking final result.
+  `,
   `
   TASK: Generate an ultra-realistic, luxury penthouse balcony photo featuring the provided perfume bottle.
   CRITICAL RULE: The perfume bottle from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter it in any way.
@@ -254,7 +267,7 @@ const PERFUME_PHOTO_PROMPTS = [
 
 const _BELT_BUCKLE_FOCUSES = [
   "The statement buckle dominates the frame — its geometry catches a razor-sharp specular highlight that draws the eye instantly.",
-  "A macro close-up reveals the intricate engraving on the buckle, each groove catching soft directional light like a sculptor's masterpiece.",
+  "A macro close-up reveals the intricate engraving on the buckle, each groove catching soft directional light that sculptures the metal.",
   "The burnished gold-toned prong buckle gleams against the matte leather, acting as the single point of brilliance in an otherwise moody frame.",
   "An oversized, geometric minimalist buckle provides strikingly bold contrast against the fine-grain leather — modern and assertive.",
   "A vintage-style roller buckle with an antique patina finish tells a story of heirloom quality and timeless design.",
@@ -293,13 +306,13 @@ const _BELT_SCENES = [
 ];
 
 const _BELT_LIGHTING_MOODS = [
-  "Cinematic chiaroscuro — single hard key light from a sharp 45° angle, creating deep pools of shadow that give the leather immense depth and volume.",
-  "Cool, overcast diffused daylight — shadowless and clinical, revealing every micro-texture and stitch detail with forensic precision.",
-  "Golden-hour warmth — the last horizontal rays of sunlight casting long, dramatic shadows and wrapping the leather in a burnished amber glow.",
-  "Neon-noir — crimson and electric cyan neon reflections paint the belt's buckle and strap with pops of vivid, cinematic color against deep shadow.",
-  "Rembrandt studio lighting — a large softbox at 45° with a subtle fill, sculpting the model's form and creating a luminous triangle highlight on the belt buckle.",
-  "High-key gallery lighting — a perfectly circular overhead spotlight illuminates only the belt and its supporting surface, surrounded by velvety shadow vignette.",
-  "Amber workshop light — warm, slightly dusty shafts of incandescent light slicing through dark space, making the leather glow with organic warmth.",
+  "Cinematic chiaroscuro — dramatic, high-contrast illumination that creates deep pools of shadow and a powerful, sculpted look.",
+  "Cool, overcast diffused daylight — clean, shadowless illumination that reveals every micro-texture and stitch detail with absolute clarity.",
+  "Golden-hour warmth — the last horizontal rays of sunlight wrapping the leather in a burnished, liquid amber glow.",
+  "Neon-noir — vibrant crimson and electric cyan reflections painting the buckle and strap with pops of cinematic color against deep shadow.",
+  "Classic high-fashion glow — soft, directional illumination that highlights the model's form and creates a luminous focus on the belt.",
+  "Sublime architectural light — a sharp, volumetric beam that illuminates only the belt and its immediate texture, surrounded by mysterious shadow.",
+  "Amber workshop illumination — warm, slightly dusty shafts of incandescent light slicing through dark space, making the leather glow with organic warmth.",
   "Blue-hour cool ambiance — the calm, desaturated light just after sunset, giving the belt a cool, authoritative presence against blue-grey urban textures.",
   "Reflected city glow — ambient light sourced entirely from the glittering city skyline, bathing the scene in layered warm amber and cool blue.",
 ];
@@ -342,16 +355,11 @@ export function getBeltCoverPrompt(): string {
 
   return `
 TASK: Create a masterful, high-end editorial centerpiece for a luxury men's belt.
-
-CRITICAL RULE — NON-NEGOTIABLE: You are provided with an image of a belt. Your absolute priority is to render the **exact belt** from that image **WITHOUT A SINGLE ALTERATION**. The design, buckle intricacies, color grading, stitching pattern, and material texture must remain pristine and completely untouched. Do NOT redesign, reinterpret, or redraw the belt.
-
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact belt** from the provided image **WITHOUT A SINGLE ALTERATION**.
 SCENE: ${scene}
-
 LIGHTING: ${lighting}
-
 BUCKLE FOCUS: ${buckle}
-
-GOAL: Produce a breathtaking, ultra-realistic, museum-quality product portrait. Every element of the composition — scene, light, texture, angle — must serve one purpose: making the original belt the uncontested hero. The result should feel worthy of a flagship luxury campaign.
+QUALITY CONTROL: NO visible camera equipment, light stands, or technical artifacts. The results must be a pure, high-end advertising masterpiece.
 `.trim();
 }
 
@@ -561,14 +569,21 @@ const BELT_PHOTO_PROMPTS: string[] = _BELT_PHOTO_PROMPT_TEMPLATES.map(
 const BELT_COVER_PROMPT: string = getBeltCoverPrompt();
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, high-fashion, full-body editorial photo of a male model wearing the provided clothing item.
-CRITICAL RULE: The garment from the user's image must be used **EXACTLY AS IS**. You **MUST NOT** alter, modify, or redraw the clothing. This includes its design, color, pattern, texture, and fit. It is a fixed, unchangeable element placed onto the model.
-DYNAMIC DIRECTION: Study the garment's style, color, and character carefully. Choose a model archetype, pose, background, and mood that feels authentically suited to THIS specific product — do not default to a generic or repeated look. The model's age, physique, hair, expression, and pose should all feel unique and creatively matched to the garment.
-LIGHTING: Choose lighting that best compliments the garment's texture and color palette — dramatic, soft, outdoor, or studio as appropriate.
-OUTPUT SPECIFICATIONS: High-resolution, sharp, editorial quality. The clothing is the absolute star of the image. Every generation should feel fresh and distinctly creative.
+TASK: Generate an ultra-realistic, pinnacle-fashion editorial of a male model wearing the provided garment.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
+DYNAMIC DIRECTION: Study the garment's character (streetwear, formal, ethnic, technical). Select a model archetype, age, styling, and pose that perfectly match the product's soul. Build a world that THIS garment belongs to — avoid generic setups.
+LIGHTING & ATMOSPHERE: High-fashion, volumetric illumination tailored to the garment's fabric. Use light to sculpt the drape and texture realistically.
+QUALITY CONTROL: NO visible camera gear, light stands, seamless paper rolls, or photographers. 
 `;
 
 const APPAREL_PHOTO_PROMPTS = [
+  `
+  TASK: Generate a "New York Editorial" style high-fashion photo of a man wearing the provided garment.
+  CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Choose a model archetype and sophisticated styling (e.g., layering, accessories, grooming) that elevates the garment to a high-fashion cover level. The setting is iconic and atmospheric — a brutalist lobby, a moody library, or a minimalist gallery. The pose is strong, editorial, and unique.
+  LIGHTING: Cinematic, non-technical illumination that sculptures the model and product.
+  QUALITY CONTROL: NO visible technical artifacts or equipment.
+  `,
   `
   TASK: Generate an ultra-realistic fashion photo of a man wearing the provided garment.
   CRITICAL RULE: The clothing item must be used **EXACTLY AS IS** — no alterations to design, color, pattern, texture, or fit.
@@ -589,20 +604,26 @@ const APPAREL_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-fashion, sharp focus on the garment. Every generation of this shot should have a distinct composition and mood.
   `,
   `
+  TASK: Generate an ultra-realistic, high-stakes cinematic action editorial of a man wearing the garment.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
+  DYNAMIC DIRECTION: "Moment of Impact". Choose a high-energy urban or architectural setting (e.g., mid-vault, running up a brutalist staircase, or turning sharply on a wet street). The model's movement should be explosive and frozen in perfect clarity. 
+  LIGHTING: Dramatic, high-speed photography lighting. Volumetric light cutting through the scene.
+  QUALITY CONTROL: Zero visible cameras or equipment. A masterpiece of frozen motion.
+  `,
+  `
   TASK: Generate an ultra-realistic, energetic photo of a model wearing the provided garment.
   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
   DYNAMIC DIRECTION: Create a scene full of energy and motion that feels right for this specific garment. The action — a jump, a walk, a turn, a lean, a run — should be chosen based on the garment's character. The location and atmosphere should be vivid and immersive — do not use a generic white studio. Think bold: a sunlit rooftop, a tunnel, an open field, an art space, a moving environment. The model's energy and expression should feel expressive and alive.
   OUTPUT SPECIFICATIONS: High-resolution, cinematic, full of momentum. A visually striking image that makes the garment feel desirable and the brand feel dynamic.
   `,
   `
-  TASK: Generate an ultra-realistic photo of a male model wearing the provided garment — focusing on the view that best represents the product uploaded.
+  TASK: Generate an ultra-realistic, product-focused informative editorial of a man wearing the garment — focusing on the view that best represents the uploaded item.
   CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
   CONDITIONAL DIRECTION:
-  - If the uploaded product image shows the **back of the garment**, generate a back-facing or three-quarter rear view of the model that clearly showcases the back panel, rear construction, and back design of the garment.
-  - If the uploaded product image shows the **front of the garment** or any other side, generate a front-facing or three-quarter front view that clearly showcases the front design, collar, chest details, and overall silhouette of the garment as provided.
-  - Do NOT generate a back view if no back product image was provided.
-  MODEL & STYLE: Choose a pose, expression, and body language that creatively fits the garment's character — not a stiff catalog pose. The setting should be clean and complementary.
-  OUTPUT SPECIFICATIONS: Clear, well-lit, and informative — as seen on a premium e-commerce product page, but with creative direction.
+  - If the uploaded product image shows the **back of the garment**, generate a back-facing or three-quarter rear view of the model that clearly showcases the back design.
+  - If the uploaded product image shows the **front of the garment** or any other side, generate a front-facing or three-quarter front view that clearly showcases the front design, collar, and silhouette.
+  DYNAMIC DIRECTION: Choose a model archetype and character-filled pose that suits the garment. The background should be clean and sophisticated (not a generic white studio).
+  QUALITY CONTROL: NO technical artifacts like paper rolls or equipment visible.
   `,
 
   `
@@ -654,11 +675,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, minimalist studio editorial photo of a man wearing the provided garment.
-  CRITICAL RULE: The clothing **MUST NOT BE CHANGED** in any way.
-  DYNAMIC DIRECTION: A clean, stark studio shot that puts the garment on a pedestal. The model poses against a seamless solid background (white, grey, or a bold color chosen to complement the garment). The pose is strong and editorial — not a catalog pose. Grooming is clean and minimal.
-  ATMOSPHERE: Pure, undistracted focus on the garment. Precise, professional lighting.
-  OUTPUT SPECIFICATIONS: High-resolution, minimalist, powerful, gallery-quality fashion photography.
+  TASK: Generate a high-fashion, ultra-realistic "Statuesque" editorial of a man wearing the garment.
+  CRITICAL RULE: Use the garment **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Artistic, clean, and powerful. Choose a model with a striking, architectural look. The background is a sophisticated solid (like raw plaster, matte metal, or deep charcoal) that makes the garment pop. The pose is strong and editorial — avoiding generic catalog stances.
+  LIGHTING: Precise, volumetric illumination that defines the product's structure.
+  QUALITY CONTROL: NO visible studio gear, paper rolls, or light stands. Pure minimalist excellence.
   `,
 
   `

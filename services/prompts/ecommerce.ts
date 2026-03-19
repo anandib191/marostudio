@@ -1,12 +1,11 @@
 
-
 // --- HOME & KITCHEN PROMPTS ---
 const HOME_KITCHEN_COVER_PROMPT = `
-TASK: Create a clean, aspirational product photoshoot stage for a home or kitchen item.
-IMPORTANT INSTRUCTION: You will be given an image containing a product. Your primary and most critical task is to use the **exact product** from the provided image. **DO NOT ALTER THE PRODUCT IN ANY WAY.** This means no changes to its shape, design, color, material, or texture. The product must be presented **AS IS**.
-SCENE: Place this unaltered product in a bright, modern home setting that complements its function. For example, a kitchen gadget on a clean marble countertop, or a home decor item on a stylish wooden shelf. The background should be softly blurred to keep focus on the product.
-LIGHTING: The lighting must be soft, natural, and inviting, like daylight from a large window. It should create gentle highlights that showcase the product's form and material without harsh reflections.
-GOAL: The final composition should feel clean, modern, and desirable, like a page from a high-end home goods catalog, with the original product as the untouched centerpiece.
+TASK: Create a masterful, high-end editorial product stage for a home or kitchen item.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact product** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, material, and texture must remain pristine.
+SCENE & ATMOSPHERE: Study the product's character (minimalist, rustic, luxury, tech). Build a sophisticated, aspirational world that THIS specific item belongs to — avoid generic setups. The background should be a deeply blurred, high-fashion home environment.
+LIGHTING: Natural, volumetric illumination that creates soft highlights and makes the materials look premium and inviting.
+QUALITY CONTROL: NO visible camera gear, light stands, or technical artifacts. Pure flagship architectural campaign result.
 `;
 
 const HOME_KITCHEN_PHOTO_PROMPTS = [
@@ -18,11 +17,11 @@ const HOME_KITCHEN_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-resolution, authentic, and relatable, showing the product as part of an aspirational daily life.
   `,
   `
-  TASK: Generate a minimalist, ultra-realistic product-focused shot of the provided item against a simple background.
-  CRITICAL RULE: The product from the user's image must be used **EXACTLY AS IS**, without any modifications to its design, shape, or details. It is a fixed element.
-  SCENE & STYLE: The product is placed on a simple, flat surface. The background is a solid, neutral color or has a very subtle texture (like light wood or concrete). Props are minimal, if any (e.g., a single herb sprig next to a kitchen tool).
-  LIGHTING & ATMOSPHERE: Clean, even studio-style lighting that clearly illuminates the entire product and minimizes shadows.
-  OUTPUT SPECIFICATIONS: A crisp, professional, and clean image perfect for e-commerce product pages where the product details are most important.
+  TASK: Generate a minimalist, ultra-realistic "Product Portrait" against a sophisticated solid background.
+  CRITICAL RULE: Use the product **EXACTLY AS IS**.
+  DYNAMIC DIRECTION: Place the item on a complementary, textured surface (e.g., raw concrete, dark linen, or light oak). The background is a clean, solid architectural wall. Use a composition that highlights the product's silhouette and form.
+  LIGHTING: Soft, volumetric illumination that provides clear, undistracted focus.
+  QUALITY CONTROL: Zero visible cameras or light stands. Pure minimalist perfection.
   `,
   `
   TASK: Generate an ultra-realistic top-down (flat-lay) composition featuring the provided product.
@@ -50,10 +49,10 @@ const HOME_KITCHEN_PHOTO_PROMPTS = [
 // --- ELECTRONICS PROMPTS ---
 const ELECTRONICS_COVER_PROMPT = `
 TASK: Create a sleek, modern product photoshoot stage for an electronic device.
-IMPORTANT INSTRUCTION: You will be given an image containing a device. Your primary and most critical task is to use the **exact device** from the provided image. **DO NOT ALTER THE DEVICE IN ANY WAY.** This means no changes to its design, color, screen content, buttons, or ports. The device must be presented **AS IS**.
-SCENE: Place this unaltered device on a minimalist, slightly reflective surface. The background should be dark and abstract, with subtle geometric shapes or soft, colored light gradients.
-LIGHTING: The lighting must be clean and dramatic, using edge lighting to define the product's silhouette and a soft key light to highlight its surface texture (e.g., brushed metal, matte plastic).
-GOAL: The final composition should feel futuristic, sophisticated, and high-tech, with the original device as the untouched centerpiece.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact device** from the provided image **WITHOUT A SINGLE ALTERATION**. This includes design, colors, buttons, and screen content.
+SCENE & ATMOSPHERE: Build a minimalistic, high-tech world around the device. Use premium materials like brushed metal, dark glass, or carbon fiber. The background should be a deeply blurred, futuristic environment with subtle geometric light plays.
+LIGHTING: Sharp, volumetric edge lighting to define the silhouette, combined with soft, non-technical surface illumination.
+QUALITY CONTROL: NO visible camera equipment, light stands, or studio artifacts. Pure iconic tech advertisement.
 `;
 
 const ELECTRONICS_PHOTO_PROMPTS = [
@@ -79,11 +78,11 @@ const ELECTRONICS_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: A sophisticated, high-end image that highlights the design and material quality of the device.
   `,
   `
-  TASK: Generate an ultra-realistic shot of the device on a clean, modern desk setup.
+  TASK: Generate an ultra-realistic shot of the device in a high-end "Creative Workspace".
   CRITICAL RULE: The device must be used **WITHOUT ANY MODIFICATION**.
-  SCENE & STYLE: The device is the central piece of a tidy, aesthetically pleasing desk setup (a "desk-scape"). Other items could include a sleek monitor, a minimalist lamp, a notebook, and a plant.
-  LIGHTING & ATMOSPHERE: Bright, clean lighting, either simulating natural daylight from a window or a professional office environment.
-  OUTPUT SPECIFICATIONS: An aspirational image that fits into the "work from home" or "tech setup" aesthetic.
+  DYNAMIC DIRECTION: "The Modern Setup". Place the device as the heart of an inspiring workspace — use accessories like architectural lighting, a minimalist notebook, or a piece of abstract art. The environment should feel high-end, clean, and technologically advanced.
+  LIGHTING: Bright, clean, and airy illumination. 
+  QUALITY CONTROL: NO technical equipment, light stands, or camera artifacts visible.
   `,
   `
   TASK: Generate a high-end, ultra-realistic product shot of the device against a contrasting natural element.
@@ -96,11 +95,11 @@ const ELECTRONICS_PHOTO_PROMPTS = [
 
 // --- FURNITURE PROMPTS ---
 const FURNITURE_COVER_PROMPT = `
-TASK: Create an elegant, well-lit product photoshoot stage for a piece of furniture.
-IMPORTANT INSTRUCTION: You will be given an image containing a piece of furniture. Your primary and most critical task is to use the **exact furniture** from the provided image. **DO NOT ALTER IT IN ANY WAY.** This includes its design, color, material, and proportions. The furniture must be presented **AS IS**.
-SCENE: Place this unaltered furniture in a spacious, minimalist room with high ceilings and large windows. The floor should be light-colored wood or polished concrete. The background should be a simple, neutral-colored wall, perhaps with a single large, abstract piece of art.
-LIGHTING: The lighting must be bright and airy, simulating soft, natural light streaming in from the windows. It should illuminate the furniture evenly, highlighting its form and texture without creating harsh shadows.
-GOAL: The final composition should feel sophisticated, modern, and aspirational, like a feature in an architectural design magazine, with the original furniture as the untouched centerpiece.
+TASK: Create an elegant, high-end architectural product stage for a piece of furniture.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact furniture** from the provided image **WITHOUT A SINGLE ALTERATION**.
+SCENE & ATMOSPHERE: Place the furniture in a spacious, light-drenched minimalist loft or a high-end architectural space. The background should be a masterpiece of depth and composition — use clean lines, premium textures, and a sophisticated, blurred depth of field.
+LIGHTING: Breathtaking, soft natural-feeling illumination that creates a sense of airy luxury and highlights the grain and fabric perfectly.
+QUALITY CONTROL: NO visible technical equipment, light stands, or camera artifacts. A flagship magazine cover result.
 `;
 
 const FURNITURE_PHOTO_PROMPTS = [
@@ -153,11 +152,11 @@ const DYNAMIC_OTHER_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: A visually rich and compelling image perfect for a magazine feature or social media.
   `,
   (productName: string) => `
-  TASK: Generate a dramatic, ultra-realistic close-up shot focusing on the details and texture of the provided ${productName}.
+  TASK: Generate a dramatic, ultra-realistic close-up shot focusing on the intricate details and texture of the provided ${productName}.
   CRITICAL RULE: The product must be used **EXACTLY AS IS**.
-  SCENE & STYLE: A macro-style shot that fills the frame with a specific, interesting detail of the ${productName}. Focus on material, craftsmanship, or a unique design feature.
-  LIGHTING & BACKGROUND: Use lighting that grazes the surface to reveal texture. The background should be completely out of focus or a simple, non-distracting surface.
-  OUTPUT SPECIFICATIONS: A sophisticated, tactile image that communicates the product's quality.
+  DYNAMIC DIRECTION: Create an "Extreme Macro" composition that reveals the soul of the product — the fine grain of wood, the weave of fabric, the machining of metal, or the crystallization of glass. Use a thin depth of field to make the detail pop against a creamy, blurred background.
+  LIGHTING: Directional, volumetric light that grazes the surface to reveal every microscopic texture.
+  QUALITY CONTROL: NO visible technical artifacts, camera gear, or light stands. Pure tactile excellence.
   `,
   (productName: string) => `
   TASK: As a world-class creative director, generate a high-concept, artistic advertisement photo for the provided ${productName}.
