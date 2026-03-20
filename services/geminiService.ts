@@ -57,17 +57,21 @@ async function getBlobFromSource(source: string, mimeType: string): Promise<Blob
     return await base64ToBlob(source, mimeType);
 }
 
-const getBackgroundInstruction = (bg: BackgroundType, customPrompt?: string) => {
-    switch (bg) {
-        case 'white': return "BACKGROUND OVERRIDE: Use a clean, seamless solid white background (#FFFFFF). High-key lighting.";
-        case 'black': return "BACKGROUND OVERRIDE: Use a clean, seamless solid black background (#000000). Dramatic lighting.";
-        case 'transparent': return "BACKGROUND OVERRIDE: The subject must be isolated on a pure, flat white background with sharp edges for easy background removal.";
-        case 'workspace': return "BACKGROUND OVERRIDE: A modern, organized creative workspace or office desk setting with blurred details.";
-        case 'studio': return "BACKGROUND OVERRIDE: A professional photography studio setting with infinite cycling wall and soft lighting.";
-        case 'city': return "BACKGROUND OVERRIDE: A stylish city street with modern architecture, softly out of focus.";
-        case 'historic': return "BACKGROUND OVERRIDE: An ancient, textured historic setting with stone walls, columns, or ruins.";
-        case 'custom': return `BACKGROUND OVERRIDE: ${customPrompt}`;
-        default: return "";
+}
+
+/**
+ * Helper to get theme-specific background and scene instructions for apparel
+ */
+const getApparelThemeInstructions = (styleId: string) => {
+    switch (styleId) {
+        case 'vintage':
+            return "SCENE & BACKGROUND: A grand, historic setting such as an ancient palace courtyard, a marble corridor with ornate arches, or beside a serene lake at a heritage site. The styling should be regal, majestic and timeless, perfectly complementing the garment's heritage.";
+        case 'aesthetic':
+            return "SCENE & BACKGROUND: A high-end minimalist studio or a sleek architectural city setting. Include curated aesthetic objects like sculptural vases, dried pampas grass, minimalist furniture, or textured architectural glass to create a trendy, sophisticated mood.";
+        case 'monochrome':
+            return "SCENE & BACKGROUND: A moody, evocative black and white scene reminiscent of mid-century fashion photography. Set the model in a vintage hotel lobby, a dramatic urban street with long shadows, or a starkly lit minimalist space. The focus is on pure form, texture, and light.";
+        default:
+            return "";
     }
 }
 
@@ -261,7 +265,17 @@ export const generateCatalogueImages = async (
 
         const { coverPrompt, photoPrompts } = prompts;
         const styleModifier = STYLE_OPTIONS.find(s => s.id === styleId)?.promptModifier || '';
-        const backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
+        let backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
+
+        // --- THEME-SPECIFIC APPAREL OVERRIDE ---
+        // For apparel, if the background is 'studio' (the default) or 'historic/city' matching the theme,
+        // we inject richer, theme-specific scene instructions.
+        if (effectiveProductType === 'apparel') {
+            const themeInstructions = getApparelThemeInstructions(styleId);
+            if (themeInstructions && (background === 'studio' || background === 'historic' || background === 'city')) {
+                backgroundInstruction = `THEME-SPECIFIC ${backgroundInstruction}\n${themeInstructions}`;
+            }
+        }
 
         const isBackViewOptional = effectiveProductType === 'apparel' && (apparelStyle === 'professional' || category === 'women' || category === 'men');
         let activePhotoPrompts = [...photoPrompts];
