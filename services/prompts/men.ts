@@ -569,9 +569,9 @@ const BELT_PHOTO_PROMPTS: string[] = _BELT_PHOTO_PROMPT_TEMPLATES.map(
 const BELT_COVER_PROMPT: string = getBeltCoverPrompt();
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, pinnacle-fashion editorial of a male model wearing the provided garment.
-CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
-DYNAMIC DIRECTION: Study the garment's character (streetwear, formal, ethnic, technical). Select a model archetype, age, styling, and pose that perfectly match the product's soul. Build a world that THIS garment belongs to — avoid generic setups.
+TASK: Generate an ultra-realistic, pinnacle-fashion editorial of a male model wearing the provided garment in a poised, static position.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved. Do NOT add any new trails, features, or stylistic additions to the cloth.
+DYNAMIC DIRECTION: Study the garment's character (streetwear, formal, ethnic, technical). Select a model archetype, age, styling, and a strong, static pose that perfectly match the product's soul. Build a world that THIS garment belongs to — avoid generic setups.
 LIGHTING & ATMOSPHERE: High-fashion, volumetric illumination tailored to the garment's fabric. Use light to sculpt the drape and texture realistically.
 QUALITY CONTROL: NO visible camera gear, light stands, seamless paper rolls, or photographers. 
 `;
@@ -604,17 +604,17 @@ const APPAREL_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-fashion, sharp focus on the garment. Every generation of this shot should have a distinct composition and mood.
   `,
   `
-  TASK: Generate an ultra-realistic, high-stakes cinematic action editorial of a man wearing the garment.
-  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
-  DYNAMIC DIRECTION: "Moment of Impact". Choose a high-energy urban or architectural setting (e.g., mid-vault, running up a brutalist staircase, or turning sharply on a wet street). The model's movement should be explosive and frozen in perfect clarity. 
-  LIGHTING: Dramatic, high-speed photography lighting. Volumetric light cutting through the scene.
-  QUALITY CONTROL: Zero visible cameras or equipment. A masterpiece of frozen motion.
+  TASK: Generate an ultra-realistic, sophisticated static editorial of a man wearing the garment in a poised position.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED**. No new trails or enhancements.
+  DYNAMIC DIRECTION: "Moment of Presence". Choose a strong, architectural or urban setting. The model is poised and perfectly still, showcasing the garment's structure and fit with absolute clarity. The pose is strong and intentional.
+  LIGHTING: Dramatic, cinematic studio-grade lighting. Volumetric light cutting through the scene.
+  QUALITY CONTROL: Zero visible cameras or equipment. A masterpiece of static composition.
   `,
   `
-  TASK: Generate an ultra-realistic, energetic photo of a model wearing the provided garment.
+  TASK: Generate an ultra-realistic, poised photo of a model wearing the provided garment in a static position.
   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
-  DYNAMIC DIRECTION: Create a scene full of energy and motion that feels right for this specific garment. The action — a jump, a walk, a turn, a lean, a run — should be chosen based on the garment's character. The location and atmosphere should be vivid and immersive — do not use a generic white studio. Think bold: a sunlit rooftop, a tunnel, an open field, an art space, a moving environment. The model's energy and expression should feel expressive and alive.
-  OUTPUT SPECIFICATIONS: High-resolution, cinematic, full of momentum. A visually striking image that makes the garment feel desirable and the brand feel dynamic.
+  DYNAMIC DIRECTION: Create a scene that feels right for this specific garment's character. The pose should be stable and poised — a lean, a strong stance, or a thoughtful gaze. The location and atmosphere should be vivid and immersive — do not use a generic white studio. Think bold: a sunlit rooftop, a tunnel, an open field, an art space. The model's presence should feel expressive and alive but static.
+  OUTPUT SPECIFICATIONS: High-resolution, cinematic, full of presence but static focus. A visually striking image that makes the garment feel desirable.
   `,
   `
   TASK: Generate an ultra-realistic, product-focused informative editorial of a man wearing the garment — focusing on the view that best represents the uploaded item.
@@ -643,11 +643,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, rain-soaked city editorial photo of a man wearing the provided garment.
-  CRITICAL RULE: The clothing **MUST NOT BE CHANGED** — preserve its original design, color, and texture perfectly.
-  DYNAMIC DIRECTION: The model walks confidently through a rain-soaked urban street. Wet pavement creates beautiful reflections. The garment should look intentional and stylish despite the weather — showing the wearer's confidence and character. The mood is moody, cinematic, and atmospheric.
+  TASK: Generate an ultra-realistic, rain-soaked city editorial photo of a man wearing the provided garment in a static pose.
+  CRITICAL RULE: The clothing **MUST NOT BE CHANGED** — preserve its original design, color, and texture perfectly. Do not add any new fabric trails.
+  DYNAMIC DIRECTION: The model stands confidently on a rain-soaked urban street. Wet pavement creates beautiful reflections. The garment should look intentional and stylish despite the weather — showing the wearer's confidence and character. The pose is static, allowing for full appreciation of the garment's construction.
   ATMOSPHERE: Cool blue-grey tones accented by warm shop-window light. Film-like quality.
-  OUTPUT SPECIFICATIONS: High-resolution, editorial, dramatic, and movie-like.
+  OUTPUT SPECIFICATIONS: High-resolution, editorial, dramatic, and static.
   `,
 
   `
@@ -667,11 +667,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, athletic/sports lifestyle photo of a man wearing the provided garment.
+  TASK: Generate an ultra-realistic, athletic/sports lifestyle photo of a man wearing the provided garment in a static pose.
   CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
-  DYNAMIC DIRECTION: If the garment suits an active context, place the model in a relevant sports or fitness scenario — stretching at a track, boxing in a gym, warming up on a basketball court. If the garment is not athletic, create a contrast — an athlete in a casual or formal garment captured in a sports setting, showing versatility.
-  ATMOSPHERE: Energetic, bold lighting. The setting should feel real and immersive.
-  OUTPUT SPECIFICATIONS: High-resolution, powerful, and action-driven.
+  DYNAMIC DIRECTION: If the garment suits an active context, place the model in a relevant sports or fitness scenario — posing at a track, standing by a boxing ring, or preparing on a basketball court. If the garment is not athletic, create a contrast — an athlete in a casual or formal garment captured in a sports setting, showing versatility. The pose is static and poised.
+  ATMOSPHERE: Striking, bold lighting. The setting should feel real and immersive.
+  OUTPUT SPECIFICATIONS: High-resolution, powerful, and poised.
   `,
 
   `
@@ -699,9 +699,9 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, coastal/beach lifestyle photo of a man wearing the provided garment.
-  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
-  DYNAMIC DIRECTION: The model is in a coastal setting — walking along a rocky shoreline, standing on a pier, or leaning against a beachside rail. The garment should feel natural in this environment. Hair is slightly windswept, the mood is relaxed and confident.
+  TASK: Generate an ultra-realistic, coastal/beach lifestyle photo of a man wearing the provided garment in a static position.
+  CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture. Keep the cloth exactly as per the provided image.
+  DYNAMIC DIRECTION: The model is in a coastal setting — standing along a rocky shoreline, standing on a pier, or leaning statically against a beachside rail. The garment should feel natural in this environment. Hair is slightly windswept, the mood is relaxed and confident. The pose is static.
   ATMOSPHERE: Bright, natural daylight with vivid blues from sky and sea. Warm skin tones. The mood is relaxed luxury.
   OUTPUT SPECIFICATIONS: High-resolution, fresh, coastal-lifestyle editorial.
   `

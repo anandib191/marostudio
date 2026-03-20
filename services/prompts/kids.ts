@@ -1,24 +1,24 @@
 // --- APPAREL PROMPTS ---
 const APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, joyful fashion editorial of a child model wearing the provided garment.
-CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
-DYNAMIC DIRECTION: Study the garment's character (playful, formal, school, seasonal). Select a child model archetype, age, expression, and pose that perfectly match the product's spirit. Build a wholesome, imaginative world that THIS garment belongs to.
+TASK: Generate an ultra-realistic, joyful fashion editorial of a child model wearing the provided garment in a poised, static position.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved. Do NOT add any new trails or additions to the cloth.
+DYNAMIC DIRECTION: Study the garment's character (playful, formal, school, seasonal). Select a child model archetype, age, expression, and a charming, static pose that perfectly match the product's spirit. Build a wholesome, imaginative world that THIS garment belongs to.
 LIGHTING & ATMOSPHERE: Professional, soft fashion-grade illumination that creates a cheerful, vibrant, and natural mood.
-QUALITY CONTROL: NO visible camera gear, light stands, studio umbrellas, or photographers. Focus on pure childhood joy. 
+QUALITY CONTROL: NO visible camera gear, light stands, studio umbrellas, or photographers. 
 `;
 
 const APPAREL_PHOTO_PROMPTS = [
   `
-  TASK: Generate an ultra-realistic, joyous "Nature Exploration" editorial of a child wearing the provided garment.
+  TASK: Generate an ultra-realistic, joyous "Nature Exploration" editorial of a child wearing the provided garment in a static position.
   CRITICAL RULE: The clothing **MUST NOT BE CHANGED**.
-  DYNAMIC DIRECTION: "Discovery". Choose a beautiful, sun-drenched outdoor setting (e.g., a flower meadow, a dappled forest path, or a coastal rockpool). The child's pose should be candid and full of wonder.
+  DYNAMIC DIRECTION: "Poised Discovery". Choose a beautiful, sun-drenched outdoor setting (e.g., a flower meadow, a dappled forest path, or a coastal rockpool). The child's pose should be poised and static, focusing on the garment.
   LIGHTING: Vibrant, natural-feeling illumination.
   QUALITY CONTROL: Zero visible cameras or equipment. Focus on pure, unedited childhood magic.
   `,
   `
-  TASK: Generate a dynamic, ultra-realistic "Playtime Portrait" of children wearing the provided garment.
+  TASK: Generate a poised, ultra-realistic "Playtime Portrait" of children wearing the provided garment in a static position.
   CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
-  DYNAMIC DIRECTION: Create a unique, heartwarming scene of friendship and interaction. Choose a diverse group of child models whose energy matches the garment. The scene should feel like a real, captured moment of life.
+  DYNAMIC DIRECTION: Create a unique, heartwarming scene of friendship. Choose a diverse group of child models whose character matches the garment. The scene should feel like a captured moment of life in a static, poised arrangement.
   LIGHTING: Natural, bright, atmospheric illumination.
   QUALITY CONTROL: Zero technical artifacts. No equipment or gear visible.
   `,
@@ -37,11 +37,11 @@ const APPAREL_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: A sweet, peaceful image showing the comfort of the clothing.
   `,
   `
-  TASK: Generate an ultra-realistic photo of a child on a playground swing or slide, wearing the provided garment.
+  TASK: Generate an ultra-realistic photo of a child standing by a playground swing or slide, wearing the provided garment.
   CRITICAL RULE: The garment must be used **EXACTLY AS IS**.
-  MODEL & STYLE: A child in mid-swing or about to go down a slide, with a big smile or laughing. The shot captures the delight of outdoor play.
-  BACKGROUND & ATMOSPHERE: A clean, modern playground. The image is dynamic and captures a feeling of freedom.
-  OUTPUT SPECIFICATIONS: Fun, energetic, and joyful.
+  MODEL & STYLE: A child poised near a playground structure, with a big smile or looking at the camera. The shot captures the delight of outdoor play in a static pose.
+  BACKGROUND & ATMOSPHERE: A clean, modern playground. The image is clear and focused.
+  OUTPUT SPECIFICATIONS: Fun, joyful, and static.
   `,
 
   `
@@ -61,19 +61,19 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic photo of a child wearing the provided garment, walking through a school hallway.
+  TASK: Generate an ultra-realistic photo of a child wearing the provided garment, standing in a school hallway.
   CRITICAL RULE: The clothing **MUST NOT BE CHANGED**. Preserve its original design, color, and pattern.
-  MODEL & STYLE: A confident, smiling child with a colorful backpack, walking through a bright, modern school hallway. Their stride is proud and happy. The garment looks perfect for an active school day.
+  MODEL & STYLE: A confident, smiling child with a colorful backpack, standing in a bright, modern school hallway. Their pose is proud and happy. The garment looks perfect for a school day.
   BACKGROUND & ATMOSPHERE: A clean, modern school interior with lockers and bright walls. Natural daylight comes through large windows.
-  OUTPUT SPECIFICATIONS: High-resolution, relatable, back-to-school lifestyle.
+  OUTPUT SPECIFICATIONS: High-resolution, relatable, back-to-school lifestyle in a poised position.
   `,
 
   `
-  TASK: Generate an ultra-realistic photo of a child wearing the provided garment, playing in rain puddles.
-  CRITICAL RULE: You **MUST** use the garment from the user's image with **ZERO ALTERATIONS**.
-  MODEL & STYLE: A child in colorful rain boots splashing in a puddle on a rainy day, wearing the provided garment. Their face shows pure excitement and delight. The splash is frozen mid-action.
-  BACKGROUND & ATMOSPHERE: A rain-wet suburban street or park path with reflections in the puddles. Overcast but bright sky. The mood is playful and free-spirited.
-  OUTPUT SPECIFICATIONS: High-resolution, dynamic, and full of childhood joy.
+  TASK: Generate an ultra-realistic photo of a child wearing the provided garment, standing in a rain puddle.
+  CRITICAL RULE: You **MUST** use the garment from the user's image with **ZERO ALTERATIONS**. No new fabric trails.
+  MODEL & STYLE: A child in colorful rain boots standing in a puddle on a rainy day, wearing the provided garment. Their face shows pure excitement and delight. The pose is static and poised.
+  BACKGROUND & ATMOSPHERE: A rain-wet suburban street or park path with reflections in the puddles. Overcast but bright sky.
+  OUTPUT SPECIFICATIONS: High-resolution, full of childhood joy, and static.
   `,
 
   `
@@ -85,11 +85,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic photo of a child wearing the provided garment on a nature hiking trail.
+  TASK: Generate an ultra-realistic photo of a child wearing the provided garment on a nature trail.
   CRITICAL RULE: The clothing item must be used **EXACTLY AS IS**. Do not alter it.
-  MODEL & STYLE: A curious child walking along a forest trail, looking up at tall trees or pointing at a butterfly. They carry a small, child-sized backpack. The garment looks comfortable and appropriate for outdoor exploration.
+  MODEL & STYLE: A curious child standing on a forest trail, looking up at tall trees or pointing at a butterfly. They carry a small, child-sized backpack. The garment looks comfortable and appropriate for outdoor exploration.
   BACKGROUND & ATMOSPHERE: A beautiful, lush forest trail with dappled sunlight filtering through the canopy. Green ferns and wildflowers line the path.
-  OUTPUT SPECIFICATIONS: High-resolution, adventurous, and connected to nature.
+  OUTPUT SPECIFICATIONS: High-resolution, adventurous, and static focus.
   `,
 
   `
@@ -103,9 +103,9 @@ const APPAREL_PHOTO_PROMPTS = [
   `
   TASK: Generate an ultra-realistic, seasonal layering photo of a child wearing the provided garment in an autumn setting.
   CRITICAL RULE: You **MUST** use the garment from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A child walking through a park, kicking fallen autumn leaves. They wear the provided garment layered naturally with an appropriate scarf or jacket if seasonally suitable. Their expression is one of playful delight.
+  MODEL & STYLE: A child standing in a park, with fallen autumn leaves around them. They wear the provided garment layered naturally with an appropriate scarf or jacket if seasonally suitable. Their expression is one of playful delight in a poised stance.
   BACKGROUND & ATMOSPHERE: A beautiful autumnal park with warm orange, red, and gold foliage. Soft, warm afternoon light.
-  OUTPUT SPECIFICATIONS: High-resolution, warm, and seasonally evocative.
+  OUTPUT SPECIFICATIONS: High-resolution, warm, and static focus.
   `,
 
   `
@@ -117,9 +117,9 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, seasonal "Festive Moment" of a child wearing the provided garment.
+  TASK: Generate an ultra-realistic, "Festive Moment" of a child wearing the provided garment in a static pose.
   CRITICAL RULE: Use the garment **EXACTLY AS IS**.
-  DYNAMIC DIRECTION: Study the festive potential of the garment. Create a unique celebration scene (e.g., a garden party, a twilight lantern festival, or a joyful indoor holiday). The child's interaction with the environment (e.g., blowing bubbles, holding a sparkler, or laughing with friends) should feel spontaneous and unique.
+  DYNAMIC DIRECTION: Study the festive potential of the garment. Create a unique celebration scene (e.g., a garden party, or a joyful indoor holiday). The child's pose should be poised and static (e.g., holding a balloon or a festive treat).
   LIGHTING: Warm, atmospheric ambient lighting with a soft, magical glow.
   QUALITY CONTROL: Zero visible technical equipment. Pure celebratory joy.
   `,

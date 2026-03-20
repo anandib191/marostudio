@@ -1,9 +1,9 @@
 // --- PROFESSIONAL APPAREL PROMPTS (E-commerce/Studio Style) ---
 
 const PROFESSIONAL_APPAREL_COVER_PROMPT = `
-TASK: Generate an ultra-realistic, high-fashion flagship editorial of a model wearing the provided garment.
-CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved.
-DYNAMIC DIRECTION: Study the garment's character. Select a model archetype, styling, and pose that creates a world-class, aspirational image. The background should be a sophisticated, blurred architectural or high-end setting that makes the product pop. 
+TASK: Generate an ultra-realistic, high-fashion flagship editorial of a model wearing the provided garment in a poised, static position.
+CRITICAL RULE — NON-NEGOTIABLE: Use the **exact garment** from the provided image **WITHOUT A SINGLE ALTERATION**. Design, color, pattern, texture, and fit must be perfectly preserved. Do NOT add any new trails or stylistic additions.
+DYNAMIC DIRECTION: Study the garment's character. Select a model archetype, styling, and a strong, static pose that creates a world-class, aspirational image. The background should be a sophisticated, blurred architectural or high-end setting that makes the product pop. 
 LIGHTING: Breathtaking, volumetric illumination tailored to the fabric. Sculpt the drape and texture with non-technical, cinematic light.
 QUALITY CONTROL: NO visible camera gear, light stands, paper rolls, or studio artifacts. Pure luxury excellence.
 `;
@@ -33,12 +33,12 @@ const PROFESSIONAL_APPAREL_PHOTO_PROMPTS = [
   LIGHTING: Directional, volumetric light that grazes the surface to reveal every micro-texture.
   QUALITY CONTROL: NO visible technical gear or light stands. Pure tactile luxury.
   `,
-  // 4. Dynamic/Posed Shot
+  // 4. Poised Shot
   `
-  TASK: Generate an ultra-realistic, dynamic "Kinetic" editorial of a model wearing the provided garment.
-  CRITICAL RULE: Use the garment **WITHOUT ANY MODIFICATION**.
-  DYNAMIC DIRECTION: "Life in Motion". Choose a pose that conveys energy — a stride, a turn, or a leaning gesture. The background should be a vivid, high-end location (e.g., a gallery staircase, a sunlit terrace, or a modern corridor) captured with a professional depth of field. 
-  LIGHTING: Volumetric, atmospheric light that tracks the movement.
+  TASK: Generate an ultra-realistic, strong "Statuesque" editorial of a model wearing the provided garment.
+  CRITICAL RULE: Use the garment **WITHOUT ANY MODIFICATION**. No new trails or additions.
+  DYNAMIC DIRECTION: "Life in Presence". Choose a static pose that conveys power and presence — a strong stance or a poised lean. The background should be a vivid, high-end location (e.g., a gallery staircase, a sunlit terrace, or a modern corridor) captured with a professional depth of field. 
+  LIGHTING: Volumetric, atmospheric light that tracks the silhouette.
   QUALITY CONTROL: NO visible technical gear or light stands. Pure creative excellence.
   `,
   // 5. Back View
