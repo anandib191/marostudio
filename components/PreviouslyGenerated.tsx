@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { StudioSidebar } from './StudioSidebar';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const PAGE_SIZE = 10;
 
 interface Generation {
   _id: string;
@@ -23,6 +24,53 @@ interface Generation {
   createdAt: string;
 }
 
+// ─── Lazy Image with Skeleton ───────────────────────────────────────
+const LazyImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+}> = ({ src, alt, className = '' }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [inView, setInView] = useState(false);
+  const imgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = imgRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className="w-full h-full relative">
+      {/* Skeleton placeholder */}
+      {!loaded && (
+        <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded-lg">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skeleton-shimmer-anim" />
+        </div>
+      )}
+      {inView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setLoaded(true)}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────
 export const PreviouslyGenerated: React.FC = () => {
   const navigate = useNavigate();
   const [generations, setGenerations] = useState<Generation[]>([]);
@@ -32,11 +80,13 @@ export const PreviouslyGenerated: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [generationToDelete, setGenerationToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchGenerations();
-  }, []);
+  // Pagination + filter state
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [selectedType, setSelectedType] = useState<'all' | 'photoshoot' | 'marketing'>('all');
 
-  const fetchGenerations = async () => {
+  const fetchGenerations = useCallback(async (p: number = page, type: string = selectedType) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       navigate('/');
@@ -45,12 +95,20 @@ export const PreviouslyGenerated: React.FC = () => {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/api/user/generations`, {
+      const params = new URLSearchParams({
+        page: String(p),
+        limit: String(PAGE_SIZE),
+        ...(type !== 'all' ? { type } : {}),
+      });
+      const res = await fetch(`${API_URL}/api/user/generations?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setGenerations(data.generations || []);
+        setTotalPages(data.pagination?.pages || 1);
+        setTotal(data.pagination?.total || 0);
+        setPage(data.pagination?.page || 1);
       } else {
         toast.error(data.message || 'Failed to fetch generations');
       }
@@ -60,8 +118,42 @@ export const PreviouslyGenerated: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  }, [navigate, page, selectedType]);
+
+  useEffect(() => {
+    fetchGenerations(page, selectedType);
+  }, [page, selectedType]);
+
+  // ─── Type filter handler ──────────────────────────────────────────
+  const handleTypeChange = (type: 'all' | 'photoshoot' | 'marketing') => {
+    setSelectedType(type);
+    setPage(1); // reset to first page
   };
 
+  // ─── Page navigation ──────────────────────────────────────────────
+  const goToPage = (p: number) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getPageNumbers = (): (number | '...')[] => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('...');
+      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+        pages.push(i);
+      }
+      if (page < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  // ─── Download & Delete (unchanged logic) ──────────────────────────
   const handleDownload = async (imageUrl: string, index: number) => {
     try {
       const response = await fetch(imageUrl);
@@ -99,11 +191,12 @@ export const PreviouslyGenerated: React.FC = () => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setGenerations(prev => prev.filter(g => g._id !== generationToDelete));
         if (selectedGeneration?._id === generationToDelete) {
           setSelectedGeneration(null);
         }
         toast.success('Generation deleted successfully');
+        // Re-fetch current page (may shift items)
+        fetchGenerations(page, selectedType);
       } else {
         toast.error(data.message || 'Failed to delete generation');
       }
@@ -150,17 +243,17 @@ export const PreviouslyGenerated: React.FC = () => {
               <p className="text-neutral-400 text-sm">
                 Your generated images
               </p>
-              {generations.length > 0 && (
+              {total > 0 && (
                 <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
-                  <span>{generations.length} generations</span>
+                  <span>{total} generations</span>
                   <span>•</span>
-                  <span>{generations.reduce((acc, g) => acc + g.imageUrls.length, 0)} total images</span>
+                  <span>Page {page} of {totalPages}</span>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={fetchGenerations}
+                onClick={() => fetchGenerations(page, selectedType)}
                 className="px-4 py-2 bg-gold-500/20 hover:bg-gold-500/30 border border-gold-500/50 rounded-lg text-gold-300 text-sm font-medium transition-colors flex items-center gap-2"
                 title="Refresh"
               >
@@ -171,15 +264,40 @@ export const PreviouslyGenerated: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* ─── Type Filter Tabs ──────────────────────────────────── */}
+          <div className="mt-6 flex gap-2 bg-neutral-900/60 rounded-xl p-1 w-fit">
+            {(['all', 'photoshoot', 'marketing'] as const).map(type => (
+              <button
+                key={type}
+                onClick={() => handleTypeChange(type)}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  selectedType === type
+                    ? 'bg-gold-600 text-white shadow-lg shadow-gold-500/30'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                }`}
+              >
+                {type === 'all' ? 'All' : type === 'photoshoot' ? 'Photoshoot' : 'Marketing'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Content - Generation Cards Grid */}
+        {/* ─── Content Grid ──────────────────────────────────────── */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gold-500 border-t-transparent mx-auto mb-4"></div>
-              <p className="text-neutral-400">Loading generations...</p>
-            </div>
+          /* Skeleton Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <div key={i} className="bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden animate-pulse">
+                <div className="aspect-square bg-neutral-800">
+                  <div className="w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skeleton-shimmer-anim" />
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-neutral-700 rounded w-2/3" />
+                  <div className="h-3 bg-neutral-800 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : generations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -187,7 +305,11 @@ export const PreviouslyGenerated: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <h3 className="text-xl font-semibold mb-2">No Generations Yet</h3>
-            <p className="text-neutral-400 text-sm mb-6">Generate images to see them here!</p>
+            <p className="text-neutral-400 text-sm mb-6">
+              {selectedType === 'all'
+                ? 'Generate images to see them here!'
+                : `No ${selectedType} generations found.`}
+            </p>
             <button
               onClick={() => navigate('/studio')}
               className="px-6 py-3 bg-gold-600 hover:bg-gold-500 rounded-lg font-semibold transition-colors"
@@ -196,63 +318,106 @@ export const PreviouslyGenerated: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {generations.map((gen) => (
-              <div
-                key={gen._id}
-                className="group relative bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-gold-500/50 transition-all duration-300 cursor-pointer"
-                onClick={() => setSelectedGeneration(gen)}
-              >
-                {/* Thumbnail - First Image */}
-                <div className="aspect-square relative overflow-hidden bg-neutral-800">
-                  {gen.imageUrls.length > 0 ? (
-                    <img
-                      src={gen.imageUrls[0]}
-                      alt={gen.productType || gen.category || 'Generated'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-16 h-16 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                      <span className="text-white text-sm font-medium">Click to view all images</span>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {generations.map((gen) => (
+                <div
+                  key={gen._id}
+                  className="group relative bg-neutral-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-gold-500/50 transition-all duration-300 cursor-pointer"
+                  onClick={() => setSelectedGeneration(gen)}
+                >
+                  {/* Thumbnail — Lazy loaded */}
+                  <div className="aspect-square relative overflow-hidden bg-neutral-800">
+                    {gen.imageUrls.length > 0 ? (
+                      <LazyImage
+                        src={gen.imageUrls[0]}
+                        alt={gen.productType || gen.category || 'Generated'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <svg className="w-16 h-16 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
+                        <span className="text-white text-sm font-medium">Click to view all images</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Card Info */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-white font-semibold text-base truncate pr-2">
-                      {gen.productType || gen.category || gen.type}
-                    </h3>
-                    <span className="text-neutral-400 text-xs whitespace-nowrap">
-                      {formatDate(gen.createdAt)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gold-400 text-sm">
-                      {gen.category || gen.type}
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border border-gold-500/50 text-gold-300 bg-gold-500/10">
-                      {gen.imageUrls.length} {gen.imageUrls.length === 1 ? 'image' : 'images'}
-                    </span>
+                  {/* Card Info */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-white font-semibold text-base truncate pr-2">
+                        {gen.productType || gen.category || gen.type}
+                      </h3>
+                      <span className="text-neutral-400 text-xs whitespace-nowrap">
+                        {formatDate(gen.createdAt)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gold-400 text-sm">
+                        {gen.category || gen.type}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border border-gold-500/50 text-gold-300 bg-gold-500/10">
+                        {gen.imageUrls.length} {gen.imageUrls.length === 1 ? 'image' : 'images'}
+                      </span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* ─── Pagination Controls ──────────────────────────── */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-10 mb-4">
+                {/* Previous */}
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10"
+                >
+                  ← Prev
+                </button>
+
+                {/* Page Numbers */}
+                {getPageNumbers().map((p, i) =>
+                  p === '...' ? (
+                    <span key={`dots-${i}`} className="px-2 text-neutral-500 select-none">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => goToPage(p)}
+                      className={`w-10 h-10 rounded-lg text-sm font-semibold transition-all ${
+                        p === page
+                          ? 'bg-gold-600 text-white shadow-lg shadow-gold-500/30'
+                          : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-white/10'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                {/* Next */}
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10"
+                >
+                  Next →
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </main>
 
-      {/* Generation Detail Modal - Shows all images */}
+      {/* ─── Generation Detail Modal ─────────────────────────────── */}
       {selectedGeneration && !selectedImageUrl && (
         <>
           <style>{`
@@ -321,7 +486,7 @@ export const PreviouslyGenerated: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Action Buttons - Studio Deliverables Style */}
+                  {/* Action Buttons */}
                   <div className="flex flex-wrap justify-center items-center gap-4">
                     <button
                       onClick={() => handleDeleteClick(selectedGeneration._id)}
@@ -344,7 +509,7 @@ export const PreviouslyGenerated: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Gallery Grid - Matching GeneratedImageGallery style */}
+                {/* Gallery Grid */}
                 <div className="flex flex-col gap-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {selectedGeneration.imageUrls.map((url, index) => {
@@ -391,7 +556,7 @@ export const PreviouslyGenerated: React.FC = () => {
         </>
       )}
 
-      {/* Full Image Preview Modal */}
+      {/* ─── Full Image Preview Modal ────────────────────────────── */}
       {selectedImageUrl && (
         <>
           <style>{`
@@ -408,7 +573,7 @@ export const PreviouslyGenerated: React.FC = () => {
             onClick={() => setSelectedImageUrl(null)}
             style={{ top: 0, left: 0, right: 0, bottom: 0 }}
           >
-            {/* Close Button - positioned below navbar */}
+            {/* Close Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -460,7 +625,7 @@ export const PreviouslyGenerated: React.FC = () => {
         </>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ─── Delete Confirmation Modal ───────────────────────────── */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100003] flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-red-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl">
@@ -495,6 +660,17 @@ export const PreviouslyGenerated: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Skeleton shimmer animation */}
+      <style>{`
+        @keyframes skeletonShimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .skeleton-shimmer-anim {
+          animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

@@ -49,19 +49,37 @@ router.post('/save', protect, async (req, res) => {
 
 /**
  * @route   GET /api/user/generations
- * @desc    Get user's generated images
+ * @desc    Get user's generated images (paginated)
  * @access  Private
  */
 router.get('/', protect, async (req, res) => {
   try {
-    const generations = await Generation.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const type = req.query.type; // 'photoshoot' | 'marketing' | undefined
+
+    const filter = { userId: req.user._id };
+    if (type && type !== 'all') {
+      filter.type = type;
+    }
+
+    const [generations, total] = await Promise.all([
+      Generation.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Generation.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       success: true,
       generations,
-      count: generations.length,
+      pagination: {
+        page,
+        pages: Math.ceil(total / limit),
+        total,
+      },
     });
   } catch (error) {
     logger.error('Get user generations error:', error);
