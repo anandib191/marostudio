@@ -8,7 +8,7 @@ import { GeneratedImageGallery } from './GeneratedImageGallery';
 import { CatalogueViewer } from './CatalogueViewer';
 import { Loader } from './Loader';
 import { LoadingScreen } from './LoadingScreen';
-import { generateCatalogueImages, identifyProduct, generateOtherProductImages } from '../services/geminiServiceold';
+import { generateCatalogueImages, identifyProduct, generateOtherProductImages } from '../services/geminiService';
 import { DYNAMIC_ORNAMENT_PROMPTS_CONFIG } from '../services/prompts/women';
 import { STYLE_OPTIONS } from '../services/styles';
 import { ImageFile, ProductType, Category, ApparelStyle, AspectRatio, BackgroundType, ImageQuality } from '../types';
@@ -187,7 +187,7 @@ interface CategoryConfig {
 
 const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
     // ─── Top-level category defaults ───
-    'Fashion': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic'], defaultStyle: 'vintage', showSameModel: true },
+    'Fashion': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic', 'closeup'], defaultStyle: 'vintage', showSameModel: true },
     'Fashion Accessories': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'closeup'], defaultStyle: 'closeup', showSameModel: false },
     'Beauty & Personal Care': { styleIds: ['modern', 'aesthetic', 'closeup', 'monochrome'], defaultStyle: 'aesthetic', showSameModel: false },
     'Electronics': { styleIds: ['modern', 'cinematic', 'monochrome', 'closeup'], defaultStyle: 'modern', showSameModel: false },
@@ -203,9 +203,9 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
     'Jewellery': { styleIds: ['closeup', 'modern', 'cinematic', 'aesthetic', 'vintage'], defaultStyle: 'closeup', showSameModel: false },
 
     // ─── Sub-category overrides (Fashion) ───
-    'Men': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome'], defaultStyle: 'modern', showSameModel: true },
-    'Women': { styleIds: ['modern', 'cinematic', 'vintage', 'aesthetic', 'monochrome'], defaultStyle: 'vintage', showSameModel: true },
-    'Kids': { styleIds: ['modern', 'aesthetic', 'vintage'], defaultStyle: 'aesthetic', showSameModel: true },
+    'Men': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic', 'closeup'], defaultStyle: 'modern', showSameModel: true },
+    'Women': { styleIds: ['modern', 'cinematic', 'vintage', 'aesthetic', 'monochrome', 'closeup'], defaultStyle: 'vintage', showSameModel: true },
+    'Kids': { styleIds: ['modern', 'cinematic', 'vintage', 'monochrome', 'aesthetic', 'closeup'], defaultStyle: 'aesthetic', showSameModel: true },
 
     // ─── Sub-category overrides (Beauty) ───
     'Skincare': { styleIds: ['modern', 'aesthetic', 'closeup'], defaultStyle: 'aesthetic', showSameModel: false },
@@ -1042,22 +1042,6 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                     </div>
                                 </button>
                             )}
-                            <button
-                                onClick={() => onUseSameLocationChange(!useSameLocation)}
-                                className={`w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all duration-300 ${useSameLocation ? 'bg-gold-500/10 border-gold-500/30' : isLight ? 'bg-white border-neutral-200' : 'bg-neutral-900/70 border-white/15'}`}
-                                title="Keeps the background environment strictly consistent."
-                            >
-                                <div className="flex items-center gap-1.5">
-                                    <span className={`text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold ${useSameLocation ? 'text-gold-400' : isLight ? 'text-neutral-600' : 'text-neutral-300'}`}>Keep Same Location</span>
-                                    <div className="relative group/tooltip">
-                                        <div className="flex items-center justify-center w-3 h-3 rounded-full border border-neutral-600 text-[8px] text-neutral-500 font-serif italic pb-px cursor-help">?</div>
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-neutral-800 border border-white/10 rounded-md text-[9px] text-neutral-300 font-normal normal-case tracking-normal whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">Keeps the same background scene in every photo</div>
-                                    </div>
-                                </div>
-                                <div className={`w-7 h-3.5 sm:w-8 sm:h-4 rounded-full relative flex-shrink-0 ${useSameLocation ? 'bg-gold-600' : isLight ? 'bg-neutral-300' : 'bg-neutral-700'}`}>
-                                    <div className={`absolute top-0.5 left-0.5 bg-white w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-transform ${useSameLocation ? 'translate-x-3.5 sm:translate-x-4' : 'translate-x-0'}`} />
-                                </div>
-                            </button>
                         </div>
 
                         {/* Number of Images */}

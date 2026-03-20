@@ -57,6 +57,19 @@ async function getBlobFromSource(source: string, mimeType: string): Promise<Blob
     return await base64ToBlob(source, mimeType);
 }
 
+const getApparelThemeInstructions = (styleId: string): string => {
+    switch (styleId.toLowerCase()) {
+        case 'vintage':
+            return "SCENE: Professional fashion shoot at a heritage site. BACKGROUND: Grand palaces with intricate architecture, marble corridors, or serene lakes with historic pavilions in the background. Atmosphere is nostalgic and premium.";
+        case 'aesthetic':
+            return "SCENE: Minimalist high-fashion studio or urban setting. BACKGROUND: Clean lines, curated aesthetic objects like ceramic vases, pampas grass, or architectural textures. Soft, artistic shadows.";
+        case 'monochrome':
+            return "SCENE: Dramatic high-contrast black and white photography. BACKGROUND: Old-world vintage hotel lobby, marble stairs, or a dramatic urban street at night with classic lamp posts. Mood is mid-century fashion editorial.";
+        default:
+            return "";
+    }
+}
+
 const getBackgroundInstruction = (bg: BackgroundType, customPrompt?: string) => {
     switch (bg) {
         case 'white': return "BACKGROUND OVERRIDE: Use a clean, seamless solid white background (#FFFFFF). High-key lighting.";
@@ -261,7 +274,15 @@ export const generateCatalogueImages = async (
 
         const { coverPrompt, photoPrompts } = prompts;
         const styleModifier = STYLE_OPTIONS.find(s => s.id === styleId)?.promptModifier || '';
-        const backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
+        let backgroundInstruction = getBackgroundInstruction(background, customBackgroundPrompt);
+
+        // Inject apparel-specific theme logic for certain backgrounds
+        if (productType === 'apparel') {
+            const themeInstructions = getApparelThemeInstructions(styleId);
+            if (themeInstructions && (background === 'studio' || background === 'historic' || background === 'city')) {
+                backgroundInstruction = `THEME-SPECIFIC BACKGROUND & SCENE INSTRUCTIONS:\n${themeInstructions}`;
+            }
+        }
 
         const isBackViewOptional = effectiveProductType === 'apparel' && (apparelStyle === 'professional' || category === 'women' || category === 'men');
         let activePhotoPrompts = [...photoPrompts];
