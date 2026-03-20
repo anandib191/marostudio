@@ -27,13 +27,6 @@ export const AuthInterceptor: React.FC = () => {
                         return response;
                     }
 
-                    // In test mode, many API routes return 401 because they need DB.
-                    // Don't treat these as real session expiry — skip the toast.
-                    const testModeRoutes = ['/api/credits', '/api/statistics', '/api/payment', '/api/user', '/api/price-plans'];
-                    if (testModeRoutes.some(r => url.includes(r))) {
-                        return response;
-                    }
-
                     // Check if we are already logged out to prevent spamming toasts
                     const token = localStorage.getItem('access_token') || localStorage.getItem('admin_token');
                     if (token) {
@@ -64,8 +57,10 @@ export const AuthInterceptor: React.FC = () => {
                         // 1. If hitting an Admin route or Dashboard, FORCE redirect to Admin Login
                         if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard')) {
                             navigate('/admin/login', { replace: true });
+                        } else {
+                            // 2. Otherwise (User routes), redirect to user login
+                            navigate('/login', { replace: true });
                         }
-                        // 2. Otherwise (User routes), stay on page (as per previous request)
                     }
                 }
 

@@ -135,6 +135,7 @@ export const Dashboard: React.FC = () => {
   const [genPage, setGenPage] = useState(1);
   const [genTotalPages, setGenTotalPages] = useState(1);
   const [expandedGenId, setExpandedGenId] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [planToDeleteIndex, setPlanToDeleteIndex] = useState<number | null>(null);
   const [showDeletePlanModal, setShowDeletePlanModal] = useState(false);
@@ -307,7 +308,7 @@ export const Dashboard: React.FC = () => {
   const loadGenerations = async (token: string, page: number) => {
     setLoadingGenerations(true);
     try {
-      const res = await fetch(`${API_URL}/api/user/generations/admin/all?page=${page}&limit=50`, {
+      const res = await fetch(`${API_URL}/api/user/generations/admin/all?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -2128,17 +2129,17 @@ export const Dashboard: React.FC = () => {
                                           <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Generated Images</p>
                                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                                             {gen.imageUrls.map((url: string, idx: number) => (
-                                              <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block">
+                                              <button key={idx} onClick={() => setPreviewImage(url)} className="block w-full text-left">
                                                 <img
                                                   src={url}
                                                   alt={`Gen ${idx + 1}`}
-                                                  className="w-full h-24 sm:h-32 object-cover rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors"
+                                                  className="w-full h-24 sm:h-32 object-contain rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors bg-black/30 p-1"
                                                   loading="lazy"
                                                   onError={(e) => {
                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                   }}
                                                 />
-                                              </a>
+                                              </button>
                                             ))}
                                           </div>
                                         </div>
@@ -2237,6 +2238,32 @@ export const Dashboard: React.FC = () => {
         cancelText="Cancel"
         confirmButtonClass="bg-red-600 hover:bg-red-500"
       />
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4 sm:p-6 lg:p-8 backdrop-blur-sm"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center max-w-7xl">
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-0 right-0 p-2 text-white bg-black/50 hover:bg-black rounded-full transition-colors z-[70] translate-x-2 -translate-y-2 sm:translate-x-4 sm:-translate-y-4"
+              aria-label="Close preview"
+            >
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Add Plan Overlay */}
       {showAddPlanOverlay && (
