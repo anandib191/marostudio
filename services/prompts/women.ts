@@ -415,16 +415,16 @@ QUALITY CONTROL: NO visible camera gear, light stands, seamless paper rolls, or 
 
 const APPAREL_PHOTO_PROMPTS = [
   `
-  TASK: Generate a poised, ultra-realistic fashion editorial of a woman wearing the provided garment in a static position.
+  TASK: Generate a poised, ultra-realistic fashion editorial of a woman wearing the provided garment in a powerful, asymmetrical stance.
   CRITICAL RULE: The garment must be used **EXACTLY AS IS**. Do not alter the cloth or add new trails.
-  DYNAMIC DIRECTION: Create a high-stakes, unique scene suited to the garment's aesthetic (e.g., an urban rooftop, a wild coastline, a brutalist staircase, or a lush botanic conservatory). Choose a model whose look and energy amplify the garment's character. The pose should be poised, static, and editorial.
+  DYNAMIC DIRECTION: Create a high-stakes, unique scene suited to the garment's aesthetic (e.g., an urban rooftop, a wild coastline, a brutalist staircase, or a lush botanic conservatory). Choose a model whose look and energy amplify the garment's character. POP THE POSE: The model MUST be captured in a confident, asymmetrical fashion stance—weight shifted to one hip, looking intensely into the camera.
   LIGHTING: Cinematic, non-technical illumination. Use natural or atmospheric light to create depth.
   QUALITY CONTROL: Zero technical artifacts. No equipment or gear visible.
   `,
   `
-  TASK: Generate an ultra-realistic lifestyle photo of a woman wearing the provided garment in a relaxed, static pose.
+  TASK: Generate an ultra-realistic lifestyle photo of a woman wearing the provided garment in a mid-action, candid moment.
   CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture. Keep it exactly as per the image.
-  DYNAMIC DIRECTION: Invent a lifestyle moment that feels naturally connected to this specific garment — a garden brunch, a city evening, a rooftop, a bookshop, a beach walk, a cultural venue, or any setting where someone wearing this piece would feel at home. The model's appearance, expression, and pose should feel real and poised — never generic or formulaic. Lighting and color palette should be chosen to harmonize with the product.
+  DYNAMIC DIRECTION: Invent a lifestyle moment that feels naturally connected to this specific garment — a garden brunch, a city evening, a rooftop, a bookshop, a beach walk, a cultural venue, or any setting where someone wearing this piece would feel at home. POP THE POSE: The model must be captured perfectly mid-action — perhaps laughing naturally, looking away, or walking briskly away from the camera while glancing over her shoulder. Lighting and color palette should be chosen to harmonize with the product.
   OUTPUT SPECIFICATIONS: High-end, aspirational lifestyle photography. The image should feel like a poised editorial portrait, not a candid shoot.
   `,
   `
@@ -434,9 +434,9 @@ const APPAREL_PHOTO_PROMPTS = [
   OUTPUT SPECIFICATIONS: High-fashion, sharp focus on the garment. Each generation of this shot should have a distinct feel and mood.
   `,
   `
-  TASK: Generate an ultra-realistic, sophisticated portrait of a model wearing the provided garment in a strong, static pose.
+  TASK: Generate an ultra-realistic, sophisticated portrait of a model wearing the provided garment capturing graceful movement.
   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit. Integrity of the clothing is absolute.
-  DYNAMIC DIRECTION: Create a scene that feels right for this specific garment's character. The pose should be dignified and static — a strong stance, a thoughtful lean, or a poised look. The location and atmosphere should be immersive and vivid — avoid generic white studios. Think creatively: a sunlit courtyard, a breezy hillside, a colorful market, a grand staircase. The model's expression should feel poised and present.
+  DYNAMIC DIRECTION: Create a scene that feels right for this specific garment's character. POP THE POSE: The model must be caught in elegant motion — fabric catching the breeze, stepping elegantly off a curb, or extending an arm gracefully. The location and atmosphere should be immersive and vivid — avoid generic white studios. Think creatively: a sunlit courtyard, a breezy hillside, a colorful market, a grand staircase. The model's expression should feel poised and present.
   OUTPUT SPECIFICATIONS: High-resolution, cinematic, elegant, and static. A visually striking image that makes the garment feel desirable.
   `,
   `
@@ -446,7 +446,7 @@ const APPAREL_PHOTO_PROMPTS = [
   - If the uploaded product image shows the **back of the garment**, generate a back-facing or three-quarter rear view of the model that clearly showcases the back panel, back design, rear silhouette, and any back details of the garment.
   - If the uploaded product image shows the **front of the garment** or any other side, generate a front-facing or three-quarter front view that clearly showcases the front design, neckline, chest area, and overall silhouette of the garment as provided.
   - Do NOT generate a back view if no back product image was provided.
-  MODEL & STYLE: Choose a pose, expression, and body language that creatively fits the garment's character — not a stiff catalog stance. The setting should be clean and complementary.
+  MODEL & STYLE: POP THE POSE: Use an aggressive, high-energy runway strut. The model leans slightly back, walking with immense power and purpose, giving the garment a fierce, commanding presence. Do NOT use a stiff catalog stance. The setting should be clean and complementary.
   OUTPUT SPECIFICATIONS: Clear, well-lit, and informative — as seen on a premium e-commerce product page, but with thoughtful creative direction.
   `,
 
@@ -461,15 +461,15 @@ const APPAREL_PHOTO_PROMPTS = [
   `
   TASK: Generate an ultra-realistic, golden hour silhouette and detail photo of a woman wearing the provided garment.
   CRITICAL RULE: The garment must be used with **ZERO ALTERATIONS** to its design, color, or texture.
-  DYNAMIC DIRECTION: Capture the model at golden hour — either as a stunning backlit silhouette that shows the garment's drape and shape, or with sunlight streaming across her body to illuminate the fabric's texture and color. The pose should be graceful and elongated, emphasizing the garment's flow.
+  DYNAMIC DIRECTION: Capture the model at golden hour — either as a stunning backlit silhouette that shows the garment's drape and shape, or with sunlight streaming across her body to illuminate the fabric's texture and color. POP THE POSE: The model must be in a grand, sweeping motion—twirling gracefully, leaping slightly, or throwing her arms wide to emphasize the absolute flow.
   ATMOSPHERE: Warm, golden light with long shadows. The location should be open and expansive — a field, a rooftop, or a shoreline.
   OUTPUT SPECIFICATIONS: High-resolution, warm, dramatic, and poetic.
   `,
 
   `
-  TASK: Generate an ultra-realistic, rainy city editorial photo of a woman wearing the provided garment in a static position.
+  TASK: Generate an ultra-realistic, rainy city editorial photo of a woman wearing the provided garment.
   CRITICAL RULE: The clothing **MUST NOT BE CHANGED** — preserve its original design, color, pattern, and texture perfectly. Do not add any new fabric trails or alterations.
-  DYNAMIC DIRECTION: The model stands confidently on a rain-soaked city street. The wet pavement creates beautiful reflections. She may carry a transparent umbrella or let the light add to the drama. The garment should be styled to look intentional in this weather — showing the model's confidence. The pose is static, showcasing the garment's fit.
+  DYNAMIC DIRECTION: The model stands confidently on a rain-soaked city street. The wet pavement creates beautiful reflections. POP THE POSE: She is huddled slightly, holding a chic umbrella against the wind, or dashing across the street looking over her shoulder with an expression of thrilling urgency.
   ATMOSPHERE: Moody, cinematic, with a cool blue-grey color palette accented by warm shop-window light. The city is atmospheric and alive.
   OUTPUT SPECIFICATIONS: High-resolution, editorial, dramatic, and static.
   `,
@@ -477,7 +477,7 @@ const APPAREL_PHOTO_PROMPTS = [
   `
   TASK: Generate an ultra-realistic, seated portrait photo of a woman wearing the provided garment.
   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
-  DYNAMIC DIRECTION: The model is seated in an interesting, character-filled setting — a velvet antique chair, a modern art-filled café, a stone garden bench, or a vintage motorcycle sidecar. The seated pose should naturally showcase how the garment falls, drapes, and fits when the wearer is at rest. Expression should be contemplative, warm, or quietly confident.
+  DYNAMIC DIRECTION: The model is seated in an interesting, character-filled setting — a velvet antique chair, a modern art-filled café, a stone garden bench, or a vintage motorcycle sidecar. POP THE POSE: She must be seated in a highly editorial, non-traditional way — crouching aggressively, sitting backwards on a chair, or sharply angling her knees and elbows to create a jagged, high-fashion silhouette. Expression should be contemplative, warm, or quietly confident.
   ATMOSPHERE: Thoughtful composition with the environment adding personality.
   OUTPUT SPECIFICATIONS: High-resolution, artistic, intimate portrait photography.
   `,
@@ -493,30 +493,30 @@ const APPAREL_PHOTO_PROMPTS = [
   `
   TASK: Generate a minimalist, high-end "Sculptural Fashion" editorial of a woman wearing the garment.
   CRITICAL RULE: Preserve the garment perfectly.
-  DYNAMIC DIRECTION: Focused, artistic, and clean. Use a model with a striking, statuesque look. The background is a sophisticated, textured solid (like plaster, raw concrete, or deep velvet) that complements the garment's color. The lighting should be sharp and directional to define the garment's silhouette.
+  DYNAMIC DIRECTION: Focused, artistic, and clean. Use a model with a striking, statuesque look. The background is a sophisticated, textured solid (like plaster, raw concrete, or deep velvet) that complements the garment's color. POP THE POSE: The model must be frozen in a bizarre, beautiful contortion—arms raised in sharp angles above her head, or twisting her torso sharply to the side. The lighting should be sharp and directional.
   QUALITY CONTROL: NO visible studio equipment, paper rolls, or light stands. Pure minimalist excellence.
   `,
 
   `
   TASK: Generate an ultra-realistic, minimalist studio editorial photo of a woman wearing the provided garment.
   CRITICAL RULE: The clothing **MUST NOT BE CHANGED** in any way.
-  DYNAMIC DIRECTION: A clean, stark studio shot that strips everything away and puts the garment on a pedestal. The model stands or poses against a seamless solid background (white, light grey, or a single bold color chosen to complement the garment). The pose is strong and editorial. Makeup is clean, hair is simple.
+  DYNAMIC DIRECTION: A clean, stark studio shot that strips everything away and puts the garment on a pedestal. The model stands or poses against a seamless solid background (white, light grey, or a single bold color chosen to complement the garment). POP THE POSE: The portrait must capture the model in explosive, high-fashion motion blur—jumping, spinning violently, or whipping her hair and the garment. Makeup is clean, hair is simple.
   ATMOSPHERE: Pure, undistracted focus on the garment's design, color, and silhouette. Lighting is precise and professional.
   OUTPUT SPECIFICATIONS: High-resolution, minimalist, powerful, gallery-quality fashion photography.
   `,
 
   `
-  TASK: Generate an ultra-realistic beach or resort lifestyle photo of a woman wearing the provided garment in a static pose.
+  TASK: Generate an ultra-realistic beach or resort lifestyle photo of a woman wearing the provided garment.
   CRITICAL RULE: The garment must be used **WITHOUT ANY MODIFICATION** to its design, color, pattern, or fit.
-  DYNAMIC DIRECTION: The model is in a luxury resort or beach setting — standing along the shore, lounging by an infinity pool, or standing on a sun-drenched terrace. The garment should feel perfect for the setting. Her styling includes minimal accessories — perhaps a straw hat, sandals, or delicate gold jewelry. The pose is static and relaxed.
+  DYNAMIC DIRECTION: The model is in a luxury resort or beach setting — standing along the shore, lounging by an infinity pool, or standing on a sun-drenched terrace. The garment should feel perfect for the setting. Her styling includes minimal accessories — perhaps a straw hat, sandals, or delicate gold jewelry. POP THE POSE: The model is reaching dynamically toward the horizon, or stepping deeply into the water with high-fashion energy.
   ATMOSPHERE: Bright, airy, sun-drenched. Vivid blues, whites, and warm skin tones. The mood is relaxed luxury.
   OUTPUT SPECIFICATIONS: High-resolution, aspirational vacation-wear photography.
   `,
 
   `
-  TASK: Generate an ultra-realistic, architectural staircase editorial photo of a woman wearing the provided garment in a poised position.
+  TASK: Generate an ultra-realistic, architectural staircase editorial photo of a woman wearing the provided garment.
   CRITICAL RULE: The clothing item must be used **EXACTLY AS IS** — no alterations whatsoever.
-  DYNAMIC DIRECTION: The model poses on a grand, visually striking staircase — marble, spiral, geometric, or ornate iron. The architecture becomes a dramatic backdrop that frames her and the garment. The pose is poised, static, and regal. The garment's full length and silhouette should be visible.
+  DYNAMIC DIRECTION: The model poses on a grand, visually striking staircase — marble, spiral, geometric, or ornate iron. The architecture becomes a dramatic backdrop that frames her and the garment. POP THE POSE: She is captured fiercely descending the stairs mid-stride, one hand dramatically sweeping the railing, the other lifting the garment. The garment's full length and silhouette should be visible.
   ATMOSPHERE: Grand, architectural, and editorial. Lighting creates dramatic shadows from the staircase's structure.
   `,
   `
