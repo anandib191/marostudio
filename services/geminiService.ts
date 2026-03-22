@@ -87,12 +87,18 @@ const getBackgroundInstruction = (bg: BackgroundType, customPrompt?: string) => 
 /**
  * Generates a 4K image using the Joingy API
  */
-const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio): Promise<string> => {
+const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string): Promise<string> => {
     const formData = new FormData();
 
     // Process main image
     const mainBlob = await getBlobFromSource(imageFile.base64, imageFile.mimeType);
     formData.append('images', mainBlob, 'input_image.png');
+
+    // If there's a reference image (for character consistency or back view), process it
+    if (referenceImageSource) {
+        const refBlob = await getBlobFromSource(referenceImageSource, 'image/png');
+        formData.append('images', refBlob, 'reference_image.png');
+    }
 
     formData.append('prompt', prompt);
     formData.append('image_size', '4K');
@@ -128,7 +134,7 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
 const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectRatio: AspectRatio, referenceImageSource?: string, imageQuality: ImageQuality = 'HD'): Promise<string> => {
     // Route to 4K API if quality is 4K
     if (imageQuality === '4K') {
-        return generate4KImage(imageFile, prompt, aspectRatio);
+        return generate4KImage(imageFile, prompt, aspectRatio, referenceImageSource);
     }
 
     const formData = new FormData();
@@ -322,16 +328,38 @@ export const generateCatalogueImages = async (
             }
         }
 
+        let apparelFocusInstruction = "";
+        if (effectiveProductType === "apparel" && itemName) {
+            apparelFocusInstruction = `CRITICAL PRODUCT MATCH: The clothing item being worn is specifically a "${itemName}". Ensure the styling, drape, fit, and physical properties perfectly match a ${itemName}. DO NOT add any extra layers, jackets, straps, or unrequested clothing items. The ${itemName} must be the primary focus and completely unaltered.`;
+        }
+
         const processedPrompts = finalPromptList.map((p: string, index: number) => {
             let currentPrompt = p;
             if (jewelryFocusInstruction) {
                 currentPrompt = `${jewelryFocusInstruction}\n${currentPrompt}`;
             }
+            if (apparelFocusInstruction) {
+                // Dynamically replace generic words with the precise item name
+                currentPrompt = currentPrompt.replace(/the provided garment/gi, `the provided ${itemName}`);
+                currentPrompt = currentPrompt.replace(/this garment/gi, `this ${itemName}`);
+                currentPrompt = currentPrompt.replace(/the garment/gi, `the ${itemName}`);
+                currentPrompt = currentPrompt.replace(/the clothing item/gi, `the ${itemName}`);
+                currentPrompt = currentPrompt.replace(/this clothing item/gi, `this ${itemName}`);
+                currentPrompt = currentPrompt.replace(/the piece of clothing/gi, `the ${itemName}`);
+                currentPrompt = currentPrompt.replace(/this piece of clothing/gi, `this ${itemName}`);
+                currentPrompt = currentPrompt.replace(/the clothing\b/gi, `the ${itemName}`);
+                currentPrompt = currentPrompt.replace(/this clothing\b/gi, `this ${itemName}`);
+                currentPrompt = currentPrompt.replace(/the piece\b/gi, `the ${itemName}`);
+                currentPrompt = currentPrompt.replace(/this piece\b/gi, `this ${itemName}`);
+                currentPrompt = `${apparelFocusInstruction}\n${currentPrompt}`;
+            }
             
             const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.";
             let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
             
-            if (consistentCharacter && index > 0) {
+            if (consistentCharacter && index === 0) {
+                finalPrompt = `CHARACTER ESTABLISHMENT: Ensure the model's face is clearly visible, well-lit, and highly detailed. This image will serve as the master face reference for character consistency in subsequent shots.\n${finalPrompt}`;
+            } else if (consistentCharacter && index > 0) {
                 finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. Follow the new pose, gesture, scene, and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
             }
             return finalPrompt;
@@ -442,7 +470,13 @@ export const generateOtherProductImages = async (
     if (consistentCharacter) {
         for (let index = 0; index < finalPromptList.length; index++) {
             const prompt = finalPromptList[index];
-            const finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
+            let finalPrompt = `${prompt}\n\n${styleModifier}\n\n${backgroundInstruction}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
+
+            if (index === 0) {
+                finalPrompt = `CHARACTER ESTABLISHMENT: Ensure the model's face is clearly visible, well-lit, and highly detailed. This image will serve as the master face reference for character consistency in subsequent shots.\n${finalPrompt}`;
+            } else {
+                finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. Follow the new pose, gesture, scene, and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
+            }
 
             try {
                 const image = await generateWithRetry(imageFile, finalPrompt, aspectRatio, index > 0 ? referenceImageForConsistency : undefined, imageQuality);
