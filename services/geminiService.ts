@@ -367,7 +367,8 @@ export const generateCatalogueImages = async (
             }
             
             const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.";
-            let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
+            const colorLock = "\n\nCRITICAL COLOR MATCH: The exact original solid color, hue, pattern, and texture of the uploaded garment must be 100% perfectly preserved. DO NOT let atmospheric lighting, shadows, or background elements alter the true color of the clothing. The garment's original color is the absolute highest priority in this generation.";
+            let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${colorLock}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
             
             if (consistentCharacter && referenceImageForConsistency) {
                 // Inject massive diverse pose instructions to break the AI out of identical static poses
