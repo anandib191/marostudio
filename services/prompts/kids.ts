@@ -101,9 +101,9 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, seasonal layering photo of a child wearing the provided garment in an autumn setting.
+  TASK: Generate an ultra-realistic, seasonal outdoor photo of a child wearing only the provided garment in an autumn setting.
   CRITICAL RULE: You **MUST** use the garment from the user's image with **ZERO ALTERATIONS**. It is a fixed element.
-  MODEL & STYLE: A child standing in a park, with fallen autumn leaves around them. They wear the provided garment layered naturally with an appropriate scarf or jacket if seasonally suitable. Their expression is one of playful delight in a poised stance.
+  MODEL & STYLE: A child standing in a park, with fallen autumn leaves around them. They wear the provided garment natively without any extra scarves, coats, or added outerwear. Their expression is one of playful delight in a poised stance.
   BACKGROUND & ATMOSPHERE: A beautiful autumnal park with warm orange, red, and gold foliage. Soft, warm afternoon light.
   OUTPUT SPECIFICATIONS: High-resolution, warm, and static focus.
   `,

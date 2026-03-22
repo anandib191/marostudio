@@ -659,11 +659,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, layered styling editorial of a man wearing the provided garment.
+  TASK: Generate an ultra-realistic, focused styling editorial of a man wearing exclusively the provided garment.
   CRITICAL RULE: The clothing item from the user's image must be used **EXACTLY AS IS**. It is a fixed, unchangeable element.
-  DYNAMIC DIRECTION: Style the garment as part of a layered outfit — add a complementary jacket, scarf, blazer, or vest that enhances the look without hiding the garment. Show how the piece integrates into a complete, fashion-forward outfit that feels personal and intentional.
+  DYNAMIC DIRECTION: Style the garment strongly on its own. DO NOT add any extra layers, jackets, blazers, vests, scarves, or unnecessary accessories. Show how the piece serves as the defining look that feels personal, intentional, and undistracted.
   ATMOSPHERE: A stylish urban environment — a concept store, a design district, or an art gallery. Clean, modern lighting.
-  OUTPUT SPECIFICATIONS: High-resolution, editorial, showing real-world styling versatility.
+  OUTPUT SPECIFICATIONS: High-resolution, editorial, showing real-world, pure styling versatility.
   `,
 
   `

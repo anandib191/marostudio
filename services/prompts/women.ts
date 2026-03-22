@@ -483,11 +483,11 @@ const APPAREL_PHOTO_PROMPTS = [
   `,
 
   `
-  TASK: Generate an ultra-realistic, layered styling editorial of a woman wearing the provided garment.
+  TASK: Generate an ultra-realistic, focused styling editorial of a woman wearing exclusively the provided garment.
   CRITICAL RULE: The clothing item from the user's image must be used **EXACTLY AS IS**. It is a fixed, unchangeable element.
-  DYNAMIC DIRECTION: Style the garment as part of a layered look — add a complementary jacket, scarf, belt, or outer piece that enhances the outfit without hiding the garment. The model should appear to be a real person with personal style, not a mannequin. Show how the garment integrates into a complete, fashion-forward outfit.
+  DYNAMIC DIRECTION: Style the garment boldly on its own. DO NOT add any extra layers, jackets, overcoats, scarves, or unnecessary accessories. The model should appear to be a real person with personal style, letting the garment stand as a hero piece with zero distractions.
   ATMOSPHERE: A stylish urban environment — a concept store, a design district, or a modern loft. Clean, bright lighting.
-  OUTPUT SPECIFICATIONS: High-resolution, editorial, showing real-world styling versatility.
+  OUTPUT SPECIFICATIONS: High-resolution, editorial, showing pure real-world elegance without distractions.
   `,
 
   `
