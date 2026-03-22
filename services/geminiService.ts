@@ -366,7 +366,7 @@ export const generateCatalogueImages = async (
                 currentPrompt = `${apparelFocusInstruction}\n${currentPrompt}`;
             }
             
-            const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.";
+            const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.\n\nMICRO-DETAIL STRICT LOCK: You MUST perfectly preserve the exact spatial position, scale, structure, and color of all micro-details on the clothing. If there is a lapel pin, flower/boutonnière, pocket square, specific button, or stitching on the uploaded item, it must remain in the EXACT same spot with the EXACT same color. DO NOT hallucinate, alter, move, or recolor tiny details.";
             
             let colorLock = "";
             if (styleId === 'monochrome') {
