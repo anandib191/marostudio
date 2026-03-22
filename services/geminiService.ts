@@ -311,6 +311,18 @@ export const generateCatalogueImages = async (
         const generatedImages: string[] = [];
         let referenceImageForConsistency: string | undefined = undefined;
 
+        if (consistentCharacter) {
+            try {
+                // Generate a pure face portrait BEFORE catalogue images.
+                // This tight headshot prevents the API from copying a full-body pose as the reference!
+                const facePrompt = `HEADSHOT PORTRAIT ONLY: Generate an ultra-realistic, highly detailed, well-lit portrait of a fashion model's face. The face MUST be clearly visible and front-facing. This is for face reference only. Do NOT show the full body. Make sure the face takes up the entire frame. \n\nQUALITY CONTROL: Crisp editorial portrait. NO full body composition.`;
+                referenceImageForConsistency = await generateWithRetry(primaryImage, facePrompt, '1:1', undefined, 'HD');
+            } catch (err) {
+                console.error('Master face generation failed. Proceeding without character consistency.', err);
+                consistentCharacter = false;
+            }
+        }
+
         // Determine Jewelry Focus Instruction based on itemName
         let jewelryFocusInstruction = "";
         if (effectiveProductType === "jewelry" && itemName) { // Use effectiveProductType
@@ -357,15 +369,23 @@ export const generateCatalogueImages = async (
             const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.";
             let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
             
-            if (consistentCharacter && index === 0) {
-                finalPrompt = `CHARACTER ESTABLISHMENT: Ensure the model's face is clearly visible, well-lit, and highly detailed. This image will serve as the master face reference for character consistency in subsequent shots.\n${finalPrompt}`;
-            } else if (consistentCharacter && index > 0) {
-                finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. Follow the new pose, gesture, scene, and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
+            if (consistentCharacter && referenceImageForConsistency) {
+                // Inject massive diverse pose instructions to break the AI out of identical static poses
+                const dynamicPoses = [
+                  "The model is standing confidently in a dynamic, asymmetrical pose, slightly angled to the camera.",
+                  "The model is seated elegantly, leaning slightly forward, projecting a relaxed yet sophisticated presence.",
+                  "The model is captured mid-stride, walking gracefully with natural movement and an effortless gaze.",
+                  "The model is striking a bold editorial pose with one hand near the face or waist, projecting high-fashion energy.",
+                  "The model is leaning beautifully against a surface, looking away thoughtfully with a relaxed, natural stance.",
+                  "The model is doing a dynamic over-the-shoulder look, showing graceful movement and high-energy expression."
+                ];
+                const variedPose = dynamicPoses[index % dynamicPoses.length];
+                finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. IMPORTANT: BREAK OUT OF RIGIDITY. DO NOT COPY THE POSE FROM THE REFERENCE IMAGE. ${variedPose} Follow the scene and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
             }
             return finalPrompt;
         });
 
-        if (consistentCharacter) {
+        if (consistentCharacter && referenceImageForConsistency) {
             for (let index = 0; index < processedPrompts.length; index++) {
                 const finalPrompt = processedPrompts[index];
                 let imageToUse = primaryImage;
@@ -379,15 +399,11 @@ export const generateCatalogueImages = async (
                         imageToUse, 
                         finalPrompt, 
                         aspectRatio, 
-                        index > 0 ? referenceImageForConsistency : undefined, 
+                        referenceImageForConsistency, 
                         imageQuality
                     );
                     onImageGenerated(image, index);
                     generatedImages.push(image);
-
-                    if (index === 0) {
-                        referenceImageForConsistency = image;
-                    }
                 } catch (err) {
                     console.error(`Image ${index} generation failed:`, err);
                 }
