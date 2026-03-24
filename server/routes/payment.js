@@ -5,6 +5,7 @@ import { body, validationResult } from "express-validator";
 import { protect } from "../middleware/auth.js";
 import User from "../models/User.js";
 import PricePlan from "../models/PricePlan.js";
+import PromoCode from "../models/PromoCode.js";
 import logger from "../utils/logger.js";
 
 const router = express.Router();
@@ -21,6 +22,87 @@ const getRazorpayInstance = () => {
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
 };
+
+/**
+ * @route   POST /api/payment/validate-promo
+ * @desc    Validate a promo code for a specific plan
+ * @access  Protected
+ */
+router.post("/validate-promo", protect, async (req, res) => {
+  try {
+    const { code, planName, billingPeriod } = req.body;
+    const userId = req.user._id.toString();
+
+    if (!code || !planName) {
+      return res.status(400).json({ success: false, message: "Promo code and plan name are required" });
+    }
+
+    const promoCode = await PromoCode.findOne({ code: code.trim().toUpperCase() });
+    if (!promoCode) {
+      return res.status(400).json({ success: false, message: "Invalid promo code" });
+    }
+
+    if (!promoCode.isActive) {
+      return res.status(400).json({ success: false, message: "This promo code is no longer active" });
+    }
+
+    if (promoCode.expiresAt && new Date(promoCode.expiresAt) < new Date()) {
+      return res.status(400).json({ success: false, message: "This promo code has expired" });
+    }
+
+    if (promoCode.usedCount >= promoCode.maxUses) {
+      return res.status(400).json({ success: false, message: "This promo code has reached its maximum usage limit" });
+    }
+
+    // Check if user already used this code
+    const alreadyUsed = promoCode.usedBy.some((u) => u.userId?.toString() === userId);
+    if (alreadyUsed) {
+      return res.status(400).json({ success: false, message: "You have already used this promo code" });
+    }
+
+    // Find the applicable plan discount
+    const planDiscount = promoCode.applicablePlans.find(
+      (p) => p.planName.toLowerCase() === planName.toLowerCase()
+    );
+    if (!planDiscount) {
+      return res.status(400).json({ success: false, message: "This promo code is not applicable for the selected plan" });
+    }
+
+    // Get plan price to calculate discount
+    const plan = await PricePlan.findOne({
+      $or: [{ name: planName }, { name: new RegExp(`^${planName}$`, "i") }],
+    });
+    if (!plan) {
+      return res.status(400).json({ success: false, message: "Plan not found" });
+    }
+
+    const price = billingPeriod === "yearly"
+      ? parseFloat(plan.yearlyPrice) * 12
+      : parseFloat(plan.price);
+
+    let discountAmount = 0;
+    if (promoCode.discountType === "percentage") {
+      discountAmount = Math.round((price * planDiscount.discountValue) / 100);
+    } else {
+      discountAmount = Math.min(planDiscount.discountValue, price);
+    }
+
+    const finalAmount = Math.max(0, price - discountAmount);
+
+    res.status(200).json({
+      success: true,
+      promoCode: promoCode.code,
+      discountType: promoCode.discountType,
+      discountValue: planDiscount.discountValue,
+      originalAmount: price,
+      discountAmount,
+      finalAmount,
+    });
+  } catch (error) {
+    logger.error("Validate promo code error:", error);
+    res.status(500).json({ success: false, message: "Failed to validate promo code" });
+  }
+});
 
 /**
  * @route   POST /api/payment/create-order
@@ -48,7 +130,7 @@ router.post(
         });
       }
 
-      const { amount, planName, billingPeriod } = req.body;
+      const { amount, planName, billingPeriod, promoCode: promoCodeStr } = req.body;
       const userId = req.user._id.toString();
 
       // Credit threshold check: block purchase if user has >= 200 remaining credits
@@ -68,8 +150,13 @@ router.post(
         }
       }
 
+      // Frontend already sends the discounted amount (validated via /validate-promo).
+      // We just pass the promo code through to Razorpay notes for reference.
+      const finalAmount = parseFloat(amount);
+      const validatedPromoCode = promoCodeStr ? promoCodeStr.trim().toUpperCase() : null;
+
       // Convert amount to paise (Razorpay expects amount in smallest currency unit)
-      const amountInPaise = Math.round(parseFloat(amount) * 100);
+      const amountInPaise = Math.round(finalAmount * 100);
 
       // Get Razorpay instance
       const razorpay = getRazorpayInstance();
@@ -89,6 +176,7 @@ router.post(
           planName: planName,
           billingPeriod: billingPeriod,
           userEmail: req.user.email,
+          promoCode: validatedPromoCode || undefined,
         },
       };
 
@@ -153,6 +241,9 @@ router.post(
         planName,
         billingPeriod,
         amount,
+        promoCode: promoCodeStr,
+        promoDiscount: promoDiscountAmount,
+        originalAmount,
       } = req.body;
       const userId = req.user._id.toString();
 
@@ -245,18 +336,23 @@ router.post(
           totalCredits: totalCredits,
         });
 
-        // Set unified credits to calculated amount (fresh credits, not adding to existing)
+        // Add new plan credits to existing remaining credits (carry over)
         const oldTotalCredits = user.totalCredits || 0;
         const oldUsedPhotoshootCredits = user.usedPhotoshootCredits || 0;
         const oldUsedMarketingCredits = user.usedMarketingCredits || 0;
 
-        // Fresh credits assignment - reset usage and assign new total
-        user.totalCredits = totalCredits;
+        // Calculate remaining credits from old plan
+        const oldRemainingCredits = Math.max(0, oldTotalCredits - oldUsedPhotoshootCredits - oldUsedMarketingCredits);
+
+        // New total = new plan credits + old remaining credits
+        const newTotalCredits = totalCredits + oldRemainingCredits;
+
+        user.totalCredits = newTotalCredits;
         user.usedPhotoshootCredits = 0; // Reset usage for new plan
         user.usedMarketingCredits = 0; // Reset usage for new plan
 
         // Store original plan credits for accurate used credits calculation
-        user.originalPlanCredits = totalCredits;
+        user.originalPlanCredits = newTotalCredits;
 
         // Log credit purchase in history
         if (!user.creditHistory) {
@@ -268,8 +364,8 @@ router.post(
           planName: planName,
           totalCredits: {
             previous: oldTotalCredits,
-            new: totalCredits,
-            change: totalCredits - oldTotalCredits,
+            new: newTotalCredits,
+            change: newTotalCredits - oldTotalCredits,
           },
           usedPhotoshootCredits: {
             previous: oldUsedPhotoshootCredits,
@@ -285,13 +381,45 @@ router.post(
           razorpayPaymentId: razorpay_payment_id,
           razorpayOrderId: razorpay_order_id,
           amount: amount || null,
-          reason: `Purchased ${planName} plan (${billingPeriod}) - Fresh credits assigned`,
+          promoCode: promoCodeStr || null,
+          promoDiscount: promoDiscountAmount || null,
+          originalAmount: originalAmount || null,
+          reason: promoCodeStr
+            ? `Purchased ${planName} plan (${billingPeriod}) with promo code ${promoCodeStr} - Discount ₹${promoDiscountAmount || 0}`
+            : `Purchased ${planName} plan (${billingPeriod}) - Fresh credits assigned`,
         });
 
         // Normalize plan name to match database (capitalize first letter)
         if (planName) {
           user.subscriptionPlan =
             planName.charAt(0).toUpperCase() + planName.slice(1).toLowerCase();
+        }
+
+        // Record promo code usage if promo was applied
+        if (promoCodeStr) {
+          try {
+            const promo = await PromoCode.findOne({ code: promoCodeStr.trim().toUpperCase() });
+            if (promo) {
+              promo.usedCount += 1;
+              promo.usedBy.push({
+                userId: user._id,
+                email: user.email,
+                planName: planName,
+                discountApplied: promoDiscountAmount || 0,
+                originalAmount: originalAmount || amount || 0,
+                finalAmount: amount || 0,
+                usedAt: new Date(),
+              });
+              await promo.save();
+              logger.info("Promo code usage recorded:", {
+                code: promo.code,
+                userEmail: user.email,
+                discount: promoDiscountAmount,
+              });
+            }
+          } catch (promoErr) {
+            logger.error("Failed to record promo usage (non-fatal):", promoErr);
+          }
         }
 
         await user.save();
@@ -351,6 +479,9 @@ router.post(
         billingPeriod: billingPeriod,
         photoshootCredits: updatedUser?.photoshootCredits || 0,
         marketingPosterCredits: updatedUser?.marketingPosterCredits || 0,
+        promoCode: promoCodeStr || null,
+        promoDiscount: promoDiscountAmount || null,
+        originalAmount: originalAmount || null,
       });
     } catch (error) {
       logger.error("Error verifying payment:", error);
@@ -452,6 +583,9 @@ router.get("/purchase-history", protect, async (req, res) => {
           orderId: h.orderId || h.razorpayOrderId || null,
           razorpayPaymentId: h.razorpayPaymentId || null,
           amount: amount,
+          promoCode: h.promoCode || null,
+          promoDiscount: h.promoDiscount || null,
+          originalAmount: h.originalAmount || null,
         };
       });
 

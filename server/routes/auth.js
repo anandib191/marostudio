@@ -252,16 +252,10 @@ router.post(
         // Don't reset credits if user has a paid plan
         if (!user.subscriptionPlan) {
           if (
-            user.photoshootCredits === undefined ||
-            user.photoshootCredits === null
+            user.totalCredits === undefined ||
+            user.totalCredits === null
           ) {
-            user.photoshootCredits = freePhotoshootCredits;
-          }
-          if (
-            user.marketingPosterCredits === undefined ||
-            user.marketingPosterCredits === null
-          ) {
-            user.marketingPosterCredits = freeMarketingCredits;
+            user.totalCredits = freeTotalCredits;
           }
         }
         await user.save();

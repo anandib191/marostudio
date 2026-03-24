@@ -7,6 +7,7 @@ import PricePlanConfig, { DEFAULT_PLANS } from "../models/PricePlanConfig.js";
 import PricePlan from "../models/PricePlan.js";
 import OTP from "../models/OTP.js";
 import AppConfig from "../models/AppConfig.js";
+import PromoCode from "../models/PromoCode.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import { sendOTPEmail } from "../utils/sendEmail.js";
 import logger from "../utils/logger.js";
@@ -1494,6 +1495,152 @@ router.put("/users/:userId/adjust-credits", protect, admin, async (req, res) => 
     });
   } catch (error) {
     logger.error("Adjust credits error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ==========================================
+// PROMO CODE MANAGEMENT
+// ==========================================
+
+/**
+ * @route   GET /api/admin/promo-codes
+ * @desc    Get all promo codes
+ * @access  Private/Admin
+ */
+router.get("/promo-codes", protect, admin, async (req, res) => {
+  try {
+    const promoCodes = await PromoCode.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, promoCodes });
+  } catch (error) {
+    logger.error("Get promo codes error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
+ * @route   POST /api/admin/promo-codes
+ * @desc    Create a new promo code
+ * @access  Private/Admin
+ */
+router.post("/promo-codes", protect, admin, async (req, res) => {
+  try {
+    const { code, discountType, applicablePlans, maxUses, expiresAt } = req.body;
+
+    if (!code || !code.trim()) {
+      return res.status(400).json({ success: false, message: "Promo code is required" });
+    }
+    if (!applicablePlans || !Array.isArray(applicablePlans) || applicablePlans.length === 0) {
+      return res.status(400).json({ success: false, message: "At least one plan must be configured" });
+    }
+    if (!maxUses || maxUses < 1) {
+      return res.status(400).json({ success: false, message: "Max uses must be at least 1" });
+    }
+
+    // Check for duplicate code
+    const existing = await PromoCode.findOne({ code: code.trim().toUpperCase() });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "A promo code with this name already exists" });
+    }
+
+    // Validate discount values
+    for (const plan of applicablePlans) {
+      if (!plan.planName || plan.discountValue == null || plan.discountValue < 0) {
+        return res.status(400).json({ success: false, message: "Each plan must have a valid name and discount value" });
+      }
+      if (discountType === "percentage" && plan.discountValue > 100) {
+        return res.status(400).json({ success: false, message: "Percentage discount cannot exceed 100%" });
+      }
+    }
+
+    const promoCode = new PromoCode({
+      code: code.trim().toUpperCase(),
+      discountType: discountType || "percentage",
+      applicablePlans,
+      maxUses: Number(maxUses),
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+    });
+
+    await promoCode.save();
+    res.status(201).json({ success: true, promoCode });
+  } catch (error) {
+    logger.error("Create promo code error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
+ * @route   PUT /api/admin/promo-codes/:id
+ * @desc    Update a promo code
+ * @access  Private/Admin
+ */
+router.put("/promo-codes/:id", protect, admin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { code, discountType, applicablePlans, maxUses, expiresAt, isActive } = req.body;
+
+    const promoCode = await PromoCode.findById(id);
+    if (!promoCode) {
+      return res.status(404).json({ success: false, message: "Promo code not found" });
+    }
+
+    // If code is being changed, check for duplicates
+    if (code && code.trim().toUpperCase() !== promoCode.code) {
+      const existing = await PromoCode.findOne({ code: code.trim().toUpperCase(), _id: { $ne: id } });
+      if (existing) {
+        return res.status(400).json({ success: false, message: "A promo code with this name already exists" });
+      }
+      promoCode.code = code.trim().toUpperCase();
+    }
+
+    if (discountType) promoCode.discountType = discountType;
+    if (applicablePlans && Array.isArray(applicablePlans)) promoCode.applicablePlans = applicablePlans;
+    if (maxUses != null) promoCode.maxUses = Number(maxUses);
+    if (expiresAt !== undefined) promoCode.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (isActive !== undefined) promoCode.isActive = isActive;
+
+    await promoCode.save();
+    res.status(200).json({ success: true, promoCode });
+  } catch (error) {
+    logger.error("Update promo code error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
+ * @route   DELETE /api/admin/promo-codes/:id
+ * @desc    Delete a promo code
+ * @access  Private/Admin
+ */
+router.delete("/promo-codes/:id", protect, admin, async (req, res) => {
+  try {
+    const promoCode = await PromoCode.findByIdAndDelete(req.params.id);
+    if (!promoCode) {
+      return res.status(404).json({ success: false, message: "Promo code not found" });
+    }
+    res.status(200).json({ success: true, message: "Promo code deleted successfully" });
+  } catch (error) {
+    logger.error("Delete promo code error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
+ * @route   PATCH /api/admin/promo-codes/:id/toggle
+ * @desc    Toggle active/inactive status of a promo code
+ * @access  Private/Admin
+ */
+router.patch("/promo-codes/:id/toggle", protect, admin, async (req, res) => {
+  try {
+    const promoCode = await PromoCode.findById(req.params.id);
+    if (!promoCode) {
+      return res.status(404).json({ success: false, message: "Promo code not found" });
+    }
+    promoCode.isActive = !promoCode.isActive;
+    await promoCode.save();
+    res.status(200).json({ success: true, promoCode });
+  } catch (error) {
+    logger.error("Toggle promo code error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

@@ -121,6 +121,17 @@ const userSchema = new mongoose.Schema(
         },
         reason: String, // e.g., "Plan credits updated by admin", "Subscription expired"
         adminEmail: String, // If changed by admin
+        // Payment fields
+        billingPeriod: String,
+        razorpayPaymentId: String,
+        razorpayOrderId: String,
+        orderId: String,
+        amount: Number,
+        errorCode: String,
+        // Promo code fields
+        promoCode: String,
+        promoDiscount: Number,
+        originalAmount: Number,
       },
     ],
     createdAt: {

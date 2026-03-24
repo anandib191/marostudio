@@ -15,6 +15,9 @@ interface HistoryEntry {
   orderId: string | null;
   razorpayPaymentId: string | null;
   amount: number | null;
+  promoCode: string | null;
+  promoDiscount: number | null;
+  originalAmount: number | null;
 }
 
 const formatDate = (dateStr: string) => {
@@ -94,8 +97,13 @@ ${entry.razorpayPaymentId ? `<div class="section"><h3>Payment Reference</h3><p>P
       <td>${entry.planName} Plan Subscription</td>
       <td>${entry.billingPeriod ? entry.billingPeriod.charAt(0).toUpperCase() + entry.billingPeriod.slice(1) : '—'}</td>
       <td>${entry.totalCredits?.toLocaleString() ?? '—'}</td>
-      <td>${entry.amount ? '₹' + entry.amount.toLocaleString('en-IN') : '—'}</td>
+      <td>${entry.originalAmount ? '₹' + entry.originalAmount.toLocaleString('en-IN') : entry.amount ? '₹' + entry.amount.toLocaleString('en-IN') : '—'}</td>
     </tr>
+    ${entry.promoCode && entry.promoDiscount ? `
+    <tr>
+      <td colspan="3" style="color:#16a34a;">🏷️ Promo Code: <strong>${entry.promoCode}</strong></td>
+      <td style="color:#16a34a;font-weight:600;">-₹${entry.promoDiscount.toLocaleString('en-IN')}</td>
+    </tr>` : ''}
     <tr class="total-row">
       <td colspan="3">Total Paid</td>
       <td>${entry.amount ? '₹' + entry.amount.toLocaleString('en-IN') : '—'}</td>
@@ -260,6 +268,20 @@ export const PurchaseHistoryPage: React.FC = () => {
                           </p>
                         )}
 
+                        {isSuccess && entry.promoCode && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-400 bg-green-500/15 px-2 py-0.5 rounded-full">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                              </svg>
+                              {entry.promoCode}
+                            </span>
+                            {entry.promoDiscount && (
+                              <span className="text-xs text-green-400">-₹{entry.promoDiscount.toLocaleString('en-IN')} off</span>
+                            )}
+                          </div>
+                        )}
+
                         {isSuccess && entry.razorpayPaymentId && (
                           <p className="text-xs text-neutral-500 mt-1 font-mono">
                             Payment ID: {entry.razorpayPaymentId}
@@ -276,9 +298,18 @@ export const PurchaseHistoryPage: React.FC = () => {
                         )}
 
                         {entry.amount && (
-                          <p className="text-sm text-neutral-300 mt-1 font-semibold">
-                            ₹{Number(entry.amount).toLocaleString('en-IN')}
-                          </p>
+                          <div className="mt-1">
+                            {entry.originalAmount && entry.promoDiscount ? (
+                              <p className="text-sm text-neutral-300 font-semibold">
+                                <span className="text-neutral-500 line-through text-xs mr-1">₹{Number(entry.originalAmount).toLocaleString('en-IN')}</span>
+                                ₹{Number(entry.amount).toLocaleString('en-IN')}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-neutral-300 font-semibold">
+                                ₹{Number(entry.amount).toLocaleString('en-IN')}
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
