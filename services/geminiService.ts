@@ -21,10 +21,10 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+    console.warn("API_KEY environment variable not set. AI features will not work until it is configured.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = process.env.API_KEY ? new GoogleGenAI({ apiKey: process.env.API_KEY }) : null;
 
 /**
  * Helper to convert base64 string to a Blob for FormData
@@ -546,6 +546,7 @@ export const generateOtherProductImages = async (
  * Uses Gemini for product identification (text-based output)
  */
 export const identifyProduct = async (imageFile: ImageFile): Promise<string> => {
+    if (!ai) throw new Error("API_KEY not configured. Please set API_KEY in your .env file.");
     const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: {
@@ -612,6 +613,7 @@ export const generateProductVideo = async (
     productName: string,
     onProgress: (message: string) => void
 ): Promise<string> => {
+    if (!ai) throw new Error("API_KEY not configured. Please set API_KEY in your .env file.");
     onProgress("Initiating cinematic render...");
     const prompt = `Create a professional 4K promotional video for: ${productName}. Category: ${category}, Type: ${productType}. Exact product from image.`;
 
@@ -649,6 +651,7 @@ export const generateAdFilm = async (
     onProgress: (message: string) => void,
     aspectRatio: '16:9' | '9:16'
 ): Promise<string> => {
+    if (!ai) throw new Error("API_KEY not configured. Please set API_KEY in your .env file.");
     onProgress("Drafting script...");
     const prompt = `Ad film for ${productName}. ${category} ${productType}. Vertical/Horizontal: ${aspectRatio}. Dynamic cuts, professional lighting.`;
 
