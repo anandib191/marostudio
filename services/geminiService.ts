@@ -110,7 +110,7 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
     }
     formData.append('aspect_ratio', apiAspectRatio);
 
-    const response = await fetch('https://api.joingy.site/', {
+    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
@@ -160,7 +160,7 @@ const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectR
 
     formData.append('aspect_ratio', apiAspectRatio);
 
-    const response = await fetch('https://api.joingy.site/', {
+    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
@@ -247,17 +247,17 @@ export const generateCatalogueImages = async (
 
         // --- SUB-CATEGORY / ITEM MAPPING OVERRIDES ---
         let effectiveProductType: string = productType;
-        
+
         if (itemName) {
             const lowerItem = itemName.toLowerCase();
             // Force Saree to apparel as requested
             if (category === 'women' && (lowerItem === 'saree' || lowerItem.includes('saree'))) {
                 effectiveProductType = 'apparel';
-            } 
+            }
             // Map Ornaments/Jewelry properly
-            else if (lowerItem.includes('jewelry') || lowerItem.includes('jewellery') || lowerItem.includes('ornament') || 
-                     lowerItem.includes('gold') || lowerItem.includes('diamond') || lowerItem.includes('silver') || 
-                     lowerItem.includes('bridal')) {
+            else if (lowerItem.includes('jewelry') || lowerItem.includes('jewellery') || lowerItem.includes('ornament') ||
+                lowerItem.includes('gold') || lowerItem.includes('diamond') || lowerItem.includes('silver') ||
+                lowerItem.includes('bridal')) {
                 effectiveProductType = 'jewelry';
             }
             // Map Perfume properly
@@ -365,27 +365,27 @@ export const generateCatalogueImages = async (
                 currentPrompt = currentPrompt.replace(/this piece\b/gi, `this ${itemName}`);
                 currentPrompt = `${apparelFocusInstruction}\n${currentPrompt}`;
             }
-            
+
             const qualityControl = "\n\nQUALITY CONTROL: Ensure a high-end, clean editorial result. Strictly avoid rendering any technical equipment like camera gear, light stands, studio umbrellas, or photographers in reflections.\n\nMICRO-DETAIL STRICT LOCK: You MUST perfectly preserve the exact spatial position, scale, structure, and color of all micro-details on the clothing. If there is a lapel pin, flower/boutonnière, pocket square, specific button, or stitching on the uploaded item, it must remain in the EXACT same spot with the EXACT same color. DO NOT hallucinate, alter, move, or recolor tiny details.";
-            
+
             let colorLock = "";
             if (styleId === 'monochrome') {
                 colorLock = "\n\nEXTREME B&W OVERRIDE: The ENTIRE final image, including the product, MUST BE 100% pure black, white, and grayscale. Absolutely ZERO color is permitted.";
             } else {
                 colorLock = "\n\nCRITICAL COLOR MATCH: The exact original solid color, hue, pattern, and texture of the uploaded garment must be 100% perfectly preserved. DO NOT let atmospheric lighting, shadows, or background elements alter the true color of the clothing. The garment's original color is the absolute highest priority in this generation.";
             }
-            
+
             let finalPrompt = `${currentPrompt}\n\n${styleModifier}\n\n${backgroundInstruction}${qualityControl}${colorLock}${extraPrompt ? `\n\nADDITIONAL USER INSTRUCTIONS: ${extraPrompt}` : ''}`;
-            
+
             if (consistentCharacter && referenceImageForConsistency) {
                 // Inject massive diverse pose instructions to break the AI out of identical static poses
                 const dynamicPoses = [
-                  "The model is standing confidently in a dynamic, asymmetrical pose, slightly angled to the camera.",
-                  "The model is seated elegantly, leaning slightly forward, projecting a relaxed yet sophisticated presence.",
-                  "The model is captured mid-stride, walking gracefully with natural movement and an effortless gaze.",
-                  "The model is striking a bold editorial pose with one hand near the face or waist, projecting high-fashion energy.",
-                  "The model is leaning beautifully against a surface, looking away thoughtfully with a relaxed, natural stance.",
-                  "The model is doing a dynamic over-the-shoulder look, showing graceful movement and high-energy expression."
+                    "The model is standing confidently in a dynamic, asymmetrical pose, slightly angled to the camera.",
+                    "The model is seated elegantly, leaning slightly forward, projecting a relaxed yet sophisticated presence.",
+                    "The model is captured mid-stride, walking gracefully with natural movement and an effortless gaze.",
+                    "The model is striking a bold editorial pose with one hand near the face or waist, projecting high-fashion energy.",
+                    "The model is leaning beautifully against a surface, looking away thoughtfully with a relaxed, natural stance.",
+                    "The model is doing a dynamic over-the-shoulder look, showing graceful movement and high-energy expression."
                 ];
                 const variedPose = dynamicPoses[index % dynamicPoses.length];
                 finalPrompt = `MAINTAIN CHARACTER CONSISTENCY: Use the exact same person (model) from the reference image provided. IMPORTANT: BREAK OUT OF RIGIDITY. DO NOT COPY THE POSE FROM THE REFERENCE IMAGE. ${variedPose} Follow the scene and styling described in the prompt below while keeping the character's facial features and identity identical.\n${finalPrompt}`;
@@ -404,10 +404,10 @@ export const generateCatalogueImages = async (
 
                 try {
                     const image = await generateWithRetry(
-                        imageToUse, 
-                        finalPrompt, 
-                        aspectRatio, 
-                        referenceImageForConsistency, 
+                        imageToUse,
+                        finalPrompt,
+                        aspectRatio,
+                        referenceImageForConsistency,
                         imageQuality
                     );
                     onImageGenerated(image, index);
@@ -586,7 +586,7 @@ ${logoFile ? 'INSTRUCTION: Use the logo provided in the second image. Place it e
     formData.append('image_size', '2K');
     formData.append('aspect_ratio', '4:5');
 
-    const response = await fetch('https://api.joingy.site/', {
+    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
