@@ -94,7 +94,7 @@ const generate4KImage = async (imageFile: ImageFile, prompt: string, aspectRatio
     }
     formData.append('aspect_ratio', apiAspectRatio);
 
-    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
+    const response = await fetch('https://4kimages-git-devlopment-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
@@ -140,7 +140,7 @@ const generateSingleImage = async (imageFile: ImageFile, prompt: string, aspectR
     }
     formData.append('aspect_ratio', apiAspectRatio);
 
-    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
+    const response = await fetch('https://4kimages-git-devlopment-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
@@ -444,7 +444,7 @@ ${logoFile ? 'INSTRUCTION: Use the logo provided in the second image. Place it e
     formData.append('image_size', '2K');
     formData.append('aspect_ratio', '4:5');
 
-    const response = await fetch('https://4kimages-gphq2ag4c-hirings-projects-44b058c4.vercel.app/', {
+    const response = await fetch('https://4kimages-git-devlopment-hirings-projects-44b058c4.vercel.app/', {
         method: 'POST',
         body: formData,
     });
