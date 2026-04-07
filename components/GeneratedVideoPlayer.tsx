@@ -16,14 +16,10 @@ export const GeneratedVideoPlayer: React.FC<GeneratedVideoPlayerProps> = ({
     onBack,
 }) => {
     
-    const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = videoUrl;
+    const handleDownload = async () => {
+        const { downloadVideo } = await import('../utils/downloadHelper');
         const safeProductName = productName.replace(/[^a-zA-Z0-9]/g, '_') || 'product_video';
-        link.download = `${safeProductName}.mp4`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        await downloadVideo(videoUrl, `${safeProductName}.mp4`);
     };
 
     return (

@@ -15,13 +15,9 @@ export const GeneratedAdsViewer: React.FC<GeneratedAdsViewerProps> = ({
   onBack,
 }) => {
 
-  const handleDownload = (image: string, index: number) => {
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = `ad_variation_${index + 1}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (image: string, index: number) => {
+    const { downloadImage } = await import('../utils/downloadHelper');
+    await downloadImage(image, `ad_variation_${index + 1}.png`);
   };
 
   return (

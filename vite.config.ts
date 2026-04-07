@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: "0.0.0.0",
+        proxy: {
+          '/s3-proxy': {
+            target: 'https://growspace-app-storage.s3.eu-north-1.amazonaws.com',
+            changeOrigin: true,
+            rewrite: (path: string) => path.replace(/^\/s3-proxy/, ''),
+          },
+        },
       },
       plugins: [react(), tailwindcss(),],
       esbuild: {

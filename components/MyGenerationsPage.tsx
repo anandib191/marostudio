@@ -54,22 +54,8 @@ export const MyGenerationsPage: React.FC = () => {
   };
 
   const handleDownload = async (imageUrl: string, filename: string) => {
-    try {
-      const res = await fetch(imageUrl);
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success('Image downloaded successfully');
-    } catch (err) {
-      console.error('Download failed:', err);
-      toast.error('Failed to download image');
-    }
+    const { downloadImage } = await import('../utils/downloadHelper');
+    await downloadImage(imageUrl, filename);
   };
 
   const handleDelete = async (generationId: string) => {

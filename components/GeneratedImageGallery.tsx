@@ -30,25 +30,38 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
     infer();
   }, [hideWatermark]);
 
-  const handleDownload = (image: string, index: number) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = image;
+  const handleDownload = async (image: string, index: number) => {
+    const isCover = index === 0;
+    const title = isCover ? 'hero-shot' : `frame-${index}`;
+    const fileName = `${title}-marostudio.png`;
 
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    // If no watermark needed, use the simple proxy download
+    if (shouldHideWatermark) {
+      const { downloadImage } = await import('../utils/downloadHelper');
+      await downloadImage(image, fileName);
+      return;
+    }
 
-      // Draw the original image
-      ctx.drawImage(img, 0, 0);
+    // Need watermark: fetch via proxy, then draw to canvas
+    try {
+      const { fetchImageAsBlob } = await import('../utils/downloadHelper');
+      const blob = await fetchImageAsBlob(image);
+      const blobUrl = URL.createObjectURL(blob);
 
-      // Only draw watermark when the user is NOT on a paid plan
-      if (!shouldHideWatermark) {
-        // Prepare watermark text
-        const padding = img.width * 0.04; 
+      const img = new Image();
+      img.src = blobUrl;
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { URL.revokeObjectURL(blobUrl); return; }
+
+        ctx.drawImage(img, 0, 0);
+
+        // Draw watermark
+        const padding = img.width * 0.04;
         const fontSize = Math.max(20, Math.round(img.width / 30));
         ctx.font = `bold ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
         ctx.textAlign = 'right';
@@ -58,40 +71,30 @@ export const GeneratedImageGallery: React.FC<GeneratedImageGalleryProps> = ({ im
         const suffixText = 'Studio';
         const x = canvas.width - padding;
         const y = padding;
-
-        // Measure text widths
         const suffixMetrics = ctx.measureText(suffixText);
-        
-        // Draw "Photo" in Gold
-        ctx.fillStyle = '#e6b71e'; 
-        ctx.fillText(suffixText, x, y);
 
-        // Draw "MARO Studio" in White to the left
+        ctx.fillStyle = '#e6b71e';
+        ctx.fillText(suffixText, x, y);
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(prefixText, x - suffixMetrics.width, y);
-      }
 
-      // Trigger download
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      const isCover = index === 0;
-      const title = isCover ? 'hero-shot' : `frame-${index}`;
-      link.download = `${title}-marostudio.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      };
 
-    img.onerror = () => {
-      const link = document.createElement('a');
-      link.href = image;
-      const isCover = index === 0;
-      const title = isCover ? 'hero-shot' : `frame-${index}`;
-      link.download = `${title}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        window.open(image, '_blank');
+      };
+    } catch {
+      // Fallback: open in new tab
+      window.open(image, '_blank');
+    }
   };
 
   return (

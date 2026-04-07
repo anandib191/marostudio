@@ -155,22 +155,8 @@ export const PreviouslyGenerated: React.FC = () => {
 
   // ─── Download & Delete (unchanged logic) ──────────────────────────
   const handleDownload = async (imageUrl: string, index: number) => {
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `generated-image-${index + 1}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success('Image downloaded successfully!');
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast.error('Failed to download image');
-    }
+    const { downloadImage } = await import('../utils/downloadHelper');
+    await downloadImage(imageUrl, `generated-image-${index + 1}.png`);
   };
 
   const handleDeleteClick = (generationId: string, e?: React.MouseEvent) => {
