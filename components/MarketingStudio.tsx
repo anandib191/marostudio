@@ -349,34 +349,8 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
 
     const handleDownload = async () => {
         if (!generatedPoster) return;
-
-        try {
-            // Convert data URL to blob for reliable download
-            const response = await fetch(generatedPoster);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `marketing-poster-${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up the blob URL
-            window.URL.revokeObjectURL(url);
-
-            toast.success('Poster downloaded successfully!', {
-                position: 'top-right',
-                autoClose: 2000,
-            });
-        } catch (error) {
-            console.error('Download failed:', error);
-            toast.error('Failed to download poster. Please try again.', {
-                position: 'top-right',
-                autoClose: 3000,
-            });
-        }
+        const { downloadImage } = await import('../utils/downloadHelper');
+        await downloadImage(generatedPoster, `marketing-poster-${Date.now()}.png`);
     };
 
     if (isLoading) {

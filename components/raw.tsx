@@ -939,10 +939,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         if (!coverImage || modelImages.length === 0) return;
         setDownloadingType('zip');
         try {
+            const { fetchImageAsBlob } = await import('../utils/downloadHelper');
             const zip = new JSZip();
             const fetchAndAdd = async (url: string, filename: string) => {
-                const response = await fetch(url);
-                const blob = await response.blob();
+                const blob = await fetchImageAsBlob(url);
                 zip.file(filename, blob);
             };
             const promises = [fetchAndAdd(coverImage, 'hero.png')];
