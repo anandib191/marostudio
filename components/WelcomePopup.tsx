@@ -9,7 +9,7 @@ export const WelcomePopup: React.FC = () => {
   const videos = [
     {
       title: 'Getting Started with MARO Studio',
-      src: 'https://www.youtube.com/embed/2uR3IY2sDqM',
+      src: 'https://www.youtube.com/embed/ZB33feFCAwE',
     },
   ];
 

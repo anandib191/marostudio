@@ -1492,7 +1492,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             quality: imageQuality,
                             imageUrls: allImages,
                             category: promptCategory,
-                            productType,
+                            productType: productName || identifiedProductName || productType,
                             style: selectedStyle,
                             creditsUsed: numberOfImages * (imageQuality === '4K' ? 40 : 20),
                             sourceImageUrl: imageFiles[0]?.previewUrl || null,

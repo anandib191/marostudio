@@ -2,7 +2,7 @@ import React from 'react';
 
 export const YouTubeEmbedSection: React.FC = () => {
   // Demo video ID - Change this to your YouTube video ID
-  const videoId = '2uR3IY2sDqM';
+  const videoId = 'ZB33feFCAwE';
 
   return (
     <section className="youtube-embed-section w-full py-12 md:py-16 bg-black relative">

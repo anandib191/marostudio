@@ -215,8 +215,8 @@ export const PreviouslyGenerated: React.FC = () => {
       <StudioSidebar
         activeStudio={null}
         currentStep={-1}
-        onSelectStudio={() => { }}
-        onJumpToStep={() => { }}
+        onSelectStudio={(studio) => navigate('/studio', { state: { studio } })}
+        onJumpToStep={() => navigate('/studio')}
         onExit={() => navigate('/studio')}
       />
 
@@ -338,7 +338,7 @@ export const PreviouslyGenerated: React.FC = () => {
                   {/* Card Info */}
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-white font-semibold text-base truncate pr-2">
+                      <h3 className="text-white font-semibold text-base truncate pr-2 capitalize">
                         {gen.productType || gen.category || gen.type}
                       </h3>
                       <span className="text-neutral-400 text-xs whitespace-nowrap">
@@ -346,7 +346,7 @@ export const PreviouslyGenerated: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gold-400 text-sm">
+                      <span className="text-gold-400 text-sm capitalize">
                         {gen.category || gen.type}
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border border-gold-500/50 text-gold-300 bg-gold-500/10">
@@ -579,20 +579,27 @@ export const PreviouslyGenerated: React.FC = () => {
               className="relative max-w-5xl w-full px-4 flex flex-col items-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-full mb-6 rounded-xl overflow-hidden shadow-2xl">
+              <div className="w-full mb-6 rounded-xl overflow-hidden shadow-2xl flex justify-center">
                 <img
                   src={selectedImageUrl}
                   alt="Full preview"
-                  className="w-full h-auto max-h-[90vh] object-contain"
+                  className="w-full h-auto max-w-[90vw] max-h-[80vh] object-contain"
                 />
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-4 relative z-[100005] pb-8">
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const index = selectedGeneration?.imageUrls.indexOf(selectedImageUrl) ?? 0;
-                    handleDownload(selectedImageUrl, index);
+                    try {
+                      await handleDownload(selectedImageUrl, index);
+                    } catch (err) {
+                      console.error("Download failed:", err);
+                    }
                   }}
-                  className="px-6 py-3 bg-gold-600 hover:bg-gold-500 rounded-lg text-white font-semibold transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-gold-600 hover:bg-gold-500 rounded-lg text-white font-semibold transition-colors flex items-center gap-2 shadow-xl hover:shadow-gold-500/50 cursor-pointer"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -600,8 +607,13 @@ export const PreviouslyGenerated: React.FC = () => {
                   Download
                 </button>
                 <button
-                  onClick={() => setSelectedImageUrl(null)}
-                  className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white font-semibold transition-colors"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedImageUrl(null);
+                  }}
+                  className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white font-semibold transition-colors shadow-xl cursor-pointer"
                 >
                   Back
                 </button>
