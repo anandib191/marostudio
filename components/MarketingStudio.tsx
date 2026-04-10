@@ -177,7 +177,17 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
 
                     try {
                         console.log('📡 Fetching poster from URL...');
-                        const response = await fetch(poster, {
+                        let fetchUrl = poster;
+                        try {
+                            if (poster.includes('amazonaws.com') && !poster.includes('/s3-proxy')) {
+                                const urlObj = new URL(poster);
+                                fetchUrl = `/s3-proxy${urlObj.pathname}${urlObj.search}`;
+                            }
+                        } catch (e) {
+                            // ignore URL parse errors and fallback to original
+                        }
+                        
+                        const response = await fetch(fetchUrl, {
                             mode: 'cors',
                             cache: 'no-cache'
                         });
@@ -386,7 +396,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         <ImageUploader onImageUpload={handleImageUpload} initialPreview={imageFile?.previewUrl} aspectRatio="aspect-[4/3]" />
                     </div>
 
-                    <div className="grid grid-cols-[auto_1fr] gap-3 sm:gap-4 items-start">
+                    <div className="flex flex-col sm:grid sm:grid-cols-[auto_1fr] gap-4 items-start">
                         <div className="w-[80px] sm:w-[100px]">
                             <h3 className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-2">Logo</h3>
                             <ImageUploader
@@ -397,7 +407,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                                 subtitle="PNG"
                             />
                         </div>
-                        <div>
+                        <div className="w-full">
                             <label htmlFor="extra-details-textarea" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-300 mb-2 block">
                                 Extra Details (optional)
                             </label>
