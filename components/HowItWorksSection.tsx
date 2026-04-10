@@ -25,7 +25,7 @@ export const HowItWorksSection: React.FC = () => {
             <div className="video-wrapper flex flex-col gap-4 transition-all hover:-translate-y-1">
               <div className="video-container relative w-full pb-[56.25%] h-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/10 transition-all hover:border-gold-500/30 hover:shadow-xl">
                 <iframe
-                  src="https://www.youtube.com/embed/2uR3IY2sDqM"
+                  src="https://www.youtube.com/embed/ZB33feFCAwE"
                   title="YouTube video player"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
