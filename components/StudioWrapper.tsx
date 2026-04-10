@@ -32,7 +32,7 @@ export const StudioWrapper: React.FC = () => {
   const [photoPhase, setPhotoPhase] = useState<string>('details');
   const [marketingStep, setMarketingStep] = useState<number>(0);
   // Light/Dark theme for the main studio content panel
-  const [isLight, setIsLight] = useState(true);
+  const [isLight, setIsLight] = useState(false);
 
   // Ref to the jump function registered by PhotoStudio
   const jumpToPhaseRef = useRef<((phase: string) => void) | null>(null);

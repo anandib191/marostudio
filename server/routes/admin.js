@@ -72,8 +72,50 @@ router.get("/users", protect, admin, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const role = req.query.role; // 'user' or 'admin' or undefined for all
+    const status = req.query.status; // 'active', 'expired', 'free'
+    const time = req.query.time; // '7days', '30days'
+    const search = req.query.search;
 
     const query = role ? { role } : {};
+
+    if (time === '7days') {
+      const date = new Date();
+      date.setDate(date.getDate() - 7);
+      query.createdAt = { $gte: date };
+    } else if (time === '30days') {
+      const date = new Date();
+      date.setDate(date.getDate() - 30);
+      query.createdAt = { $gte: date };
+    }
+
+    if (status === 'active') {
+      query.subscriptionPlan = { $exists: true, $ne: null, $ne: 'Free' };
+      query.subscriptionExpiresAt = { $gt: new Date() };
+    } else if (status === 'expired') {
+      query.subscriptionPlan = { $exists: true, $ne: null, $ne: 'Free' };
+      query.subscriptionExpiresAt = { $lt: new Date() };
+    } else if (status === 'free') {
+      query.$or = [
+        { subscriptionPlan: 'Free' },
+        { subscriptionPlan: { $exists: false } },
+        { subscriptionPlan: null }
+      ];
+    }
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: 'i' };
+      if (query.$or) {
+        // If query.$or already exists (from status='free'), $and them together
+        query.$and = [
+          { $or: query.$or },
+          { $or: [{ email: searchRegex }, { name: searchRegex }] }
+        ];
+        delete query.$or;
+      } else {
+        query.$or = [{ email: searchRegex }, { name: searchRegex }];
+      }
+    }
+
     const users = await User.find(query)
       .select("-__v -creditHistory")
       .sort({ createdAt: -1 })

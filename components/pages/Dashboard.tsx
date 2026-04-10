@@ -8,6 +8,15 @@ import { StarIcon } from '../icons/StarIcon';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+const getProxiedUrlForReview = (url: string) => {
+  if (!url) return '';
+  if (url.includes('amazonaws.com') && !url.includes('/s3-proxy')) {
+    const urlObj = new URL(url);
+    return `/s3-proxy${urlObj.pathname}${urlObj.search}`;
+  }
+  return url;
+};
+
 export interface PricePlan {
   _id?: string;
   name: string;
@@ -44,7 +53,7 @@ interface User {
   isActive?: boolean;
 }
 
-type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits' | 'statistics' | 'gen-history' | 'promo-codes';
+type SidebarSection = 'price-plans' | 'users' | 'admins' | 'credits' | 'statistics' | 'gen-history' | 'promo-codes' | 'reviews';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -71,6 +80,9 @@ export const Dashboard: React.FC = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [activeSubscriptions, setActiveSubscriptions] = useState(0);
   const [loadingUserStats, setLoadingUserStats] = useState(false);
+  const [userStatusFilter, setUserStatusFilter] = useState('');
+  const [userTimeFilter, setUserTimeFilter] = useState('');
+  const [userSearchEmail, setUserSearchEmail] = useState('');
 
   // Admins state
   const [admins, setAdmins] = useState<User[]>([]);
@@ -136,6 +148,15 @@ export const Dashboard: React.FC = () => {
   const [genTotalPages, setGenTotalPages] = useState(1);
   const [expandedGenId, setExpandedGenId] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [genFilterType, setGenFilterType] = useState('all');
+  const [genFilterPlan, setGenFilterPlan] = useState('all');
+  const [genSearchEmail, setGenSearchEmail] = useState('');
+
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewTotalPages, setReviewTotalPages] = useState(1);
 
   // Promo codes state
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
@@ -184,7 +205,7 @@ export const Dashboard: React.FC = () => {
     if (section === 'price-plans') {
       loadPlans(token);
     } else if (section === 'users') {
-      loadUsers(token, usersPage);
+      loadUsers(token, usersPage, userStatusFilter, userTimeFilter, userSearchEmail);
       loadUserStats(token);
     } else if (section === 'admins') {
       loadAdmins(token, adminsPage);
@@ -195,12 +216,14 @@ export const Dashboard: React.FC = () => {
     } else if (section === 'statistics') {
       loadStatistics(token);
     } else if (section === 'gen-history') {
-      loadGenerations(token, genPage);
+      loadGenerations(token, genPage, genFilterType, genSearchEmail, genFilterPlan);
+    } else if (section === 'reviews') {
+      loadReviews(token, reviewPage);
     } else if (section === 'promo-codes') {
       loadPromoCodes(token);
       loadPlans(token); // Need plans for the form
     }
-  }, [navigate, section, usersPage, adminsPage, genPage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigate, section, usersPage, adminsPage, genPage, reviewPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPlans = async (token: string) => {
     // Don't set loading or clear plans if we already have plans (prevents flash)
@@ -324,10 +347,15 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const loadGenerations = async (token: string, page: number) => {
+  const loadGenerations = async (token: string, page: number, type: string = genFilterType, search: string = genSearchEmail, plan: string = genFilterPlan) => {
     setLoadingGenerations(true);
     try {
-      const res = await fetch(`${API_URL}/api/user/generations/admin/all?page=${page}&limit=10`, {
+      let queryUrl = `${API_URL}/api/user/generations/admin/all?page=${page}&limit=10`;
+      if (type && type !== 'all') queryUrl += `&type=${encodeURIComponent(type)}`;
+      if (search) queryUrl += `&search=${encodeURIComponent(search)}`;
+      if (plan && plan !== 'all') queryUrl += `&plan=${encodeURIComponent(plan)}`;
+      
+      const res = await fetch(queryUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -341,6 +369,26 @@ export const Dashboard: React.FC = () => {
       toast.error('Failed to load generations', { position: "top-right", autoClose: 3000 });
     } finally {
       setLoadingGenerations(false);
+    }
+  };
+
+  const loadReviews = async (token: string, page: number) => {
+    setLoadingReviews(true);
+    try {
+      const res = await fetch(`${API_URL}/api/user/generations/admin/all?page=${page}&limit=12&hasRating=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setReviews(data.generations || []);
+        setReviewTotalPages(data.pagination?.pages || 1);
+      } else {
+        toast.error(data.message || 'Failed to load reviews', { position: "top-right", autoClose: 3000 });
+      }
+    } catch (e) {
+      toast.error('Failed to load reviews', { position: "top-right", autoClose: 3000 });
+    } finally {
+      setLoadingReviews(false);
     }
   };
 
@@ -477,7 +525,7 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const loadUsers = async (token: string, page: number) => {
+  const loadUsers = async (token: string, page: number, status: string = userStatusFilter, time: string = userTimeFilter, search: string = userSearchEmail) => {
     // Don't show loading if we already have users (prevents flash)
     const hasExistingUsers = users.length > 0;
     if (!hasExistingUsers) {
@@ -485,7 +533,12 @@ export const Dashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/users?role=user&page=${page}&limit=100`, {
+      let queryUrl = `${API_URL}/api/admin/users?role=user&page=${page}&limit=100`;
+      if (status) queryUrl += `&status=${encodeURIComponent(status)}`;
+      if (time) queryUrl += `&time=${encodeURIComponent(time)}`;
+      if (search) queryUrl += `&search=${encodeURIComponent(search)}`;
+
+      const res = await fetch(queryUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -1226,6 +1279,16 @@ export const Dashboard: React.FC = () => {
         </button>
         <button
           onClick={() => {
+            setSection('reviews');
+            setSidebarOpen(false);
+          }}
+          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${section === 'reviews' ? 'bg-gold-600/20 text-gold-400' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+        >
+          ⭐ Reviews
+        </button>
+        <button
+          onClick={() => {
             setSection('promo-codes');
             setSidebarOpen(false);
           }}
@@ -1405,7 +1468,56 @@ export const Dashboard: React.FC = () => {
 
             {section === 'users' && (
               <div className="w-full max-w-6xl">
-                <h2 className="text-xl sm:text-2xl font-bold font-serif-display mb-4 sm:mb-6">Users</h2>
+                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif-display">Users</h2>
+                  
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder="Search email/name..."
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white max-w-[180px]"
+                      value={userSearchEmail}
+                      onChange={(e) => setUserSearchEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && setUsersPage(1) && loadUsers(localStorage.getItem('admin_token') || '', 1, userStatusFilter, userTimeFilter, userSearchEmail)}
+                    />
+                    <select
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white cursor-pointer"
+                      value={userStatusFilter}
+                      onChange={(e) => {
+                         setUserStatusFilter(e.target.value);
+                         setUsersPage(1);
+                         loadUsers(localStorage.getItem('admin_token') || '', 1, e.target.value, userTimeFilter, userSearchEmail);
+                      }}
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="active">Active Plan</option>
+                      <option value="expired">Expired Plan</option>
+                      <option value="free">Free / None</option>
+                    </select>
+                    <select
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white cursor-pointer"
+                      value={userTimeFilter}
+                      onChange={(e) => {
+                         setUserTimeFilter(e.target.value);
+                         setUsersPage(1);
+                         loadUsers(localStorage.getItem('admin_token') || '', 1, userStatusFilter, e.target.value, userSearchEmail);
+                      }}
+                    >
+                      <option value="">All Time</option>
+                      <option value="7days">Last 7 Days</option>
+                      <option value="30days">Last 30 Days</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        setUsersPage(1);
+                        loadUsers(localStorage.getItem('admin_token') || '', 1, userStatusFilter, userTimeFilter, userSearchEmail);
+                      }}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Filter
+                    </button>
+                  </div>
+                </div>
 
                 {/* User Statistics Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -2202,9 +2314,57 @@ export const Dashboard: React.FC = () => {
 
             {section === 'gen-history' && (
               <div className="w-full">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold font-serif-display">Generation History</h2>
-                  <p className="text-sm text-neutral-400">All image generations by users</p>
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold font-serif-display">Generation History</h2>
+                    <p className="text-sm text-neutral-400">All image generations by users</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder="Search email..."
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white max-w-[200px]"
+                      value={genSearchEmail}
+                      onChange={(e) => setGenSearchEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && setGenPage(1) && loadGenerations(localStorage.getItem('admin_token') || '', 1, genFilterType, genSearchEmail, genFilterPlan)}
+                    />
+                    <select
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white cursor-pointer"
+                      value={genFilterType}
+                      onChange={(e) => {
+                         setGenFilterType(e.target.value);
+                         setGenPage(1);
+                         loadGenerations(localStorage.getItem('admin_token') || '', 1, e.target.value, genSearchEmail, genFilterPlan);
+                      }}
+                    >
+                      <option value="all">All Types</option>
+                      <option value="photoshoot">Photoshoot</option>
+                      <option value="marketing">Marketing</option>
+                    </select>
+                    <select
+                      className="px-3 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-white cursor-pointer"
+                      value={genFilterPlan}
+                      onChange={(e) => {
+                         setGenFilterPlan(e.target.value);
+                         setGenPage(1);
+                         loadGenerations(localStorage.getItem('admin_token') || '', 1, genFilterType, genSearchEmail, e.target.value);
+                      }}
+                    >
+                      <option value="all">All Plans</option>
+                      <option value="free">Free Plan</option>
+                      <option value="paid">Paid Plan</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        setGenPage(1);
+                        loadGenerations(localStorage.getItem('admin_token') || '', 1, genFilterType, genSearchEmail, genFilterPlan);
+                      }}
+                      className="px-4 py-2 bg-gold-600 hover:bg-gold-500 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Filter
+                    </button>
+                  </div>
                 </div>
 
                 {loadingGenerations ? (
@@ -2230,6 +2390,7 @@ export const Dashboard: React.FC = () => {
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Persona</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider"># Images</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Credits</th>
+                            <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Rating</th>
                             <th className="px-3 py-2.5 text-left text-[10px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider">Date & Time</th>
                           </tr>
                         </thead>
@@ -2259,6 +2420,14 @@ export const Dashboard: React.FC = () => {
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">{gen.creatorName || '—'}</td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-white font-medium">{gen.numberOfImages || gen.imageUrls?.length || 0}</td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">{gen.creditsUsed || 0}</td>
+                                <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400">
+                                  {gen.rating > 0 ? (
+                                    <div className="flex items-center text-gold-400 gap-1">
+                                      <span className="font-bold">{gen.rating}</span>
+                                      <StarIcon className="w-3.5 h-3.5" />
+                                    </div>
+                                  ) : '—'}
+                                </td>
                                 <td className="px-3 py-2.5 text-xs sm:text-sm text-neutral-400 whitespace-nowrap">
                                   <div>{formatDate(gen.createdAt)}</div>
                                   <div className="text-[10px] text-neutral-500">{formatDateTime(gen.createdAt)}</div>
@@ -2272,9 +2441,9 @@ export const Dashboard: React.FC = () => {
                                       {gen.sourceImageUrl && (
                                         <div>
                                           <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Uploaded Photo</p>
-                                          <a href={gen.sourceImageUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                                          <a href={getProxiedUrlForReview(gen.sourceImageUrl)} target="_blank" rel="noopener noreferrer" className="inline-block">
                                             <img
-                                              src={gen.sourceImageUrl}
+                                              src={getProxiedUrlForReview(gen.sourceImageUrl)}
                                               alt="Uploaded source"
                                               className="h-28 sm:h-36 object-contain rounded-lg border-2 border-gold-500/30 bg-black/30 p-1"
                                               loading="lazy"
@@ -2291,9 +2460,9 @@ export const Dashboard: React.FC = () => {
                                           <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Generated Images</p>
                                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                                             {gen.imageUrls.map((url: string, idx: number) => (
-                                              <button key={idx} onClick={() => setPreviewImage(url)} className="block w-full text-left">
+                                              <button key={idx} onClick={() => setPreviewImage(getProxiedUrlForReview(url))} className="block w-full text-left">
                                                 <img
-                                                  src={url}
+                                                  src={getProxiedUrlForReview(url)}
                                                   alt={`Gen ${idx + 1}`}
                                                   className="w-full h-24 sm:h-32 object-contain rounded-lg border border-white/10 hover:border-gold-500/50 transition-colors bg-black/30 p-1"
                                                   loading="lazy"
@@ -2335,6 +2504,90 @@ export const Dashboard: React.FC = () => {
                           onClick={() => setGenPage(Math.min(genTotalPages, genPage + 1))}
                           disabled={genPage === genTotalPages}
                           className="px-3 py-1.5 text-xs bg-neutral-800 text-neutral-300 border border-white/10 rounded-lg disabled:opacity-30 hover:bg-neutral-700"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ==================== REVIEWS SECTION ==================== */}
+            {section === 'reviews' && (
+              <div className="w-full">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold font-serif-display text-white">⭐ User Reviews</h2>
+                    <p className="text-sm text-neutral-400">All generations that received user ratings.</p>
+                  </div>
+                </div>
+
+                {loadingReviews ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gold-500 border-t-transparent" />
+                  </div>
+                ) : reviews.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="text-5xl mb-4">⭐</div>
+                    <p className="text-neutral-400 text-lg">No reviews yet</p>
+                    <p className="text-neutral-500 text-sm mt-1">When users rate their generated results, they will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {reviews.map((review) => (
+                        <div key={review._id} className="bg-neutral-900/40 border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-gold-500/30 transition-all shadow-xl">
+                          <div className="aspect-[4/3] bg-black/80 relative flex items-center justify-center p-2 border-b border-white/10">
+                             <img 
+                               src={getProxiedUrlForReview(review.imageUrls?.[0] || review.sourceImageUrl)} 
+                               alt="Review preview" 
+                               className="w-full h-full object-contain"
+                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                             />
+                             <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-gold-500/40 flex items-center gap-1 shadow-lg shadow-black">
+                                <span className="font-bold text-gold-400 text-sm">{review.rating}</span>
+                                <StarIcon className="w-3.5 h-3.5 text-gold-400" />
+                             </div>
+                             <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded border border-white/10 shadow-lg shadow-black">
+                                <span className={`text-[10px] font-medium uppercase tracking-wider ${review.type === 'photoshoot' ? 'text-blue-300' : 'text-purple-300'}`}>
+                                  {review.type || 'Photoshoot'}
+                                </span>
+                             </div>
+                          </div>
+                          
+                          <div className="p-5 flex-1 flex flex-col">
+                            <h3 className="font-medium text-white truncate text-sm mb-1" title={review.userEmail}>{review.userEmail}</h3>
+                            <p className="text-[10px] text-neutral-500 mb-4">{new Date(review.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                            
+                            <div className="bg-black/30 p-4 flex-1 rounded-xl border border-white/5 mt-auto">
+                               {review.ratingFeedback ? (
+                                  <p className="text-sm text-neutral-300 italic leading-relaxed">"{review.ratingFeedback}"</p>
+                               ) : (
+                                  <p className="text-sm text-neutral-600 italic">No feedback text provided.</p>
+                               )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {reviewTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 pt-6">
+                        <button
+                          onClick={() => setReviewPage(Math.max(1, reviewPage - 1))}
+                          disabled={reviewPage === 1}
+                          className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 border border-white/10 rounded-xl disabled:opacity-30 hover:bg-neutral-700 hover:text-white transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-sm text-neutral-400 font-medium px-4">Page {reviewPage} of {reviewTotalPages}</span>
+                        <button
+                          onClick={() => setReviewPage(Math.min(reviewTotalPages, reviewPage + 1))}
+                          disabled={reviewPage === reviewTotalPages}
+                          className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 border border-white/10 rounded-xl disabled:opacity-30 hover:bg-neutral-700 hover:text-white transition-colors"
                         >
                           Next
                         </button>

@@ -14,6 +14,7 @@ import { UnifiedCreditsSummaryBox } from './UnifiedCreditsSummaryBox';
 import { addToCache, getCachedItems } from '../utils/cacheManager';
 import { toast } from 'react-toastify';
 import { notifyGenerationComplete } from '../utils/notification';
+import { RatingPopup } from './RatingPopup';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -31,6 +32,12 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
     const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Rating state
+    const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
+    const [generationRating, setGenerationRating] = useState<number>(0);
+    const [generationFeedback, setGenerationFeedback] = useState<string>('');
+    const [showRatingPopup, setShowRatingPopup] = useState<boolean>(false);
 
     const fetchCredits = useCallback(async () => {
         const token = localStorage.getItem('access_token');
@@ -320,7 +327,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
 
                 // Save generation record for admin tracking
                 try {
-                    await fetch(`${API_URL}/api/user/generations/save`, {
+                    const saveRes = await fetch(`${API_URL}/api/user/generations/save`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -328,13 +335,21 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         },
                         body: JSON.stringify({
                             type: 'marketing',
-                            quality: '2K',
+                            quality: 'HD', // Must be 'HD' or '4K' per Mongoose enum
                             imageUrls: [poster],
                             creditsUsed: 20,
                             sourceImageUrl: imageFile?.previewUrl || null,
                             numberOfImages: 1,
                         }),
                     });
+                    const saveData = await saveRes.json();
+                    if (saveData.success && saveData.generation) {
+                        setCurrentGenerationId(saveData.generation._id);
+                        setGenerationRating(0);
+                        setGenerationFeedback('');
+                        // Show rating popup after a brief delay so users can focus on results first
+                        setTimeout(() => setShowRatingPopup(true), 2500);
+                    }
                 } catch (err) {
                     console.error('Save generation record error:', err);
                 }
@@ -471,6 +486,37 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                 </div>
             </div>
             {error && <div className="mt-6 p-4 bg-red-900/30 border border-red-500/50 text-red-300 rounded-lg text-center max-w-md mx-auto">{error}</div>}
+
+            {/* Inline Review Form for generated marketing posters */}
+            {generatedPoster && currentGenerationId && (
+                <div className="mt-8 mb-6 pb-2">
+                    <RatingPopup
+                        generationId={currentGenerationId}
+                        variant="inline"
+                        initialRating={generationRating}
+                        initialFeedback={generationFeedback}
+                        onSyncState={(rating, feedback) => {
+                            setGenerationRating(rating);
+                            setGenerationFeedback(feedback);
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* Modal Review Form matching PhotoStudio */}
+            {showRatingPopup && currentGenerationId && (
+                <RatingPopup
+                    generationId={currentGenerationId}
+                    variant="popup"
+                    onClose={() => setShowRatingPopup(false)}
+                    initialRating={generationRating}
+                    initialFeedback={generationFeedback}
+                    onSyncState={(rating, feedback) => {
+                        setGenerationRating(rating);
+                        setGenerationFeedback(feedback);
+                    }}
+                />
+            )}
         </div>
     );
 };

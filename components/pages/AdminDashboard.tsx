@@ -9,6 +9,15 @@ interface DashboardStats {
   revenue: number;
 }
 
+const getProxiedUrlForReview = (url: string) => {
+  if (!url) return '';
+  if (url.includes('amazonaws.com') && !url.includes('/s3-proxy')) {
+    const urlObj = new URL(url);
+    return `/s3-proxy${urlObj.pathname}${urlObj.search}`;
+  }
+  return url;
+};
+
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
@@ -17,6 +26,7 @@ export const AdminDashboard: React.FC = () => {
     activeSubscriptions: 0,
     revenue: 0,
   });
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -37,15 +47,23 @@ export const AdminDashboard: React.FC = () => {
     const fetchStats = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-        const response = await fetch(`${API_URL}/api/admin/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        
+        const [statsResponse, generationsResponse] = await Promise.all([
+          fetch(`${API_URL}/api/admin/stats`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }),
+          fetch(`${API_URL}/api/user/generations/admin/all?limit=100`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+        ]);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (statsResponse.ok) {
+          const data = await statsResponse.json();
           if (data.success) {
             setStats({
               totalUsers: data.totalUsers,
@@ -56,9 +74,18 @@ export const AdminDashboard: React.FC = () => {
           }
         } else {
           // If unauthorized, redirect to login
-          if (response.status === 401 || response.status === 403) {
+          if (statsResponse.status === 401 || statsResponse.status === 403) {
             navigate('/admin/login');
+            return;
           }
+        }
+
+        if (generationsResponse.ok) {
+           const genData = await generationsResponse.json();
+           if (genData.success && genData.generations) {
+              const reviews = genData.generations.filter((g: any) => g.rating > 0);
+              setRecentReviews(reviews);
+           }
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
@@ -131,12 +158,35 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Additional Dashboard Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-            <div className="space-y-3">
-              <div className="text-sm text-neutral-400">
-                Dashboard activity will be displayed here
-              </div>
+          <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-xl p-6 flex flex-col max-h-[500px]">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-gold-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              Recent Reviews
+            </h2>
+            <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
+              {recentReviews.length > 0 ? recentReviews.map((review, i) => (
+                <div key={i} className="flex gap-4 p-3 bg-white/5 rounded-lg border border-white/5">
+                  <img src={getProxiedUrlForReview(review.imageUrls?.[0])} className="w-16 h-16 object-cover rounded bg-black shrink-0" alt="Generations" />
+                  <div className="flex-1 min-w-0">
+                     <div className="flex justify-between items-start mb-1">
+                        <span className="text-sm font-medium truncate pr-2">{review.userEmail}</span>
+                        <div className="flex text-gold-400 shrink-0">
+                           {[1,2,3,4,5].map(s => (
+                             <svg key={s} className="w-3.5 h-3.5" fill={s <= review.rating ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={s <= review.rating ? 0 : 2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                             </svg>
+                           ))}
+                        </div>
+                     </div>
+                     {review.ratingFeedback && <p className="text-xs text-neutral-400 italic">"{review.ratingFeedback}"</p>}
+                     <p className="text-[10px] text-neutral-500 mt-2">{new Date(review.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              )) : (
+                <div className="text-sm text-neutral-400 p-4 text-center border border-dashed border-white/10 rounded-lg">No reviews submitted yet.</div>
+              )}
             </div>
           </div>
           <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-xl p-6">

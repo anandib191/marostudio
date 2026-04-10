@@ -37,6 +37,9 @@ export const notifyGenerationComplete = (feature: string = 'Photoshoot') => {
     // Check if the user is currently looking at the studio page
     const isStudioVisible = document.visibilityState === 'visible' && window.location.pathname.includes('/studio');
     
+    // Dispatch a global event so the sidebar can show the "New" badge
+    window.dispatchEvent(new CustomEvent('generation_complete'));
+    
     if (!isStudioVisible) {
         playNotificationSound();
         toast.success(`✨ Your ${feature} generation is complete!`, {

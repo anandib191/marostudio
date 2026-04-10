@@ -46,14 +46,17 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
     const isPhoto = previewStudio === 'photo';
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [cachedCount, setCachedCount] = useState(0);
+    const [hasNewGenerations, setHasNewGenerations] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         setIsLoggedIn(!!token);
-        if (token) {
-            getCacheStats().then(stats => setCachedCount(stats.itemCount)).catch(() => { });
-        }
+
+        const handleNewGen = () => {
+             setHasNewGenerations(true);
+        };
+        window.addEventListener('generation_complete', handleNewGen);
+        return () => window.removeEventListener('generation_complete', handleNewGen);
     }, []);
 
     const canJumpTo = (index: number) => {
@@ -152,8 +155,11 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
             <div className="px-4 pb-6 flex flex-col gap-1">
                 {isLoggedIn && (
                     <button
-                        onClick={() => navigate('/previously-generated')}
-                        className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] transition-all ${location.pathname === '/previously-generated'
+                        onClick={() => {
+                            setHasNewGenerations(false);
+                            navigate('/previously-generated');
+                        }}
+                        className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[11px] transition-all relative ${location.pathname === '/previously-generated'
                             ? 'bg-gold-500/10 text-gold-400 font-semibold border border-gold-500/20'
                             : 'text-neutral-400 hover:text-white hover:bg-white/[0.05] border border-transparent'
                             }`}
@@ -162,10 +168,16 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="flex-1 text-left">Previously Generated</span>
-                        {cachedCount > 0 && (
-                            <span className="px-1.5 py-0.5 bg-gold-500/20 text-gold-600 text-[9px] font-bold rounded-full">
-                                {cachedCount}
-                            </span>
+                        {hasNewGenerations && (
+                            <div className="flex items-center gap-1.5 ml-1">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                </span>
+                                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-500 text-[9px] font-bold rounded-[4px] uppercase tracking-wider">
+                                    New
+                                </span>
+                            </div>
                         )}
                     </button>
                 )}

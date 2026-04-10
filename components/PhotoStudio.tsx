@@ -46,7 +46,7 @@ import { AspectRatio16x9Icon } from './icons/AspectRatio16x9Icon';
 import { AspectRatio9x16Icon } from './icons/AspectRatio9x16Icon';
 import { UserIcon } from './icons/UserIcon';
 import { addToCache, getCachedItems } from '../utils/cacheManager';
-
+import { RatingPopup } from './RatingPopup';
 
 type ViewMode = 'gallery' | 'catalogue';
 type StudioPhase = 'category' | 'upload' | 'identification' | 'details' | 'generating' | 'results';
@@ -740,7 +740,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
 
                                     {/* Dropdown panel */}
                                     {isCategoryDropdownOpen && (
-                                        <div className={`absolute z-[100] mt-1 w-full max-h-64 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
+                                        <div className={`studio-dropdown-panel absolute z-[100] mt-1 w-full max-h-64 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
                                             {categorySearch.trim() ? (
                                                 /* Search results — flat list of matching items */
                                                 searchResults.length > 0 ? (
@@ -785,7 +785,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                         </button>
                                         <ChevronDownIcon className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400 pointer-events-none transition-transform ${isSubcategoryDropdownOpen ? 'rotate-180' : ''}`} />
                                         {isSubcategoryDropdownOpen && (
-                                            <div className={`absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
+                                            <div className={`studio-dropdown-panel absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
                                                 {subcategoryOptions.map(sub => (
                                                     <button
                                                         key={sub}
@@ -821,7 +821,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                         
                                         {/* Dropdown panel */}
                                         {isItemDropdownOpen && (
-                                            <div className={`absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
+                                            <div className={`studio-dropdown-panel absolute z-[100] mt-1 w-full max-h-48 overflow-y-auto border rounded-lg shadow-2xl animate-fade-in ${isLight ? 'bg-white border-neutral-200 shadow-neutral-200/60' : 'bg-neutral-950 border-white/15 shadow-black/80'}`}>
                                                 {/* Pinned special options */}
                                                 {(!itemSearch.trim() || 'ai detected'.includes(itemSearch.toLowerCase())) && (
                                                     <button
@@ -834,7 +834,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                             const dProd = derivedProductType(selectedCategory, selectedSubcategory, 'AI Detected');
                                                             onCategoryChange?.(dCat, dProd, 'AI Detected');
                                                         }}
-                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-gold-50' : 'border-white/10 hover:bg-gold-500/10'} ${selectedItem === 'AI Detected' ? 'text-gold-400 bg-gold-500/10' : 'text-gold-400/80'}`}
+                                                        className={`studio-dropdown-ai-btn w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-gold-50' : 'border-white/10 hover:bg-gold-500/10'} ${selectedItem === 'AI Detected' ? 'studio-dropdown-ai-active bg-gold-500/10' : ''}`}
                                                     >
                                                         <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                                                         AI Detected
@@ -851,7 +851,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                             const dProd2 = derivedProductType(selectedCategory, selectedSubcategory, 'Other');
                                                             onCategoryChange?.(dCat2, dProd2, 'Other');
                                                         }}
-                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/10 hover:bg-white/10'} ${selectedItem === 'Other' ? 'text-gold-400 bg-gold-500/10' : isLight ? 'text-neutral-600' : 'text-neutral-300'}`}
+                                                        className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b transition-colors flex items-center gap-2 ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/10 hover:bg-white/10'} ${selectedItem === 'Other' ? 'studio-dropdown-item-active bg-gold-500/10' : isLight ? '' : 'text-neutral-300'}`}
                                                     >
                                                         <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                                                         Other
@@ -871,7 +871,7 @@ const DetailsStep: React.FC<DetailsStepProps> = ({
                                                                 const dProd3 = derivedProductType(selectedCategory, selectedSubcategory, item);
                                                                 onCategoryChange?.(dCat3, dProd3, item);
                                                             }}
-                                                            className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b last:border-0 transition-colors ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/5 hover:bg-white/10'} ${selectedItem === item ? 'text-gold-400 bg-gold-500/10' : isLight ? 'text-neutral-700' : 'text-white'}`}
+                                                            className={`w-full text-left px-3 py-2.5 text-sm font-medium border-b last:border-0 transition-colors ${isLight ? 'border-neutral-100 hover:bg-neutral-50' : 'border-white/5 hover:bg-white/10'} ${selectedItem === item ? 'studio-dropdown-item-active bg-gold-500/10' : isLight ? '' : 'text-white'}`}
                                                         >
                                                             {item}
                                                         </button>
@@ -1208,6 +1208,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [downloadingType, setDownloadingType] = useState<DownloadingType>(null);
     const [error, setError] = useState<string | null>(null);
+    const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
+    const [generationRating, setGenerationRating] = useState<number>(0);
+    const [generationFeedback, setGenerationFeedback] = useState<string>('');
+    const [showRatingPopup, setShowRatingPopup] = useState<boolean>(false);
     const [viewMode, setViewMode] = useState<ViewMode>('gallery');
     const catalogueRef = useRef<HTMLDivElement>(null);
 
@@ -1481,7 +1485,7 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                 // Save generation record for admin tracking
                 try {
                     const allImages = [result.coverImage, ...result.modelImages].filter(Boolean);
-                    await fetch(`${API_URL}/api/user/generations/save`, {
+                    const response = await fetch(`${API_URL}/api/user/generations/save`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1501,6 +1505,17 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                             creatorName: creatorName || null,
                         }),
                     });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.generation && data.generation._id) {
+                            setCurrentGenerationId(data.generation._id);
+                            setGenerationRating(0);
+                            setGenerationFeedback('');
+                            // Show rating popup after a brief delay so users can focus on results first
+                            setTimeout(() => setShowRatingPopup(true), 2500);
+                        }
+                    }
                 } catch (err) {
                     console.error('Save generation record error:', err);
                 }
@@ -1606,6 +1621,24 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                     tempContainer.appendChild(clonedPage);
                     document.body.appendChild(tempContainer);
 
+                    // Import proxy utility
+                    const { getProxiedUrl } = await import('../utils/downloadHelper');
+                    
+                    // Proxy all image sources to bypass CORS for html2canvas
+                    const images = clonedPage.querySelectorAll('img');
+                    images.forEach(img => {
+                        if (img.src) {
+                            // We need to keep the proxy path in the same origin
+                            const proxiedPath = getProxiedUrl(img.src);
+                            // If it starts with /s3-proxy, prepend current origin
+                            if (proxiedPath.startsWith('/s3-proxy')) {
+                                img.src = window.location.origin + proxiedPath;
+                            } else {
+                                img.src = proxiedPath;
+                            }
+                        }
+                    });
+
                     const { default: html2canvas } = await import('html2canvas');
                     const pageCanvas = await html2canvas(clonedPage, {
                         scale: 2,
@@ -1671,10 +1704,10 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         setDownloadingType('zip');
         try {
             const { default: JSZip } = await import('jszip');
+            const { fetchImageAsBlob } = await import('../utils/downloadHelper');
             const zip = new JSZip();
             const fetchAndAdd = async (url: string, filename: string) => {
-                const response = await fetch(url);
-                const blob = await response.blob();
+                const blob = await fetchImageAsBlob(url);
                 zip.file(filename, blob);
             };
             const promises = [fetchAndAdd(coverImage, 'hero.png')];
@@ -2081,6 +2114,21 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
                                 />
                             )}
                         </div>
+                        
+                        {/* Inline Rating Component at the bottom */}
+                        <div className="mt-8">
+                            <RatingPopup 
+                                variant="inline" 
+                                generationId={currentGenerationId} 
+                                isLight={isLight} 
+                                initialRating={generationRating}
+                                initialFeedback={generationFeedback}
+                                onSyncState={(r, f) => {
+                                    setGenerationRating(r);
+                                    setGenerationFeedback(f);
+                                }}
+                            />
+                        </div>
                     </div>
                 );
             default: return null;
@@ -2091,6 +2139,20 @@ export const PhotoStudio: React.FC<{ onExit: () => void; onContentGenerated: () 
         <div className="w-full h-full pb-20">
             {renderPhaseContent()}
             {error && <div className="mt-12 p-6 bg-red-900/10 border border-red-500/20 text-red-300 rounded-2xl text-center max-w-lg mx-auto text-sm">{error}</div>}
+            
+            <RatingPopup 
+                variant="popup"
+                generationId={currentGenerationId} 
+                isVisible={showRatingPopup} 
+                onClose={() => setShowRatingPopup(false)} 
+                isLight={isLight}
+                initialRating={generationRating}
+                initialFeedback={generationFeedback}
+                onSyncState={(r, f) => {
+                    setGenerationRating(r);
+                    setGenerationFeedback(f);
+                }}
+            />
         </div>
     );
 };

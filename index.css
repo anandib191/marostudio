@@ -1416,7 +1416,8 @@ hr,
   background-color: #f9fafb !important;
 }
 
-/* Studio light mode: override the global button color rule that forces white text */
+/* Studio light mode: override the global button color rule that forces white text.
+   Dropdown buttons get overridden by more specific .studio-dropdown-panel rules below. */
 .studio-light button {
   color: #1a1a1a !important;
 }
@@ -1434,6 +1435,41 @@ hr,
 /* Keep white text on gold/colored buttons */
 .studio-light button[class*="bg-gold"] {
   color: #ffffff !important;
+}
+
+/* Dropdown panel items in studio light — gold for AI Detected */
+.studio-light .studio-dropdown-panel .studio-dropdown-ai-btn {
+  color: rgba(202, 138, 4, 0.85) !important;
+}
+
+.studio-light .studio-dropdown-panel .studio-dropdown-ai-btn svg {
+  color: rgba(202, 138, 4, 0.85) !important;
+}
+
+.studio-light .studio-dropdown-panel .studio-dropdown-ai-btn.studio-dropdown-ai-active {
+  color: #ca8a04 !important;
+}
+
+/* Dropdown panel items in studio light — regular items dark text */
+.studio-light .studio-dropdown-panel button {
+  color: #374151 !important;
+}
+
+/* Override: gold items stay gold even in studio-light dropdown */
+.studio-light .studio-dropdown-panel button.studio-dropdown-ai-btn {
+  color: rgba(202, 138, 4, 0.85) !important;
+}
+
+/* Selected items stay gold */
+.studio-light .studio-dropdown-panel button.studio-dropdown-item-active {
+  color: #ca8a04 !important;
+}
+
+/* Ensure dropdown panels in studio light have proper background */
+.studio-light .bg-neutral-950 {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12) !important;
 }
 
 /* ─── Theme Toggle Button ─── */

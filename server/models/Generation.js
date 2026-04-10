@@ -46,6 +46,16 @@ const generationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     }, // persona lock toggle
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+    ratingFeedback: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

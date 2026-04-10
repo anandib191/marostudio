@@ -2,6 +2,7 @@ import express from 'express';
 import { protect } from '../middleware/auth.js';
 import { admin } from '../middleware/auth.js';
 import Generation from '../models/Generation.js';
+import User from '../models/User.js';
 import logger from '../utils/logger.js';
 
 const router = express.Router();
@@ -97,13 +98,43 @@ router.get('/admin/all', protect, admin, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
+    const type = req.query.type;
+    const search = req.query.search;
+    const hasRating = req.query.hasRating === 'true';
+    const plan = req.query.plan; // 'free' or 'paid'
+
+    const filter = {};
+    if (hasRating) {
+      filter.rating = { $gt: 0 };
+    }
+    if (type && type !== 'all') {
+      filter.type = type;
+    }
+    if (search) {
+      filter.userEmail = { $regex: search, $options: 'i' };
+    }
+    if (plan && plan !== 'all') {
+      let userQuery = {};
+      if (plan === 'free') {
+        userQuery.$or = [
+          { subscriptionPlan: 'Free' },
+          { subscriptionPlan: null },
+          { subscriptionPlan: { $exists: false } }
+        ];
+      } else if (plan === 'paid') {
+        userQuery.subscriptionPlan = { $exists: true, $ne: null, $ne: 'Free' };
+      }
+      const matchingUsers = await User.find(userQuery).select('_id');
+      const userIds = matchingUsers.map(u => u._id);
+      filter.userId = { $in: userIds };
+    }
 
     const [generations, total] = await Promise.all([
-      Generation.find({})
+      Generation.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      Generation.countDocuments({}),
+      Generation.countDocuments(filter),
     ]);
 
     res.status(200).json({
@@ -140,6 +171,35 @@ router.delete('/:id', protect, async (req, res) => {
     res.status(200).json({ success: true, message: 'Generation deleted successfully' });
   } catch (error) {
     logger.error('Delete generation error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+/**
+ * @route   PATCH /api/user/generations/:id/rating
+ * @desc    Submit a rating for a generation
+ * @access  Private
+ */
+router.patch('/:id/rating', protect, async (req, res) => {
+  try {
+    const { rating, ratingFeedback } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
+    }
+
+    const generation = await Generation.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      { rating: Math.round(rating), ratingFeedback: ratingFeedback || null },
+      { new: true }
+    );
+
+    if (!generation) {
+      return res.status(404).json({ success: false, message: 'Generation not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Rating saved successfully' });
+  } catch (error) {
+    logger.error('Save rating error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
