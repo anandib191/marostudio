@@ -5,6 +5,7 @@
   "installCommand": "npm install",
 
   "rewrites": [
+    { "source": "/s3-proxy/:path*", "destination": "https://growspace-app-storage.s3.eu-north-1.amazonaws.com/:path*" },
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/(.*)", "destination": "/index.html" }
