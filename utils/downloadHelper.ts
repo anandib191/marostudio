@@ -9,8 +9,9 @@ const S3_BUCKET_HOST = 'growspace-app-storage.s3.eu-north-1.amazonaws.com';
  */
 export function getProxiedUrl(url: string): string {
   if (!url) return url;
-  // Only proxy S3 bucket URLs
-  if (url.includes(S3_BUCKET_HOST)) {
+  // Proxy S3 bucket URLs ONLY in development environment to avoid CORS issues
+  // In production, the domains can fetch directly
+  if (import.meta.env.DEV && url.includes(S3_BUCKET_HOST)) {
     const path = url.split(S3_BUCKET_HOST)[1]; // e.g. /marostudio/2026-04-07/abc.png
     return `/s3-proxy${path}`;
   }

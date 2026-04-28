@@ -179,7 +179,7 @@ export const MarketingStudio: React.FC<{ onExit: () => void; onContentGenerated:
                         console.log('📡 Fetching poster from URL...');
                         let fetchUrl = poster;
                         try {
-                            if (poster.includes('amazonaws.com') && !poster.includes('/s3-proxy')) {
+                            if (import.meta.env.DEV && poster.includes('amazonaws.com') && !poster.includes('/s3-proxy')) {
                                 const urlObj = new URL(poster);
                                 fetchUrl = `/s3-proxy${urlObj.pathname}${urlObj.search}`;
                             }

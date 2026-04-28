@@ -11,7 +11,7 @@ interface DashboardStats {
 
 const getProxiedUrlForReview = (url: string) => {
   if (!url) return '';
-  if (url.includes('amazonaws.com') && !url.includes('/s3-proxy')) {
+  if (import.meta.env.DEV && url.includes('amazonaws.com') && !url.includes('/s3-proxy')) {
     const urlObj = new URL(url);
     return `/s3-proxy${urlObj.pathname}${urlObj.search}`;
   }
